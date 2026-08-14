@@ -1,0 +1,124 @@
+import React, { useState } from 'react';
+import {
+  Pressable,
+  StyleSheet,
+  TextInput,
+  TextInputProps,
+  View,
+} from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+
+import { AppText } from '@/components/ui/AppText';
+import { colors, radius, spacing, typography } from '@/constants/theme';
+
+export interface FormFieldProps extends TextInputProps {
+  label: string;
+  error?: string | null;
+  /** Renders a secure field with a show/hide toggle. */
+  secure?: boolean;
+  /** Optional helper text shown below the field (e.g. format rules). */
+  hint?: string;
+}
+
+/**
+ * Labeled text input wired to the design system, with inline error and helper
+ * text and an optional show/hide toggle for password fields.
+ */
+export function FormField({
+  label,
+  error,
+  secure = false,
+  hint,
+  style,
+  onFocus,
+  onBlur,
+  editable,
+  ...rest
+}: FormFieldProps) {
+  const [isFocused, setIsFocused] = useState(false);
+  const [hidden, setHidden] = useState(secure);
+
+  const borderColor = error ? colors.danger : isFocused ? colors.primary : colors.border;
+
+  return (
+    <View style={styles.container}>
+      <AppText variant="label" weight="medium" color={colors.textSecondary}>
+        {label}
+      </AppText>
+
+      <View style={[styles.inputRow, { borderColor }]}>
+        <TextInput
+          style={styles.input}
+          placeholderTextColor={colors.textMuted}
+          secureTextEntry={hidden}
+          editable={editable}
+          onFocus={(event) => {
+            setIsFocused(true);
+            onFocus?.(event);
+          }}
+          onBlur={(event) => {
+            setIsFocused(false);
+            onBlur?.(event);
+          }}
+          accessibilityLabel={label}
+          accessibilityHint={hint}
+          accessibilityState={{ disabled: editable === false }}
+          {...rest}
+        />
+        {secure ? (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={hidden ? 'Show password' : 'Hide password'}
+            hitSlop={12}
+            onPress={() => setHidden((value) => !value)}
+            style={styles.toggle}
+          >
+            <Ionicons
+              name={hidden ? 'eye-outline' : 'eye-off-outline'}
+              size={20}
+              color={colors.textMuted}
+            />
+          </Pressable>
+        ) : null}
+      </View>
+
+      {error ? (
+        <AppText variant="caption" color={colors.danger} style={styles.message}>
+          {error}
+        </AppText>
+      ) : hint ? (
+        <AppText variant="caption" color={colors.textMuted} style={styles.message}>
+          {hint}
+        </AppText>
+      ) : null}
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    marginBottom: spacing.md,
+  },
+  inputRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: spacing.xs,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    backgroundColor: colors.surface,
+    paddingHorizontal: spacing.md,
+  },
+  input: {
+    flex: 1,
+    height: 52,
+    color: colors.text,
+    fontSize: typography.body,
+  },
+  toggle: {
+    paddingLeft: spacing.sm,
+  },
+  message: {
+    marginTop: spacing.xxs,
+    lineHeight: 16,
+  },
+});

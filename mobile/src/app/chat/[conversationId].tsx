@@ -1,0 +1,669 @@
+import { Ionicons } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  ActivityIndicator,
+  Alert,
+  FlatList,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  StyleSheet,
+  View,
+} from 'react-native';
+
+import { Avatar } from '@/components/Avatar';
+import { AttachmentPickerSheet } from '@/components/AttachmentPickerSheet';
+import { MediaPreview, MediaPreviewModal } from '@/components/MediaPreviewModal';
+import { MessageActionsSheet } from '@/components/MessageActionsSheet';
+import { ChatItem, MessageBubble } from '@/components/MessageBubble';
+import { MessageInput } from '@/components/MessageInput';
+import { RealtimeBanner } from '@/components/RealtimeBanner';
+import { ReportSheet } from '@/components/ReportSheet';
+import { VoiceRecorderBar } from '@/components/VoiceRecorderBar';
+import { AppText, Screen } from '@/components/ui';
+import { colors, spacing } from '@/constants/theme';
+import { PendingMessage, useMessages } from '@/hooks/useMessages';
+import { useAuth } from '@/lib/auth';
+import {
+  deleteMessage,
+  fetchConversationInfo,
+  reactToMessage,
+  resolveMediaUrl,
+  unreactToMessage,
+} from '@/lib/messaging';
+import {
+  isConversationMuted,
+  reportMessage,
+  setConversationMuted,
+} from '@/lib/moderation';
+import { ReportCategory } from '@/lib/moderation';
+import { MessageRow } from '@/types/database';
+
+interface ReplyState {
+  messageId: string;
+  text: string;
+  senderName: string;
+}
+
+export default function ChatScreen() {
+  const params = useLocalSearchParams<{ conversationId: string }>();
+  const conversationId = params.conversationId;
+  const { user } = useAuth();
+  const meId = user?.id ?? '';
+
+  const chat = useMessages(conversationId);
+  const [peer, setPeer] = useState<{
+    id: string;
+    displayName: string;
+    username: string;
+    avatarUrl: string | null;
+  } | null>(null);
+  const [peerLoading, setPeerLoading] = useState(true);
+  const [input, setInput] = useState('');
+  const [replying, setReplying] = useState<ReplyState | null>(null);
+  const [sheetItem, setSheetItem] = useState<MessageRow | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [pickerVisible, setPickerVisible] = useState(false);
+  const [preview, setPreview] = useState<MediaPreview | null>(null);
+  const [previewCaption, setPreviewCaption] = useState('');
+  const [voiceActive, setVoiceActive] = useState(false);
+  const [mediaUrls, setMediaUrls] = useState<Record<string, string>>({});
+  const mediaUrlSeen = useRef<Set<string>>(new Set());
+
+  const [muted, setMuted] = useState(false);
+  const [muteBusy, setMuteBusy] = useState(false);
+  const [reportItem, setReportItem] = useState<MessageRow | null>(null);
+  const [reportError, setReportError] = useState<string | null>(null);
+  const [reportSubmitting, setReportSubmitting] = useState(false);
+
+  const listRef = useRef<FlatList<ChatItem>>(null);
+  const stickToBottom = useRef(true);
+
+  // Load the conversation's mute state whenever it changes.
+  useEffect(() => {
+    if (!conversationId) {
+      return;
+    }
+    let active = true;
+    void isConversationMuted('dm', conversationId).then(({ muted: mutedState, error }) => {
+      if (active && !error) {
+        setMuted(mutedState);
+      }
+    });
+    return () => {
+      active = false;
+    };
+  }, [conversationId, muted]);
+
+  const toggleMute = () => {
+    if (!conversationId || muteBusy) {
+      return;
+    }
+    setMuteBusy(true);
+    void setConversationMuted('dm', conversationId, !muted).then((error) => {
+      setMuteBusy(false);
+      if (error) {
+        setActionError(error);
+      } else {
+        setMuted((prev) => !prev);
+      }
+    });
+  };
+
+  const submitReport = (category: ReportCategory, details?: string) => {
+    if (!reportItem) {
+      return;
+    }
+    setReportError(null);
+    setReportSubmitting(true);
+    void reportMessage(reportItem.id, category, details).then((error) => {
+      setReportSubmitting(false);
+      if (error) {
+        setReportError(error);
+      } else {
+        setReportItem(null);
+        setActionError(null);
+        Alert.alert('Report sent', 'Thanks — our team will review it.');
+      }
+    });
+  };
+
+  useEffect(() => {
+    if (!conversationId) {
+      return;
+    }
+    let active = true;
+    setPeerLoading(true);
+    void fetchConversationInfo(conversationId).then(({ data }) => {
+      if (!active) {
+        return;
+      }
+      setPeerLoading(false);
+      if (data) {
+        setPeer({
+          id: data.other_user_id,
+          displayName: data.display_name,
+          username: data.username,
+          avatarUrl: data.avatar_url,
+        });
+      } else {
+        setPeer(null);
+      }
+    });
+    return () => {
+      active = false;
+    };
+  }, [conversationId]);
+
+  // Resolve short-lived signed URLs for every media message shown here.
+  useEffect(() => {
+    for (const message of chat.messages) {
+      if (!message.media_path || mediaUrlSeen.current.has(message.id)) {
+        continue;
+      }
+      void resolveMediaUrl(message.id, message.media_path).then((result) => {
+        if (result.url) {
+          mediaUrlSeen.current.add(message.id);
+          setMediaUrls((prev) => ({ ...prev, [message.id]: result.url as string }));
+        }
+      });
+    }
+  }, [chat.messages]);
+
+  useFocusEffect(
+    useCallback(() => {
+      chat.setFocused(true);
+      return () => chat.setFocused(false);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [conversationId]),
+  );
+
+  const items = useMemo<ChatItem[]>(() => {
+    const pendingItems = [...chat.pending].sort((a, b) =>
+      a.createdAt < b.createdAt ? -1 : 1,
+    );
+    return [...chat.messages, ...pendingItems];
+  }, [chat.messages, chat.pending]);
+
+  const replyTextFor = useCallback(
+    (item: ChatItem): string | null => {
+      if ('status' in item) {
+        return item.replyText ?? null;
+      }
+      if (!item.reply_to_id) {
+        return null;
+      }
+      const found = chat.messages.find((m) => m.id === item.reply_to_id);
+      if (found) {
+        return found.deleted_at ? 'This message was deleted' : (found.body ?? '');
+      }
+      return 'Message';
+    },
+    [chat.messages],
+  );
+
+  const isMine = (item: ChatItem): boolean => {
+    if ('status' in item) {
+      return true;
+    }
+    return item.sender_id === meId;
+  };
+
+  const senderName = (item: ChatItem): string => {
+    return isMine(item) ? 'you' : (peer?.displayName ?? 'them');
+  };
+
+  const toggleReaction = async (message: MessageRow, emoji: string, hasMine: boolean) => {
+    setActionError(null);
+    const error = hasMine
+      ? await unreactToMessage(message.id, emoji)
+      : await reactToMessage(message.id, emoji);
+    if (error) {
+      setActionError(error);
+    }
+  };
+
+  const onDelete = async (message: MessageRow) => {
+    Alert.alert('Delete message?', 'This removes the message for everyone in this chat.', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Delete',
+        style: 'destructive',
+        onPress: () => {
+          setSheetItem(null);
+          setActionError(null);
+          void deleteMessage(message.id).then((error) => {
+            if (error) {
+              setActionError(error);
+            }
+          });
+        },
+      },
+    ]);
+  };
+
+  const onSend = () => {
+    const text = input.trim();
+    if (!text) {
+      return;
+    }
+    chat.send(text, replying?.messageId ?? null, replying?.text ?? undefined);
+    setInput('');
+    setReplying(null);
+  };
+
+  const onOpenPicker = () => {
+    Keyboard.dismiss();
+    setPickerVisible(true);
+  };
+
+  const handlePickImage = async () => {
+    setPickerVisible(false);
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      quality: 0.85,
+    });
+    if (result.canceled || result.assets.length === 0) {
+      return;
+    }
+    const asset = result.assets[0];
+    setPreview({
+      kind: 'image',
+      uri: asset.uri,
+      width: asset.width || undefined,
+      height: asset.height || undefined,
+    });
+    setPreviewCaption('');
+  };
+
+  const handlePickVideo = async () => {
+    setPickerVisible(false);
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) {
+      setActionError('Photo library access is required to send videos.');
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['videos'],
+    });
+    if (result.canceled || result.assets.length === 0) {
+      return;
+    }
+    const asset = result.assets[0];
+    setPreview({
+      kind: 'video',
+      uri: asset.uri,
+      width: asset.width || undefined,
+      height: asset.height || undefined,
+      durationSeconds: asset.duration ? asset.duration / 1000 : undefined,
+    });
+    setPreviewCaption('');
+  };
+
+  const handleVoiceNote = () => {
+    setPickerVisible(false);
+    Keyboard.dismiss();
+    setReplying(null);
+    setVoiceActive(true);
+  };
+
+  const onSendPreview = () => {
+    if (!preview) {
+      return;
+    }
+    chat.sendMedia(
+      {
+        kind: preview.kind,
+        mimeType: preview.kind === 'image' ? 'image/jpeg' : 'video/mp4',
+        uri: preview.uri,
+        width: preview.width,
+        height: preview.height,
+        durationSeconds: preview.durationSeconds,
+      },
+      previewCaption,
+      replying?.messageId ?? null,
+      replying?.text,
+    );
+    setPreview(null);
+    setPreviewCaption('');
+    setReplying(null);
+  };
+
+  const onVoiceSend = ({
+    uri,
+    durationSeconds,
+  }: {
+    uri: string;
+    durationSeconds: number;
+  }) => {
+    chat.sendMedia(
+      { kind: 'voice', mimeType: 'audio/mp4', uri, durationSeconds },
+      '',
+      replying?.messageId ?? null,
+      replying?.text,
+    );
+    setVoiceActive(false);
+    setReplying(null);
+  };
+
+  const onScroll = (event: { nativeEvent: { contentOffset: { y: number }; layoutMeasurement: { height: number }; contentSize: { height: number } } }) => {
+    const { contentOffset, layoutMeasurement, contentSize } = event.nativeEvent;
+    stickToBottom.current =
+      contentOffset.y + layoutMeasurement.height >= contentSize.height - 120;
+  };
+
+  const renderItem = ({ item }: { item: ChatItem }) => {
+    const mine = isMine(item);
+    const pendingFailed = 'status' in item && item.status === 'failed';
+    const realMessage = !('status' in item) && !item.deleted_at;
+
+    return (
+      <MessageBubble
+        item={item}
+        isMine={mine}
+        replyText={replyTextFor(item)}
+        meId={meId}
+        mediaUrl={mediaUrls[item.id] ?? null}
+        onLongPress={() => {
+          if (pendingFailed) {
+            chat.discard(item.id);
+          } else if (realMessage && 'id' in item) {
+            setSheetItem(item as MessageRow);
+          }
+        }}
+        onRetry={
+          pendingFailed && 'status' in item
+            ? () => chat.retry(item as PendingMessage)
+            : undefined
+        }
+        onReact={(emoji, hasMine) => {
+          if (realMessage && 'id' in item) {
+            void toggleReaction(item as MessageRow, emoji, hasMine);
+          }
+        }}
+      />
+    );
+  };
+
+  return (
+    <Screen padding={0}>
+      <View style={styles.header}>
+        <Pressable
+          accessibilityRole="button"
+          hitSlop={12}
+          style={styles.backButton}
+          onPress={() => router.back()}
+        >
+          <Ionicons name="arrow-back" size={22} color={colors.text} />
+        </Pressable>
+        <Pressable
+          accessibilityRole="button"
+          style={styles.peer}
+          disabled={!peer}
+          onPress={() => peer && router.push(`/users/${peer.username}`)}
+        >
+          <Avatar uri={peer?.avatarUrl} name={peer?.displayName} size={34} />
+          <View style={styles.peerText}>
+            <AppText variant="body" weight="semibold" numberOfLines={1}>
+              {peer ? peer.displayName : 'Loading…'}
+            </AppText>
+            {peer ? (
+              <AppText variant="caption" color={colors.textSecondary} numberOfLines={1}>
+                @{peer.username}
+              </AppText>
+            ) : null}
+          </View>
+        </Pressable>
+        <View style={styles.backButton}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={muted ? 'Unmute conversation' : 'Mute conversation'}
+            hitSlop={12}
+            onPress={toggleMute}
+          >
+            <Ionicons
+              name={muted ? 'notifications-off-outline' : 'notifications-outline'}
+              size={22}
+              color={muted ? colors.danger : colors.textSecondary}
+            />
+          </Pressable>
+        </View>
+      </View>
+
+      <RealtimeBanner status={chat.realtime} />
+
+      {!peerLoading && !peer ? (
+        <View style={styles.state}>
+          <AppText variant="body" color={colors.textSecondary} align="center" style={styles.stateText}>
+            This conversation is no longer available.
+          </AppText>
+        </View>
+      ) : chat.loading ? (
+        <View style={styles.state}>
+          <ActivityIndicator color={colors.primary} />
+        </View>
+      ) : chat.error ? (
+        <View style={styles.state}>
+          <AppText variant="body" color={colors.textSecondary} align="center" style={styles.stateText}>
+            {chat.error}
+          </AppText>
+          <Pressable accessibilityRole="button" onPress={() => void chat.refresh()} style={styles.retry}>
+            <AppText variant="label" color={colors.primary} weight="semibold">
+              Retry
+            </AppText>
+          </Pressable>
+        </View>
+      ) : (
+        <KeyboardAvoidingView
+          style={styles.flex}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 8 : 0}
+        >
+          {items.length === 0 ? (
+            <View style={styles.emptyChat}>
+              <Ionicons name="chatbubble-ellipses-outline" size={40} color={colors.textMuted} />
+              <AppText variant="body" color={colors.textSecondary} align="center" style={styles.emptyText}>
+                No messages yet. Say hi to {peer?.displayName ?? 'them'}!
+              </AppText>
+            </View>
+          ) : (
+            <FlatList
+              ref={listRef}
+              data={items}
+              keyExtractor={(item) => item.id}
+              renderItem={renderItem}
+              contentContainerStyle={styles.list}
+              keyboardShouldPersistTaps="handled"
+              onScroll={onScroll}
+              scrollEventThrottle={64}
+              onContentSizeChange={() => {
+                if (stickToBottom.current) {
+                  listRef.current?.scrollToEnd({ animated: true });
+                }
+              }}
+            />
+          )}
+
+          {chat.sendError ? (
+            <View style={styles.sendErrorBar}>
+              <AppText variant="caption" color={colors.danger} style={styles.flex}>
+                {chat.sendError}
+              </AppText>
+              <Pressable accessibilityRole="button" hitSlop={10} onPress={chat.clearSendError}>
+                <Ionicons name="close" size={16} color={colors.danger} />
+              </Pressable>
+            </View>
+          ) : null}
+
+          {actionError ? (
+            <View style={styles.sendErrorBar}>
+              <AppText variant="caption" color={colors.danger} style={styles.flex}>
+                {actionError}
+              </AppText>
+              <Pressable accessibilityRole="button" hitSlop={10} onPress={() => setActionError(null)}>
+                <Ionicons name="close" size={16} color={colors.danger} />
+              </Pressable>
+            </View>
+          ) : null}
+
+          {voiceActive ? (
+            <VoiceRecorderBar onSend={onVoiceSend} onCancel={() => setVoiceActive(false)} />
+          ) : (
+            <MessageInput
+              value={input}
+              onChangeText={setInput}
+              onSend={onSend}
+              replyingTo={
+                replying
+                  ? { name: replying.senderName, text: replying.text }
+                  : null
+              }
+              onCancelReply={() => setReplying(null)}
+              onAttach={onOpenPicker}
+            />
+          )}
+        </KeyboardAvoidingView>
+      )}
+
+      <AttachmentPickerSheet
+        visible={pickerVisible}
+        onClose={() => setPickerVisible(false)}
+        onPickImage={() => void handlePickImage()}
+        onPickVideo={() => void handlePickVideo()}
+        onVoiceNote={handleVoiceNote}
+      />
+
+      <MediaPreviewModal
+        visible={preview !== null}
+        media={preview}
+        caption={previewCaption}
+        onChangeCaption={setPreviewCaption}
+        onSend={onSendPreview}
+        onClose={() => {
+          setPreview(null);
+          setPreviewCaption('');
+        }}
+      />
+
+      <MessageActionsSheet
+        visible={sheetItem !== null}
+        isMine={sheetItem ? sheetItem.sender_id === meId : false}
+        canDelete={sheetItem ? sheetItem.sender_id === meId : false}
+        onClose={() => setSheetItem(null)}
+        onReply={() => {
+          if (!sheetItem) {
+            return;
+          }
+          const text = sheetItem.deleted_at ? 'This message was deleted' : (sheetItem.body ?? '');
+          setReplying({
+            messageId: sheetItem.id,
+            text,
+            senderName: sheetItem.sender_id === meId ? 'you' : (peer?.displayName ?? 'them'),
+          });
+          setSheetItem(null);
+        }}
+        onDelete={() => {
+          if (sheetItem) {
+            void onDelete(sheetItem);
+          }
+        }}
+        onReact={(emoji) => {
+          if (!sheetItem) {
+            return;
+          }
+          setSheetItem(null);
+          const hasMine = Array.isArray(sheetItem.reactions)
+            ? (sheetItem.reactions as { user_id: string }[]).some(
+                (r) => r.user_id === meId && 'emoji' in r && (r as { emoji: string }).emoji === emoji,
+              )
+            : false;
+          void toggleReaction(sheetItem, emoji, hasMine);
+        }}
+        onReport={() => {
+          if (sheetItem) {
+            setReportError(null);
+            setReportItem(sheetItem);
+          }
+        }}
+      />
+
+      <ReportSheet
+        visible={reportItem !== null}
+        title="Report message"
+        submitting={reportSubmitting}
+        error={reportError}
+        onClose={() => {
+          setReportItem(null);
+          setReportError(null);
+        }}
+        onSubmit={(category, details) => submitReport(category, details)}
+      />
+    </Screen>
+  );
+}
+
+const styles = StyleSheet.create({
+  flex: {
+    flex: 1,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  peer: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  peerText: {
+    marginLeft: spacing.sm,
+    maxWidth: '70%',
+  },
+  list: {
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    paddingBottom: spacing.lg,
+  },
+  state: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: spacing.xl,
+  },
+  stateText: {
+    lineHeight: 22,
+    marginBottom: spacing.sm,
+  },
+  retry: {
+    padding: spacing.xs,
+  },
+  emptyChat: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: spacing.xl,
+  },
+  emptyText: {
+    marginTop: spacing.sm,
+    lineHeight: 22,
+  },
+  sendErrorBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FDEBEA',
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
+  },
+});
