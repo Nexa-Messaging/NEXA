@@ -5,34 +5,30 @@
  * are therefore safe to reference here. Secrets such as the Supabase
  * `service_role` key must never be added with the `EXPO_PUBLIC_` prefix and must
  * never be imported from client code.
+ *
+ * IMPORTANT: Expo only inlines `process.env.EXPO_PUBLIC_*` when it is referenced
+ * with static dot notation (e.g. `process.env.EXPO_PUBLIC_SUPABASE_URL`).
+ * Dynamic access via `process.env[key]` or destructuring is NOT inlined, so the
+ * values below must always be static property accesses on `process.env`.
  */
 
-const publicEnv: Record<string, string | undefined> = process.env as Record<
-  string,
-  string | undefined
->;
+const supabaseUrlRaw = process.env.EXPO_PUBLIC_SUPABASE_URL;
+const supabaseAnonKeyRaw = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
 
-/** Returns the value of an environment variable without throwing when unset. */
-function readPublicVar(key: string): string | undefined {
-  return publicEnv[key]?.trim() || undefined;
+/** Reads a value, trimming whitespace and normalizing empty strings to undefined. */
+function clean(value: string | undefined): string | undefined {
+  const trimmed = value?.trim();
+  return trimmed ? trimmed : undefined;
 }
 
 export const env = {
   /** Public Supabase project URL. Returns `undefined` until configured. */
   get supabaseUrl(): string | undefined {
-    return readPublicVar('EXPO_PUBLIC_SUPABASE_URL');
+    return clean(supabaseUrlRaw);
   },
 
   /** Public Supabase anonymous key. Returns `undefined` until configured. */
   get supabaseAnonKey(): string | undefined {
-    return readPublicVar('EXPO_PUBLIC_SUPABASE_ANON_KEY');
-  },
-
-  /**
-   * Whether the environment variables required by a feature are present.
-   * Features should not call their services until this returns true.
-   */
-  isConfigured(...keys: string[]): boolean {
-    return keys.every((key) => readPublicVar(key) !== undefined);
+    return clean(supabaseAnonKeyRaw);
   },
 } as const;

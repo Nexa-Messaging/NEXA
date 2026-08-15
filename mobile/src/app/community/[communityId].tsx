@@ -136,7 +136,7 @@ export default function CommunityScreen() {
   return (
     <Screen padding={0}>
       <View style={styles.header}>
-        <Pressable accessibilityRole="button" hitSlop={12} style={styles.backButton} onPress={() => router.back()}>
+        <Pressable accessibilityRole="button" hitSlop={12} style={styles.backButton} onPress={() => router.back()} accessibilityLabel="Back">
           <Ionicons name="arrow-back" size={22} color={colors.text} />
         </Pressable>
         <AppText variant="heading" weight="bold" numberOfLines={1} style={styles.headerTitle}>
@@ -181,7 +181,7 @@ export default function CommunityScreen() {
           <AppText variant="label" color={colors.danger} style={styles.flex}>
             {error}
           </AppText>
-          <Pressable accessibilityRole="button" hitSlop={10} onPress={() => void load()}>
+          <Pressable accessibilityRole="button" accessibilityLabel="Retry" hitSlop={10} onPress={() => void load()}>
             <Ionicons name="refresh" size={18} color={colors.danger} />
           </Pressable>
         </View>

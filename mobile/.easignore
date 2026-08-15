@@ -1,0 +1,26 @@
+# Ignore files when uploading the project to EAS Build.
+
+# Dependencies
+node_modules/
+
+# Expo / build artifacts
+.expo/
+dist/
+web-build/
+android/
+ios/
+
+# Environment files (secrets + local-only values). EAS cloud builds get the
+# EXPO_PUBLIC_* values from EAS project environment variables instead.
+# See: eas env:create / eas env:set
+.env
+.env.*
+!.env.example
+
+# Typescript
+*.tsbuildinfo
+
+# Editor / OS
+.idea/
+.vscode/
+.DS_Store

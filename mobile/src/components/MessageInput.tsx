@@ -49,7 +49,7 @@ export function MessageInput({
               {replyingTo.text}
             </AppText>
           </View>
-          <Pressable accessibilityRole="button" hitSlop={10} onPress={onCancelReply}>
+          <Pressable accessibilityRole="button" accessibilityLabel="Cancel reply" hitSlop={10} onPress={onCancelReply}>
             <Ionicons name="close" size={20} color={colors.textSecondary} />
           </Pressable>
         </View>

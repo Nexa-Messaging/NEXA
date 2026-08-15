@@ -18,6 +18,8 @@ import {
   CommunityRole,
 } from '@/types/database';
 
+import { randomToken } from '@/utils/random';
+
 /** Private bucket that holds community photos, path "<communityId>/<file>". */
 export const COMMUNITY_AVATARS_BUCKET = 'community-avatars';
 
@@ -38,7 +40,7 @@ export function buildCommunityMediaPath(
   fileName: string,
 ): string {
   const safe = (fileName || 'file').replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 80);
-  const rand = Math.random().toString(36).slice(2, 6);
+  const rand = randomToken(4);
   return `${communityId}/${senderId}/${Date.now()}-${rand}-${safe}`;
 }
 

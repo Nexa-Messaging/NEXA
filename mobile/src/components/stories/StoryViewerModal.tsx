@@ -350,6 +350,11 @@ export function StoryViewerModal({
       <View style={styles.container}>
         <Pressable
           accessibilityRole="button"
+          accessibilityLabel={
+            story
+              ? `Story by ${entry?.display_name ?? 'user'}, tap the left side for previous, right side for next`
+              : 'Story viewer'
+          }
           style={styles.fill}
           onPress={(event) => onTap(event.nativeEvent.locationX)}
         >
@@ -375,7 +380,7 @@ export function StoryViewerModal({
           ) : null}
 
           <View style={styles.header}>
-            <Pressable accessibilityRole="button" hitSlop={12} onPress={onClose} style={styles.headerButton}>
+            <Pressable accessibilityRole="button" accessibilityLabel="Close story" hitSlop={12} onPress={onClose} style={styles.headerButton}>
               <Ionicons name="chevron-down" size={26} color={colors.surface} />
             </Pressable>
             {story ? (
@@ -395,16 +400,17 @@ export function StoryViewerModal({
             <View style={styles.headerActions}>
               {isMine ? (
                 <>
-                  <Pressable accessibilityRole="button" hitSlop={8} onPress={() => void openInsights()} style={styles.headerButton}>
+                  <Pressable accessibilityRole="button" accessibilityLabel="View story insights" hitSlop={8} onPress={() => void openInsights()} style={styles.headerButton}>
                     <Ionicons name="eye-outline" size={22} color={colors.surface} />
                   </Pressable>
-                  <Pressable accessibilityRole="button" hitSlop={8} onPress={confirmDelete} style={styles.headerButton}>
+                  <Pressable accessibilityRole="button" accessibilityLabel="Delete story" hitSlop={8} onPress={confirmDelete} style={styles.headerButton}>
                     <Ionicons name="trash-outline" size={22} color={colors.surface} />
                   </Pressable>
                 </>
               ) : (
                 <Pressable
                   accessibilityRole="button"
+                  accessibilityLabel="Reply to story"
                   hitSlop={8}
                   onPress={() => {
                     setActionError(null);
@@ -477,6 +483,7 @@ export function StoryViewerModal({
               />
               <Pressable
                 accessibilityRole="button"
+                accessibilityLabel="Send reply"
                 disabled={sendingReply || !replyText.trim()}
                 onPress={() => void handleReply()}
                 style={[styles.sendButton, (!replyText.trim() || sendingReply) && styles.sendButtonDisabled]}

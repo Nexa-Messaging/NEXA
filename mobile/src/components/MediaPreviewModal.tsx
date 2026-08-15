@@ -54,7 +54,7 @@ export function MediaPreviewModal({
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
         <View style={styles.header}>
-          <Pressable accessibilityRole="button" hitSlop={12} onPress={onClose} style={styles.iconButton}>
+          <Pressable accessibilityRole="button" accessibilityLabel="Close preview" hitSlop={12} onPress={onClose} style={styles.iconButton}>
             <Ionicons name="close" size={24} color={colors.surface} />
           </Pressable>
           <AppText variant="label" weight="semibold" color={colors.surface} style={styles.headerTitle}>

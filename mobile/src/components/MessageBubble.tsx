@@ -166,6 +166,13 @@ export function MessageBubble({
       ) : null}
       <Pressable
         accessibilityRole="button"
+        accessibilityLabel={
+          media
+            ? media.kind === 'voice'
+              ? 'Voice message, double tap and hold for options'
+              : `${media.kind} message, double tap and hold for options`
+            : undefined
+        }
         onLongPress={onLongPress}
         delayLongPress={300}
         style={[styles.bubble, bubbleStyle, isFailed && styles.bubbleFailed]}

@@ -1,9 +1,11 @@
 import { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 
-import { fallbackMessage } from '@/lib/messaging';
+import { cacheSignedUrl, fallbackMessage } from '@/lib/messaging';
 import { getSupabase } from '@/lib/supabase';
 import { uploadObjectViaXhr } from '@/lib/uploadObject';
 import { StoryFeedRow, StoryReplyFeed, StoryViewer } from '@/types/database';
+
+import { randomToken } from '@/utils/random';
 
 /** Private bucket that holds story media, path "<userId>/<timestamp>-<file>". */
 export const STORIES_BUCKET = 'stories-media';
@@ -18,7 +20,7 @@ export interface StoryResult<T> {
 /** Storage object path: "<userId>/<ts>-<rand>-<safeFileName>". */
 export function buildStoryPath(userId: string, fileName: string): string {
   const safe = (fileName || 'file').replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 80);
-  const rand = Math.random().toString(36).slice(2, 6);
+  const rand = randomToken(4);
   return `${userId}/${Date.now()}-${rand}-${safe}`;
 }
 
@@ -222,7 +224,7 @@ export async function resolveStoryMediaUrl(
     return { url: null, error: fallbackMessage(error, 'The media is no longer available.') };
   }
   if (data?.signedUrl) {
-    storyUrlCache.set(storyId, { url: data.signedUrl, expiresAt: Date.now() + 45_000 });
+    cacheSignedUrl(storyUrlCache, storyId, { url: data.signedUrl, expiresAt: Date.now() + 45_000 });
     return { url: data.signedUrl, error: null };
   }
   return { url: null, error: 'The media is no longer available.' };

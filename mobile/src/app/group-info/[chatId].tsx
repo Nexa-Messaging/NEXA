@@ -379,7 +379,7 @@ export default function GroupInfoScreen() {
   return (
     <Screen padding={0}>
       <View style={styles.header}>
-        <Pressable accessibilityRole="button" hitSlop={12} style={styles.backButton} onPress={() => router.back()}>
+        <Pressable accessibilityRole="button" hitSlop={12} style={styles.backButton} onPress={() => router.back()} accessibilityLabel="Back">
           <Ionicons name="arrow-back" size={22} color={colors.text} />
         </Pressable>
         <AppText variant="heading" weight="bold">
@@ -483,7 +483,7 @@ export default function GroupInfoScreen() {
 
       {renameOpen ? (
         <Modal visible transparent animationType="fade" onRequestClose={() => setRenameOpen(false)}>
-          <Pressable accessibilityRole="button" style={styles.backdrop} onPress={() => setRenameOpen(false)}>
+          <Pressable accessibilityRole="button" accessibilityLabel="Close" style={styles.backdrop} onPress={() => setRenameOpen(false)}>
             <Pressable style={styles.dialog} onPress={() => {}}>
               <AppText variant="label" weight="semibold" color={colors.textSecondary} style={styles.dialogTitle}>
                 RENAME GROUP
@@ -518,7 +518,7 @@ export default function GroupInfoScreen() {
 
       {addingOpen ? (
         <Modal visible transparent animationType="fade" onRequestClose={() => setAddingOpen(false)}>
-          <Pressable accessibilityRole="button" style={styles.backdrop} onPress={() => setAddingOpen(false)}>
+          <Pressable accessibilityRole="button" accessibilityLabel="Close" style={styles.backdrop} onPress={() => setAddingOpen(false)}>
             <Pressable style={[styles.dialog, styles.addDialog]} onPress={() => {}}>
               <AppText variant="label" weight="semibold" color={colors.textSecondary} style={styles.dialogTitle}>
                 ADD MEMBERS

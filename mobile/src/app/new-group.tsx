@@ -90,7 +90,7 @@ export default function NewGroupScreen() {
   return (
     <Screen padding={0}>
       <View style={styles.header}>
-        <Pressable accessibilityRole="button" hitSlop={12} style={styles.iconButton} onPress={() => router.back()}>
+        <Pressable accessibilityRole="button" hitSlop={12} style={styles.iconButton} onPress={() => router.back()} accessibilityLabel="Back">
           <Ionicons name="arrow-back" size={22} color={colors.text} />
         </Pressable>
         <AppText variant="heading" weight="bold" style={styles.title}>

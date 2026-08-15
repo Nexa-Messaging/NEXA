@@ -5,6 +5,8 @@ import { getSupabase } from '@/lib/supabase';
 import { uploadObjectViaXhr } from '@/lib/uploadObject';
 import { CommunityEventFeed, EventResponse } from '@/types/database';
 
+import { randomToken } from '@/utils/random';
+
 /** Private bucket that holds event images, path "<communityId>/<senderId>/<file>". */
 export const EVENT_IMAGES_BUCKET = 'event-images';
 
@@ -16,7 +18,7 @@ export interface EventResult<T> {
 /** Storage object path: "<communityId>/<senderId>/<ts>-<rand>-<safeFileName>". */
 export function buildEventImagePath(communityId: string, senderId: string, fileName: string): string {
   const safe = (fileName || 'file').replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 80);
-  const rand = Math.random().toString(36).slice(2, 6);
+  const rand = randomToken(4);
   return `${communityId}/${senderId}/${Date.now()}-${rand}-${safe}`;
 }
 

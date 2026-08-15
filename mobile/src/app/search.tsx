@@ -229,6 +229,7 @@ export default function SearchScreen() {
           hitSlop={12}
           style={styles.iconButton}
           onPress={() => router.back()}
+          accessibilityLabel="Back"
         >
           <Ionicons name="arrow-back" size={22} color={colors.text} />
         </Pressable>
@@ -247,7 +248,7 @@ export default function SearchScreen() {
             accessibilityLabel="Search"
           />
           {query.length > 0 ? (
-            <Pressable accessibilityRole="button" hitSlop={8} onPress={() => setQuery('')}>
+            <Pressable accessibilityRole="button" accessibilityLabel="Clear search" hitSlop={8} onPress={() => setQuery('')}>
               <Ionicons name="close-circle" size={18} color={colors.textMuted} />
             </Pressable>
           ) : null}

@@ -58,6 +58,7 @@ export function ReportSheet({
     >
       <Pressable
         accessibilityRole="button"
+        accessibilityLabel="Close"
         style={styles.backdrop}
         onPress={() => {
           reset();

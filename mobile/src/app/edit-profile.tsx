@@ -187,7 +187,7 @@ export default function EditProfileScreen() {
   return (
     <Screen padding={0}>
       <View style={styles.header}>
-        <Pressable accessibilityRole="button" hitSlop={12} style={styles.backButton} onPress={() => router.back()}>
+        <Pressable accessibilityRole="button" hitSlop={12} style={styles.backButton} onPress={() => router.back()} accessibilityLabel="Back">
           <Ionicons name="arrow-back" size={22} color={colors.text} />
         </Pressable>
         <AppText variant="heading" weight="bold">

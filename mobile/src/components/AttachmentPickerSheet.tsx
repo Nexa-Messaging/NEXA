@@ -26,7 +26,7 @@ export function AttachmentPickerSheet({
 }: AttachmentPickerSheetProps) {
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
-      <Pressable accessibilityRole="button" style={styles.backdrop} onPress={onClose}>
+      <Pressable accessibilityRole="button" accessibilityLabel="Close" style={styles.backdrop} onPress={onClose}>
         <Pressable style={styles.sheet} onPress={() => {}}>
           <AppText variant="label" weight="semibold" color={colors.textSecondary} align="center">
             ADD ATTACHMENT

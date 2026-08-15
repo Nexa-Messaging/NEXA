@@ -17,6 +17,7 @@ import {
   getSignUpErrorMessage,
 } from '@/lib/auth/errors';
 import { fetchProfileById } from '@/lib/profiles';
+import { installNotificationHandler, registerPushToken, unregisterPushToken } from '@/lib/push';
 import { SupabaseNotConfiguredError, getSupabase } from '@/lib/supabase';
 import { Profile } from '@/types/database';
 import { normalizeUsername } from '@/utils/validation';
@@ -78,6 +79,10 @@ export function AuthProvider({ children }: PropsWithChildren) {
       throw error;
     }
 
+    // Foreground presentation of pushes is a global behavior, so install it as
+    // early as possible. The call is idempotent.
+    installNotificationHandler();
+
     const loadProfile = async (userId: string) => {
       const { data } = await fetchProfileById(userId);
       if (active) {
@@ -92,21 +97,28 @@ export function AuthProvider({ children }: PropsWithChildren) {
       setSession(data.session);
       if (data.session) {
         void loadProfile(data.session.user.id);
+        void registerPushToken();
       }
       setIsLoading(false);
     });
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+    } = supabase.auth.onAuthStateChange((event, nextSession) => {
       if (!active) {
         return;
       }
       setSession(nextSession);
       if (nextSession) {
         void loadProfile(nextSession.user.id);
+        if (event === 'SIGNED_IN') {
+          void registerPushToken();
+        }
       } else {
         setProfile(null);
+        if (event === 'SIGNED_OUT') {
+          void unregisterPushToken();
+        }
       }
       setIsLoading(false);
     });

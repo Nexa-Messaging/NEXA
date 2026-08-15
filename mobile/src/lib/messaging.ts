@@ -6,6 +6,7 @@ import {
 import { getSupabase } from '@/lib/supabase';
 import { uploadObjectViaXhr } from '@/lib/uploadObject';
 import { ConversationInfo, ConversationSummary, MessageRow } from '@/types/database';
+import { genUuid as _genUuid, randomToken } from '@/utils/random';
 
 export type RealtimeStatus = 'connecting' | 'connected' | 'disconnected' | 'error';
 
@@ -25,17 +26,8 @@ export function fallbackMessage(error: unknown, fallback: string): string {
   return message || fallback;
 }
 
-/** RFC 4122 v4 UUID using the platform RNG (idempotency keys / local ids). */
-export function genUuid(): string {
-  const bytes = new Uint8Array(16);
-  for (let i = 0; i < 16; i += 1) {
-    bytes[i] = Math.floor(Math.random() * 256);
-  }
-  bytes[6] = (bytes[6] & 0x0f) | 0x40;
-  bytes[8] = (bytes[8] & 0x3f) | 0x80;
-  const hex = Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
-  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
-}
+/** RFC 4122 v4 UUID using the platform CSPRNG (idempotency keys / local ids). */
+export { _genUuid as genUuid };
 
 // ---------------------------------------------------------------------------
 // Queries
@@ -67,17 +59,43 @@ export async function fetchConversationInfo(
   return { data: rows[0] ?? null, error: null };
 }
 
-/** Messages in a conversation, oldest first. */
+/** Default page size for message history fetches (keyset by `seq`). */
+export const MESSAGE_PAGE_SIZE = 100;
+
+export interface FetchMessagesOptions {
+  /** Max rows to return. Defaults to `MESSAGE_PAGE_SIZE`. */
+  limit?: number;
+  /** Keyset cursor: only messages with `seq` strictly below this are returned. */
+  beforeSeq?: number;
+}
+
+/** A page of messages in a conversation, oldest first. */
 export async function fetchMessages(
   conversationId: string,
+  options?: FetchMessagesOptions,
 ): Promise<MessagingResult<MessageRow[]>> {
+  const limit = options?.limit ?? MESSAGE_PAGE_SIZE;
   const supabase = getSupabase();
+  if (options?.beforeSeq != null) {
+    // Older-than-cursor page: fetch newest-first then reverse for ascending order.
+    const { data, error } = await supabase
+      .from('messages')
+      .select('*')
+      .eq('conversation_id', conversationId)
+      .lt('seq', options.beforeSeq)
+      .order('seq', { ascending: false })
+      .limit(limit);
+    if (error) {
+      return { data: null, error: fallbackMessage(error, 'Could not load messages.') };
+    }
+    return { data: ((data as MessageRow[]) ?? []).reverse(), error: null };
+  }
   const { data, error } = await supabase
     .from('messages')
     .select('*')
     .eq('conversation_id', conversationId)
     .order('seq', { ascending: true })
-    .limit(200);
+    .limit(limit);
   if (error) {
     return { data: null, error: fallbackMessage(error, 'Could not load messages.') };
   }
@@ -187,7 +205,7 @@ export function buildMediaPath(
   fileName: string,
 ): string {
   const safe = (fileName || 'file').replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 80);
-  const rand = Math.random().toString(36).slice(2, 6);
+  const rand = randomToken(4);
   return `${conversationId}/${senderId}/${Date.now()}-${rand}-${safe}`;
 }
 
@@ -291,7 +309,26 @@ export async function sendMediaMessage(
   return { ok: true, messageId: data as string };
 }
 
+/** Max signed-URL cache entries; evicted oldest-first to bound memory. */
+const MEDIA_URL_CACHE_MAX = 200;
 const mediaUrlCache = new Map<string, { url: string; expiresAt: number }>();
+
+/** Bounded signed-URL cache insert (oldest-first eviction) shared by resolvers. */
+export function cacheSignedUrl(
+  cache: Map<string, { url: string; expiresAt: number }>,
+  key: string,
+  value: { url: string; expiresAt: number },
+): void {
+  cache.delete(key);
+  cache.set(key, value);
+  while (cache.size > MEDIA_URL_CACHE_MAX) {
+    const oldest = cache.keys().next();
+    if (oldest.done) {
+      break;
+    }
+    cache.delete(oldest.value);
+  }
+}
 
 /**
  * Resolves the short-lived signed URL for a media message. Access is enforced
@@ -317,7 +354,10 @@ export async function resolveMediaUrl(
     return { url: null, error: fallbackMessage(error, 'The media is no longer available.') };
   }
   if (data?.signedUrl) {
-    mediaUrlCache.set(messageId, { url: data.signedUrl, expiresAt: Date.now() + 45_000 });
+    cacheSignedUrl(mediaUrlCache, messageId, {
+      url: data.signedUrl,
+      expiresAt: Date.now() + 45_000,
+    });
     return { url: data.signedUrl, error: null };
   }
   return { url: null, error: 'The media is no longer available.' };

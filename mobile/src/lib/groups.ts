@@ -14,6 +14,8 @@ import {
   GroupMessageRow,
 } from '@/types/database';
 
+import { randomToken } from '@/utils/random';
+
 /** Private bucket that holds group chat photos, path "<chatId>/<file>". */
 export const GROUP_AVATARS_BUCKET = 'group-avatars';
 
@@ -30,7 +32,7 @@ export interface GroupResult<T> {
 /** Storage object path: "<chatId>/<senderId>/<ts>-<rand>-<safeFileName>". */
 export function buildGroupMediaPath(chatId: string, senderId: string, fileName: string): string {
   const safe = (fileName || 'file').replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 80);
-  const rand = Math.random().toString(36).slice(2, 6);
+  const rand = randomToken(4);
   return `${chatId}/${senderId}/${Date.now()}-${rand}-${safe}`;
 }
 

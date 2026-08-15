@@ -152,7 +152,7 @@ export default function EventDetailScreen() {
       <RealtimeBanner status={realtime} />
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.header}>
-          <Pressable accessibilityRole="button" hitSlop={12} style={styles.backButton} onPress={() => router.back()}>
+          <Pressable accessibilityRole="button" hitSlop={12} style={styles.backButton} onPress={() => router.back()} accessibilityLabel="Back">
             <Ionicons name="arrow-back" size={22} color={colors.text} />
           </Pressable>
           <AppText variant="heading" weight="bold" numberOfLines={1} style={styles.headerTitle}>

@@ -41,6 +41,7 @@ import {
 } from '@/lib/moderation';
 import { ReportCategory } from '@/lib/moderation';
 import { MessageRow } from '@/types/database';
+import { pickCompressedVideo } from '@/utils/mediaCompression';
 
 interface ReplyState {
   messageId: string;
@@ -82,7 +83,8 @@ export default function ChatScreen() {
   const listRef = useRef<FlatList<ChatItem>>(null);
   const stickToBottom = useRef(true);
 
-  // Load the conversation's mute state whenever it changes.
+  // Load the conversation's mute state once per conversation. Re-fetching on
+  // every `muted` change would race the mute toggle and loop on failure.
   useEffect(() => {
     if (!conversationId) {
       return;
@@ -96,7 +98,7 @@ export default function ChatScreen() {
     return () => {
       active = false;
     };
-  }, [conversationId, muted]);
+  }, [conversationId]);
 
   const toggleMute = () => {
     if (!conversationId || muteBusy) {
@@ -281,24 +283,21 @@ export default function ChatScreen() {
 
   const handlePickVideo = async () => {
     setPickerVisible(false);
-    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!permission.granted) {
-      setActionError('Photo library access is required to send videos.');
+    const picked = await pickCompressedVideo();
+    if (picked.canceled) {
       return;
     }
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['videos'],
-    });
-    if (result.canceled || result.assets.length === 0) {
+    if ('error' in picked) {
+      setActionError(picked.error);
       return;
     }
-    const asset = result.assets[0];
+    const asset = picked.video;
     setPreview({
       kind: 'video',
       uri: asset.uri,
-      width: asset.width || undefined,
-      height: asset.height || undefined,
-      durationSeconds: asset.duration ? asset.duration / 1000 : undefined,
+      width: asset.width,
+      height: asset.height,
+      durationSeconds: asset.durationSeconds,
     });
     setPreviewCaption('');
   };
@@ -396,6 +395,7 @@ export default function ChatScreen() {
           hitSlop={12}
           style={styles.backButton}
           onPress={() => router.back()}
+          accessibilityLabel="Back"
         >
           <Ionicons name="arrow-back" size={22} color={colors.text} />
         </Pressable>
@@ -479,6 +479,23 @@ export default function ChatScreen() {
               keyboardShouldPersistTaps="handled"
               onScroll={onScroll}
               scrollEventThrottle={64}
+              maintainVisibleContentPosition={{ minIndexForVisible: 0 }}
+              onStartReached={() => {
+                if (chat.hasMore) {
+                  void chat.loadOlder();
+                }
+              }}
+              onStartReachedThreshold={0.3}
+              ListHeaderComponent={
+                chat.hasMore || chat.loadingOlder ? (
+                  <View style={styles.olderLoader}>
+                    <ActivityIndicator size="small" color={colors.textSecondary} />
+                    <AppText variant="caption" color={colors.textSecondary}>
+                      Loading earlier messages…
+                    </AppText>
+                  </View>
+                ) : null
+              }
               onContentSizeChange={() => {
                 if (stickToBottom.current) {
                   listRef.current?.scrollToEnd({ animated: true });
@@ -492,7 +509,7 @@ export default function ChatScreen() {
               <AppText variant="caption" color={colors.danger} style={styles.flex}>
                 {chat.sendError}
               </AppText>
-              <Pressable accessibilityRole="button" hitSlop={10} onPress={chat.clearSendError}>
+              <Pressable accessibilityRole="button" accessibilityLabel="Dismiss error" hitSlop={10} onPress={chat.clearSendError}>
                 <Ionicons name="close" size={16} color={colors.danger} />
               </Pressable>
             </View>
@@ -503,7 +520,7 @@ export default function ChatScreen() {
               <AppText variant="caption" color={colors.danger} style={styles.flex}>
                 {actionError}
               </AppText>
-              <Pressable accessibilityRole="button" hitSlop={10} onPress={() => setActionError(null)}>
+              <Pressable accessibilityRole="button" accessibilityLabel="Dismiss error" hitSlop={10} onPress={() => setActionError(null)}>
                 <Ionicons name="close" size={16} color={colors.danger} />
               </Pressable>
             </View>
@@ -658,6 +675,13 @@ const styles = StyleSheet.create({
   emptyText: {
     marginTop: spacing.sm,
     lineHeight: 22,
+  },
+  olderLoader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.xs,
+    paddingVertical: spacing.sm,
   },
   sendErrorBar: {
     flexDirection: 'row',

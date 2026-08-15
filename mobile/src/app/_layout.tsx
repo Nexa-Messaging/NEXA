@@ -3,6 +3,8 @@ import { StatusBar } from 'expo-status-bar';
 import React from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
+import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
+import { PushNavigation } from '@/components/PushNavigation';
 import { Screen } from '@/components/ui';
 import { AppText } from '@/components/ui/AppText';
 import { colors, radius, spacing } from '@/constants/theme';
@@ -11,7 +13,10 @@ import { AuthProvider, useAuth } from '@/lib/auth';
 export default function RootLayout() {
   return (
     <AuthProvider>
-      <RootNavigator />
+      <ErrorBoundary>
+        <RootNavigator />
+        <PushNavigation />
+      </ErrorBoundary>
       <StatusBar style="dark" />
     </AuthProvider>
   );

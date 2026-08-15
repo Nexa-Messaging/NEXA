@@ -35,7 +35,7 @@ export function MessageActionsSheet({
 }: MessageActionsSheetProps) {
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
-      <Pressable accessibilityRole="button" style={styles.backdrop} onPress={onClose}>
+      <Pressable accessibilityRole="button" accessibilityLabel="Close menu" style={styles.backdrop} onPress={onClose}>
         <Pressable style={styles.sheet} onPress={() => {}}>
           <AppText variant="label" weight="semibold" color={colors.textSecondary} align="center">
             MESSAGE ACTIONS
@@ -59,6 +59,7 @@ export function MessageActionsSheet({
               <Pressable
                 key={emoji}
                 accessibilityRole="button"
+                accessibilityLabel={`React with ${emoji}`}
                 onPress={() => onReact(emoji)}
                 style={styles.emoji}
               >

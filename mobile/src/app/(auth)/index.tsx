@@ -31,7 +31,7 @@ export default function WelcomeScreen() {
 
         <View style={styles.actions}>
           <Link href="/register" asChild>
-            <AppButton title="Create account" size="lg" fullWidth />
+            <AppButton title="Register" size="lg" fullWidth />
           </Link>
           <Link href="/login" asChild>
             <AppButton

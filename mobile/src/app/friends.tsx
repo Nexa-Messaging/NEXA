@@ -47,6 +47,7 @@ export default function FriendsScreen() {
           hitSlop={12}
           style={styles.backButton}
           onPress={() => router.back()}
+          accessibilityLabel="Back"
         >
           <Ionicons name="arrow-back" size={22} color={colors.text} />
         </Pressable>
@@ -318,7 +319,7 @@ function SearchPanel({ userId }: { userId: string }) {
           accessibilityLabel="Search users"
         />
         {query.length > 0 ? (
-          <Pressable hitSlop={10} onPress={() => setQuery('')}>
+          <Pressable accessibilityRole="button" accessibilityLabel="Clear search" hitSlop={10} onPress={() => setQuery('')}>
             <Ionicons name="close-circle" size={18} color={colors.textMuted} />
           </Pressable>
         ) : null}

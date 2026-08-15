@@ -72,11 +72,10 @@ export async function markAllNotificationsRead(): Promise<string | null> {
 // ---------------------------------------------------------------------------
 
 /**
- * Opens the screen a notification points at. Centralized here so no screen
- * needs to know how to interpret a notification's payload.
+ * Opens the screen a notification's `data` payload points at. Centralized here
+ * so neither the in-app feed nor the push layer needs routing knowledge.
  */
-export function openNotification(item: NotificationFeed): void {
-  const data = (item.data ?? {}) as NotificationTarget;
+export function openNotificationTarget(data: NotificationTarget): void {
   switch (data.target) {
     case 'message':
       router.push({
@@ -109,6 +108,14 @@ export function openNotification(item: NotificationFeed): void {
     default:
       router.push('/friends');
   }
+}
+
+/**
+ * Opens the screen a notification points at. Centralized here so no screen
+ * needs to know how to interpret a notification's payload.
+ */
+export function openNotification(item: NotificationFeed): void {
+  openNotificationTarget((item.data ?? {}) as NotificationTarget);
 }
 
 // ---------------------------------------------------------------------------

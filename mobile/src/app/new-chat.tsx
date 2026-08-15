@@ -74,6 +74,7 @@ export default function NewChatScreen() {
           hitSlop={12}
           style={styles.iconButton}
           onPress={() => router.back()}
+          accessibilityLabel="Back"
         >
           <Ionicons name="arrow-back" size={22} color={colors.text} />
         </Pressable>

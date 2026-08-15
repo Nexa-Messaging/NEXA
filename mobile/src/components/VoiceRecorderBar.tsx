@@ -147,7 +147,7 @@ export function VoiceRecorderBar({ onSend, onCancel }: VoiceRecorderBarProps) {
           <AppText variant="body" color={colors.danger} style={styles.label}>
             {error ?? 'Voice notes are unavailable.'}
           </AppText>
-          <Pressable accessibilityRole="button" hitSlop={10} onPress={handleCancel}>
+          <Pressable accessibilityRole="button" accessibilityLabel="Dismiss" hitSlop={10} onPress={handleCancel}>
             <Ionicons name="close" size={22} color={colors.textSecondary} />
           </Pressable>
         </View>
@@ -165,7 +165,7 @@ export function VoiceRecorderBar({ onSend, onCancel }: VoiceRecorderBarProps) {
             {formatDuration(recorderState.durationMillis / 1000)}
           </AppText>
           <View style={styles.spacer} />
-          <Pressable accessibilityRole="button" hitSlop={10} onPress={handleCancel}>
+          <Pressable accessibilityRole="button" accessibilityLabel="Cancel recording" hitSlop={10} onPress={handleCancel}>
             <Ionicons name="close" size={24} color={colors.textSecondary} />
           </Pressable>
           <Pressable
@@ -198,7 +198,7 @@ export function VoiceRecorderBar({ onSend, onCancel }: VoiceRecorderBarProps) {
             {formatDuration(recordedSeconds)}
           </AppText>
           <View style={styles.spacer} />
-          <Pressable accessibilityRole="button" hitSlop={10} onPress={handleCancel}>
+          <Pressable accessibilityRole="button" accessibilityLabel="Cancel recording" hitSlop={10} onPress={handleCancel}>
             <Ionicons name="close" size={24} color={colors.textSecondary} />
           </Pressable>
           <Pressable

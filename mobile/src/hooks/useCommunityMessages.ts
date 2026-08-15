@@ -12,6 +12,7 @@ import {
 } from '@/lib/communities';
 import { RealtimeStatus, subscribeToRealtimeStatus } from '@/lib/messaging';
 import { CommunityMessageFeed, CommunityMessageRow } from '@/types/database';
+import { randomToken } from '@/utils/random';
 
 export type PendingStatus = 'sending' | 'uploading' | 'failed';
 
@@ -55,7 +56,7 @@ function insertSorted(
 }
 
 function localId(): string {
-  return `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+  return `${Date.now()}-${randomToken(10)}`;
 }
 
 /**

@@ -46,6 +46,7 @@ import {
   CommunityMemberInfo,
   CommunityMessageFeed,
 } from '@/types/database';
+import { pickCompressedVideo } from '@/utils/mediaCompression';
 
 type MemberInfo = CommunityMemberInfo;
 
@@ -239,7 +240,8 @@ export default function ChannelChatScreen() {
     ]);
   };
 
-  // Load the community's mute state whenever the channel context changes.
+  // Load the community's mute state once per channel. Re-fetching on every
+  // `muted` change would race the mute toggle and loop on failure.
   useEffect(() => {
     const communityId = channel?.community_id;
     if (!communityId) {
@@ -254,7 +256,7 @@ export default function ChannelChatScreen() {
     return () => {
       active = false;
     };
-  }, [channel?.community_id, muted]);
+  }, [channel?.community_id]);
 
   const toggleMute = () => {
     const communityId = channel?.community_id;
@@ -326,24 +328,21 @@ export default function ChannelChatScreen() {
 
   const handlePickVideo = async () => {
     setPickerVisible(false);
-    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!permission.granted) {
-      setActionError('Photo library access is required to send videos.');
+    const picked = await pickCompressedVideo();
+    if (picked.canceled) {
       return;
     }
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['videos'],
-    });
-    if (result.canceled || result.assets.length === 0) {
+    if ('error' in picked) {
+      setActionError(picked.error);
       return;
     }
-    const asset = result.assets[0];
+    const asset = picked.video;
     setPreview({
       kind: 'video',
       uri: asset.uri,
-      width: asset.width || undefined,
-      height: asset.height || undefined,
-      durationSeconds: asset.duration ? asset.duration / 1000 : undefined,
+      width: asset.width,
+      height: asset.height,
+      durationSeconds: asset.durationSeconds,
     });
     setPreviewCaption('');
   };
@@ -445,6 +444,7 @@ export default function ChannelChatScreen() {
           hitSlop={12}
           style={styles.backButton}
           onPress={() => router.back()}
+          accessibilityLabel="Back"
         >
           <Ionicons name="arrow-back" size={22} color={colors.text} />
         </Pressable>
@@ -553,7 +553,7 @@ export default function ChannelChatScreen() {
               <AppText variant="caption" color={colors.danger} style={styles.flex}>
                 {chat.sendError}
               </AppText>
-              <Pressable accessibilityRole="button" hitSlop={10} onPress={chat.clearSendError}>
+              <Pressable accessibilityRole="button" accessibilityLabel="Dismiss error" hitSlop={10} onPress={chat.clearSendError}>
                 <Ionicons name="close" size={16} color={colors.danger} />
               </Pressable>
             </View>
@@ -564,7 +564,7 @@ export default function ChannelChatScreen() {
               <AppText variant="caption" color={colors.danger} style={styles.flex}>
                 {actionError}
               </AppText>
-              <Pressable accessibilityRole="button" hitSlop={10} onPress={() => setActionError(null)}>
+              <Pressable accessibilityRole="button" accessibilityLabel="Dismiss error" hitSlop={10} onPress={() => setActionError(null)}>
                 <Ionicons name="close" size={16} color={colors.danger} />
               </Pressable>
             </View>

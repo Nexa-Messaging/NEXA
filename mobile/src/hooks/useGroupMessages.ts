@@ -12,6 +12,7 @@ import {
 } from '@/lib/groups';
 import { RealtimeStatus, subscribeToRealtimeStatus } from '@/lib/messaging';
 import { GroupMessageFeed, GroupMessageRow } from '@/types/database';
+import { randomToken } from '@/utils/random';
 
 export type PendingStatus = 'sending' | 'uploading' | 'failed';
 
@@ -52,7 +53,7 @@ function insertSorted(rows: GroupMessageFeed[], next: GroupMessageFeed): GroupMe
 }
 
 function localId(): string {
-  return `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+  return `${Date.now()}-${randomToken(10)}`;
 }
 
 /**

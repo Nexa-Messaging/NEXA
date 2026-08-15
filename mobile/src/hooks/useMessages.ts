@@ -9,6 +9,7 @@ import {
   markMessagesDelivered,
   markMessagesRead,
   MediaUploadInput,
+  MESSAGE_PAGE_SIZE,
   RealtimeStatus,
   sendMediaMessage as rpcSendMediaMessage,
   sendMessage as rpcSendMessage,
@@ -17,6 +18,7 @@ import {
   uploadMessageMedia,
 } from '@/lib/messaging';
 import { MessageRow } from '@/types/database';
+import { randomToken } from '@/utils/random';
 
 export type PendingStatus = 'sending' | 'uploading' | 'failed';
 
@@ -53,7 +55,7 @@ function insertSorted(rows: MessageRow[], next: MessageRow): MessageRow[] {
 }
 
 function localId(): string {
-  return `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+  return `${Date.now()}-${randomToken(10)}`;
 }
 
 /**
@@ -68,6 +70,8 @@ export function useMessages(conversationId: string | undefined) {
   const [messages, setMessages] = useState<MessageRow[]>([]);
   const [pending, setPending] = useState<PendingMessage[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingOlder, setLoadingOlder] = useState(false);
+  const [hasMore, setHasMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [realtime, setRealtime] = useState<RealtimeStatus>('connecting');
   const [sendError, setSendError] = useState<string | null>(null);
@@ -76,14 +80,46 @@ export function useMessages(conversationId: string | undefined) {
     if (!conversationId) {
       return;
     }
-    const result = await fetchMessages(conversationId);
+    const result = await fetchMessages(conversationId, { limit: MESSAGE_PAGE_SIZE });
     if (result.error) {
       setError(result.error);
     } else {
       setMessages(result.data ?? []);
+      setHasMore((result.data?.length ?? 0) >= MESSAGE_PAGE_SIZE);
       setError(null);
     }
   }, [conversationId]);
+
+  /** Fetches the next older page and prepends it, keeping ascending order. */
+  const loadOlder = useCallback(async () => {
+    if (!conversationId || loadingOlder) {
+      return;
+    }
+    setLoadingOlder(true);
+    try {
+      const [oldest] = messages;
+      if (!oldest) {
+        return;
+      }
+      const result = await fetchMessages(conversationId, {
+        beforeSeq: oldest.seq,
+        limit: MESSAGE_PAGE_SIZE,
+      });
+      if (result.error) {
+        setError(result.error);
+        return;
+      }
+      const rows = result.data ?? [];
+      setMessages((prev) => {
+        const seen = new Set(prev.map((m) => m.id));
+        const fresh = rows.filter((r) => !seen.has(r.id));
+        return [...fresh, ...prev].sort((a, b) => a.seq - b.seq);
+      });
+      setHasMore(rows.length >= MESSAGE_PAGE_SIZE);
+    } finally {
+      setLoadingOlder(false);
+    }
+  }, [conversationId, loadingOlder, messages]);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -308,6 +344,8 @@ export function useMessages(conversationId: string | undefined) {
     messages,
     pending,
     loading,
+    loadingOlder,
+    hasMore,
     error,
     realtime,
     sendError,
@@ -318,5 +356,6 @@ export function useMessages(conversationId: string | undefined) {
     discard,
     setFocused,
     refresh: reload,
+    loadOlder,
   };
 }

@@ -90,7 +90,7 @@ export default function NotificationsScreen() {
           <AppText variant="label" color={colors.danger} style={styles.flex}>
             {error}
           </AppText>
-          <Pressable accessibilityRole="button" hitSlop={10} onPress={() => void refresh()}>
+          <Pressable accessibilityRole="button" accessibilityLabel="Retry" hitSlop={10} onPress={() => void refresh()}>
             <Ionicons name="refresh" size={18} color={colors.danger} />
           </Pressable>
         </View>

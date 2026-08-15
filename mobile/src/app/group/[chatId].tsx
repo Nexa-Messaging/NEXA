@@ -43,6 +43,7 @@ import {
 } from '@/lib/moderation';
 import { ReportCategory } from '@/lib/moderation';
 import { GroupChatInfo, GroupMemberInfo, GroupMessageFeed } from '@/types/database';
+import { pickCompressedVideo } from '@/utils/mediaCompression';
 
 interface ReplyState {
   messageId: string;
@@ -104,7 +105,8 @@ export default function GroupChatScreen() {
   const listRef = useRef<FlatList<ChatItem>>(null);
   const stickToBottom = useRef(true);
 
-  // Load the group's mute state whenever it changes.
+  // Load the group's mute state once per chat. Re-fetching on every `muted`
+  // change would race the mute toggle and loop on failure.
   useEffect(() => {
     if (!chatId) {
       return;
@@ -118,7 +120,7 @@ export default function GroupChatScreen() {
     return () => {
       active = false;
     };
-  }, [chatId, muted]);
+  }, [chatId]);
 
   const toggleMute = () => {
     if (!chatId || muteBusy) {
@@ -326,24 +328,21 @@ export default function GroupChatScreen() {
 
   const handlePickVideo = async () => {
     setPickerVisible(false);
-    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!permission.granted) {
-      setActionError('Photo library access is required to send videos.');
+    const picked = await pickCompressedVideo();
+    if (picked.canceled) {
       return;
     }
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['videos'],
-    });
-    if (result.canceled || result.assets.length === 0) {
+    if ('error' in picked) {
+      setActionError(picked.error);
       return;
     }
-    const asset = result.assets[0];
+    const asset = picked.video;
     setPreview({
       kind: 'video',
       uri: asset.uri,
-      width: asset.width || undefined,
-      height: asset.height || undefined,
-      durationSeconds: asset.duration ? asset.duration / 1000 : undefined,
+      width: asset.width,
+      height: asset.height,
+      durationSeconds: asset.durationSeconds,
     });
     setPreviewCaption('');
   };
@@ -445,6 +444,7 @@ export default function GroupChatScreen() {
           hitSlop={12}
           style={styles.backButton}
           onPress={() => router.back()}
+          accessibilityLabel="Back"
         >
           <Ionicons name="arrow-back" size={22} color={colors.text} />
         </Pressable>
@@ -548,7 +548,7 @@ export default function GroupChatScreen() {
               <AppText variant="caption" color={colors.danger} style={styles.flex}>
                 {chat.sendError}
               </AppText>
-              <Pressable accessibilityRole="button" hitSlop={10} onPress={chat.clearSendError}>
+              <Pressable accessibilityRole="button" accessibilityLabel="Dismiss error" hitSlop={10} onPress={chat.clearSendError}>
                 <Ionicons name="close" size={16} color={colors.danger} />
               </Pressable>
             </View>
@@ -559,7 +559,7 @@ export default function GroupChatScreen() {
               <AppText variant="caption" color={colors.danger} style={styles.flex}>
                 {actionError}
               </AppText>
-              <Pressable accessibilityRole="button" hitSlop={10} onPress={() => setActionError(null)}>
+              <Pressable accessibilityRole="button" accessibilityLabel="Dismiss error" hitSlop={10} onPress={() => setActionError(null)}>
                 <Ionicons name="close" size={16} color={colors.danger} />
               </Pressable>
             </View>

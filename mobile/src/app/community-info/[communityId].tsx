@@ -372,7 +372,7 @@ export default function CommunityInfoScreen() {
   return (
     <Screen padding={0}>
       <View style={styles.header}>
-        <Pressable accessibilityRole="button" hitSlop={12} style={styles.backButton} onPress={() => router.back()}>
+        <Pressable accessibilityRole="button" hitSlop={12} style={styles.backButton} onPress={() => router.back()} accessibilityLabel="Back">
           <Ionicons name="arrow-back" size={22} color={colors.text} />
         </Pressable>
         <AppText variant="heading" weight="bold">
@@ -486,7 +486,7 @@ export default function CommunityInfoScreen() {
 
       {editOpen ? (
         <Modal visible transparent animationType="fade" onRequestClose={() => setEditOpen(false)}>
-          <Pressable accessibilityRole="button" style={styles.backdrop} onPress={() => setEditOpen(false)}>
+          <Pressable accessibilityRole="button" accessibilityLabel="Close" style={styles.backdrop} onPress={() => setEditOpen(false)}>
             <Pressable style={styles.dialog} onPress={() => {}}>
               <AppText variant="label" weight="semibold" color={colors.textSecondary} style={styles.dialogTitle}>
                 EDIT COMMUNITY
@@ -529,7 +529,7 @@ export default function CommunityInfoScreen() {
 
       {addingOpen ? (
         <Modal visible transparent animationType="fade" onRequestClose={() => setAddingOpen(false)}>
-          <Pressable accessibilityRole="button" style={styles.backdrop} onPress={() => setAddingOpen(false)}>
+          <Pressable accessibilityRole="button" accessibilityLabel="Close" style={styles.backdrop} onPress={() => setAddingOpen(false)}>
             <Pressable style={[styles.dialog, styles.addDialog]} onPress={() => {}}>
               <AppText variant="label" weight="semibold" color={colors.textSecondary} style={styles.dialogTitle}>
                 ADD CLASSMATES

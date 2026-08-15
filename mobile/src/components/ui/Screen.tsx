@@ -41,6 +41,7 @@ export function Screen({
       style={[
         card && styles.card,
         padding !== 0 ? { padding } : null,
+        !scroll && !centered && styles.flex,
         style,
       ]}
     >

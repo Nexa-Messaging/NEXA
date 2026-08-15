@@ -265,6 +265,7 @@ export function StoryComposerModal({ visible, meId, onClose, onPosted }: StoryCo
               </AppText>
               <Pressable
                 accessibilityRole="button"
+                accessibilityLabel="Post story"
                 accessibilityState={{ disabled: !canPost }}
                 disabled={!canPost}
                 onPress={() => void post()}
@@ -314,6 +315,7 @@ export function StoryComposerModal({ visible, meId, onClose, onPosted }: StoryCo
               />
               <Pressable
                 accessibilityRole="button"
+                accessibilityLabel="Post story"
                 accessibilityState={{ disabled: !canPost }}
                 disabled={!canPost}
                 onPress={() => void post()}

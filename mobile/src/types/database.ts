@@ -1,8 +1,11 @@
 /**
  * Type definitions matching the NEXA PostgreSQL schema.
  *
- * These mirror the output `supabase gen types` would produce. Regenerate or
- * update them whenever the schema in `supabase/migrations` changes.
+ * GENERATED FILE — do not edit by hand.
+ * Regenerate after changing supabase/migrations by running:
+ *   cd mobile && npm run types:gen
+ * The convenience aliases below the Database interface live in
+ * mobile/scripts/types-aliases.ts and are appended by the generator.
  */
 
 export type Json =
@@ -132,6 +135,44 @@ export interface Database {
           {
             foreignKeyName: 'blocks_blocked_user_id_fkey';
             columns: ['blocked_user_id'];
+            isOneToOne: false;
+            referencedRelation: 'users';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      device_tokens: {
+        Row: {
+          id: string;
+          user_id: string;
+          token: string;
+          platform: string;
+          invalidated_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          token: string;
+          platform: string;
+          invalidated_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          token?: string;
+          platform?: string;
+          invalidated_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'device_tokens_user_id_fkey';
+            columns: ['user_id'];
             isOneToOne: false;
             referencedRelation: 'users';
             referencedColumns: ['id'];
@@ -1810,6 +1851,14 @@ export interface Database {
         Args: Record<PropertyKey, never>;
         Returns: undefined;
       };
+      register_device_token: {
+        Args: { p_token: string; p_platform?: string };
+        Returns: undefined;
+      };
+      unregister_device_token: {
+        Args: { p_token: string };
+        Returns: undefined;
+      };
       process_due_event_reminders: {
         Args: { p_window_minutes?: number };
         Returns: number;
@@ -1962,6 +2011,10 @@ export interface Database {
     CompositeTypes: Record<string, never>;
   };
 }
+
+// Convenience aliases over the generated `Database` interface.
+// This file is the maintained source of truth; the type generator appends
+// it (without this import line) to the generated database.ts.
 
 /** The public `profiles` row used across the app. */
 export type Profile = Database['public']['Tables']['profiles']['Row'];

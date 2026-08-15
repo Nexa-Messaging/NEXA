@@ -117,7 +117,7 @@ export default function RegisterScreen() {
     <Screen padding={0}>
       <View style={styles.header}>
         <Link href="/" asChild>
-          <Pressable accessibilityRole="button" hitSlop={12} style={styles.backButton}>
+          <Pressable accessibilityRole="button" accessibilityLabel="Back" hitSlop={12} style={styles.backButton}>
             <Ionicons name="arrow-back" size={22} color={colors.text} />
           </Pressable>
         </Link>
