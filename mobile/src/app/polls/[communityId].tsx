@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState , useEffect } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -11,7 +11,7 @@ import {
   View,
 } from 'react-native';
 
-import { AppText, AppButton, Screen } from '@/components/ui';
+import { AppText, Screen } from '@/components/ui';
 import { RealtimeBanner } from '@/components/RealtimeBanner';
 import { colors, radius, spacing } from '@/constants/theme';
 import { useAuth } from '@/lib/auth';
@@ -19,7 +19,6 @@ import { subscribeToRealtimeStatus, RealtimeStatus } from '@/lib/messaging';
 import { deleteCommunityPoll, voteCommunityPoll } from '@/lib/polls';
 import { PollFeedEntry, usePolls } from '@/hooks/usePolls';
 import { formatDateTime, timeAgoShort } from '@/utils/format';
-import { useEffect } from 'react';
 
 function PollCard({
   entry,

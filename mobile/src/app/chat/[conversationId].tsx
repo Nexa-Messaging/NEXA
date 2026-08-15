@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import * as ImagePicker from 'expo-image-picker';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -24,7 +25,7 @@ import { RealtimeBanner } from '@/components/RealtimeBanner';
 import { ReportSheet } from '@/components/ReportSheet';
 import { VoiceRecorderBar } from '@/components/VoiceRecorderBar';
 import { AppText, Screen } from '@/components/ui';
-import { colors, spacing } from '@/constants/theme';
+import { colors, gradients, radius, spacing } from '@/constants/theme';
 import { PendingMessage, useMessages } from '@/hooks/useMessages';
 import { useAuth } from '@/lib/auth';
 import {
@@ -38,8 +39,7 @@ import {
   isConversationMuted,
   reportMessage,
   setConversationMuted,
-} from '@/lib/moderation';
-import { ReportCategory } from '@/lib/moderation';
+ ReportCategory } from '@/lib/moderation';
 import { MessageRow } from '@/types/database';
 import { pickCompressedVideo } from '@/utils/mediaCompression';
 
@@ -214,10 +214,6 @@ export default function ChatScreen() {
     return item.sender_id === meId;
   };
 
-  const senderName = (item: ChatItem): string => {
-    return isMine(item) ? 'you' : (peer?.displayName ?? 'them');
-  };
-
   const toggleReaction = async (message: MessageRow, emoji: string, hasMine: boolean) => {
     setActionError(null);
     const error = hasMine
@@ -389,49 +385,56 @@ export default function ChatScreen() {
 
   return (
     <Screen padding={0}>
-      <View style={styles.header}>
-        <Pressable
-          accessibilityRole="button"
-          hitSlop={12}
-          style={styles.backButton}
-          onPress={() => router.back()}
-          accessibilityLabel="Back"
-        >
-          <Ionicons name="arrow-back" size={22} color={colors.text} />
-        </Pressable>
-        <Pressable
-          accessibilityRole="button"
-          style={styles.peer}
-          disabled={!peer}
-          onPress={() => peer && router.push(`/users/${peer.username}`)}
-        >
-          <Avatar uri={peer?.avatarUrl} name={peer?.displayName} size={34} />
-          <View style={styles.peerText}>
-            <AppText variant="body" weight="semibold" numberOfLines={1}>
-              {peer ? peer.displayName : 'Loading…'}
-            </AppText>
-            {peer ? (
-              <AppText variant="caption" color={colors.textSecondary} numberOfLines={1}>
-                @{peer.username}
-              </AppText>
-            ) : null}
-          </View>
-        </Pressable>
-        <View style={styles.backButton}>
+      <LinearGradient
+        colors={gradients.ocean}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.headerBand}
+      >
+        <View style={styles.header}>
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel={muted ? 'Unmute conversation' : 'Mute conversation'}
             hitSlop={12}
-            onPress={toggleMute}
+            style={styles.backButton}
+            onPress={() => router.back()}
+            accessibilityLabel="Back"
           >
-            <Ionicons
-              name={muted ? 'notifications-off-outline' : 'notifications-outline'}
-              size={22}
-              color={muted ? colors.danger : colors.textSecondary}
-            />
+            <Ionicons name="arrow-back" size={22} color={colors.surface} />
           </Pressable>
+          <Pressable
+            accessibilityRole="button"
+            style={styles.peer}
+            disabled={!peer}
+            onPress={() => peer && router.push(`/users/${peer.username}`)}
+          >
+            <Avatar uri={peer?.avatarUrl} name={peer?.displayName} size={36} />
+            <View style={styles.peerText}>
+              <AppText variant="body" weight="bold" color={colors.surface} numberOfLines={1}>
+                {peer ? peer.displayName : 'Loading…'}
+              </AppText>
+              {peer ? (
+                <AppText variant="caption" color={colors.surface} numberOfLines={1} style={styles.peerSub}>
+                  @{peer.username}
+                </AppText>
+              ) : null}
+            </View>
+          </Pressable>
+          <View style={styles.backButton}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={muted ? 'Unmute conversation' : 'Mute conversation'}
+              hitSlop={12}
+              onPress={toggleMute}
+            >
+              <Ionicons
+                name={muted ? 'notifications-off-outline' : 'notifications-outline'}
+                size={22}
+                color={muted ? colors.sun : colors.surface}
+              />
+            </Pressable>
+          </View>
         </View>
-      </View>
+      </LinearGradient>
 
       <RealtimeBanner status={chat.realtime} />
 
@@ -626,10 +629,24 @@ const styles = StyleSheet.create({
   flex: {
     flex: 1,
   },
+  headerBand: {
+    paddingHorizontal: spacing.md,
+    paddingTop: spacing.xs,
+    paddingBottom: spacing.xs,
+    borderBottomLeftRadius: radius.xxl,
+    borderBottomRightRadius: radius.xxl,
+    marginHorizontal: spacing.md,
+    ...({
+      shadowColor: '#1D1A2F',
+      shadowOpacity: 0.12,
+      shadowRadius: 12,
+      shadowOffset: { width: 0, height: 4 },
+      elevation: 3,
+    } as object),
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: spacing.md,
     paddingVertical: spacing.xs,
   },
   backButton: {
@@ -647,6 +664,9 @@ const styles = StyleSheet.create({
   peerText: {
     marginLeft: spacing.sm,
     maxWidth: '70%',
+  },
+  peerSub: {
+    opacity: 0.85,
   },
   list: {
     paddingHorizontal: spacing.md,

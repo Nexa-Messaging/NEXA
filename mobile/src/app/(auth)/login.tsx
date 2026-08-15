@@ -3,7 +3,7 @@ import { Link, router } from 'expo-router';
 import React, { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
-import { AppButton, AppText, FormField, Screen } from '@/components/ui';
+import { AppButton, AppText, FormField, GradientText, Screen } from '@/components/ui';
 import { colors, radius, spacing } from '@/constants/theme';
 import { useAuth } from '@/lib/auth';
 import { validateEmail, validatePassword } from '@/utils/validation';
@@ -59,7 +59,7 @@ export default function LoginScreen() {
   };
 
   return (
-    <Screen padding={0}>
+    <Screen blobbed padding={0}>
       <View style={styles.header}>
         <Link href="/" asChild>
           <Pressable accessibilityRole="button" accessibilityLabel="Back" hitSlop={12} style={styles.backButton}>
@@ -73,17 +73,17 @@ export default function LoginScreen() {
       </View>
 
       <View style={styles.body}>
-        <AppText variant="heading" weight="bold">
+        <GradientText variant="heading" weight="bold">
           Welcome back
-        </AppText>
-        <AppText variant="body" color={colors.textSecondary} style={{ marginTop: spacing.xs, marginBottom: spacing.lg }}>
+        </GradientText>
+        <AppText variant="body" tone="secondary" style={{ marginTop: spacing.xs, marginBottom: spacing.lg }}>
           Log in to continue to your campus.
         </AppText>
 
         {formError ? (
           <View style={styles.errorBanner}>
             <Ionicons name="alert-circle" size={18} color={colors.danger} />
-            <AppText variant="label" color={colors.danger} style={styles.errorBannerText}>
+            <AppText variant="label" tone="danger" style={styles.errorBannerText}>
               {formError}
             </AppText>
           </View>
@@ -118,6 +118,7 @@ export default function LoginScreen() {
 
         <AppButton
           title="Log in"
+          variant="gradient"
           size="lg"
           fullWidth
           loading={submitting}
@@ -126,12 +127,12 @@ export default function LoginScreen() {
         />
 
         <View style={styles.footer}>
-          <AppText variant="body" color={colors.textSecondary} align="center">
+          <AppText variant="body" tone="secondary" align="center">
             New to NEXA?
           </AppText>
           <Link href="/register" asChild>
             <Pressable accessibilityRole="link" hitSlop={8}>
-              <AppText variant="body" color={colors.primary} weight="semibold">
+              <AppText variant="body" color={colors.primary} weight="bold">
                 {' '}
                 Create an account
               </AppText>
@@ -165,7 +166,7 @@ const styles = StyleSheet.create({
   errorBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FDECEA',
+    backgroundColor: '#FDE9ED',
     borderRadius: radius.md,
     padding: spacing.sm,
     marginBottom: spacing.md,

@@ -3,7 +3,7 @@ import { Link, router } from 'expo-router';
 import React, { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
-import { AppButton, AppText, FormField, Screen } from '@/components/ui';
+import { AppButton, AppText, FormField, GradientText, Screen } from '@/components/ui';
 import { colors, radius, spacing } from '@/constants/theme';
 import { useAuth } from '@/lib/auth';
 import { isUsernameTaken } from '@/lib/profiles';
@@ -88,17 +88,17 @@ export default function RegisterScreen() {
 
   if (awaitingEmailConfirmation) {
     return (
-      <Screen centered>
+      <Screen blobbed centered>
         <View style={styles.confirmCard}>
           <View style={styles.confirmIcon}>
             <Ionicons name="mail-unread-outline" size={36} color={colors.primary} />
           </View>
-          <AppText variant="heading" weight="bold" align="center" style={{ marginTop: spacing.md }}>
+          <GradientText variant="heading" weight="bold" align="center" style={{ marginTop: spacing.md }}>
             Check your email
-          </AppText>
+          </GradientText>
           <AppText
             variant="body"
-            color={colors.textSecondary}
+            tone="secondary"
             align="center"
             style={{ marginTop: spacing.xs, lineHeight: 22 }}
           >
@@ -106,7 +106,7 @@ export default function RegisterScreen() {
             in.
           </AppText>
           <Link href="/login" asChild>
-            <AppButton title="Go to login" size="lg" fullWidth style={{ marginTop: spacing.lg }} />
+            <AppButton title="Go to login" variant="gradient" size="lg" fullWidth style={{ marginTop: spacing.lg }} />
           </Link>
         </View>
       </Screen>
@@ -114,7 +114,7 @@ export default function RegisterScreen() {
   }
 
   return (
-    <Screen padding={0}>
+    <Screen blobbed padding={0}>
       <View style={styles.header}>
         <Link href="/" asChild>
           <Pressable accessibilityRole="button" accessibilityLabel="Back" hitSlop={12} style={styles.backButton}>
@@ -128,12 +128,12 @@ export default function RegisterScreen() {
       </View>
 
       <ScrollView style={styles.body} keyboardShouldPersistTaps="handled">
-        <AppText variant="heading" weight="bold">
+        <GradientText variant="heading" weight="bold">
           Join NEXA
-        </AppText>
+        </GradientText>
         <AppText
           variant="body"
-          color={colors.textSecondary}
+          tone="secondary"
           style={{ marginTop: spacing.xs, marginBottom: spacing.lg }}
         >
           Create your account to connect with your campus.
@@ -142,7 +142,7 @@ export default function RegisterScreen() {
         {formError ? (
           <View style={styles.errorBanner}>
             <Ionicons name="alert-circle" size={18} color={colors.danger} />
-            <AppText variant="label" color={colors.danger} style={styles.errorBannerText}>
+            <AppText variant="label" tone="danger" style={styles.errorBannerText}>
               {formError}
             </AppText>
           </View>
@@ -204,6 +204,7 @@ export default function RegisterScreen() {
 
         <AppButton
           title="Create account"
+          variant="gradient"
           size="lg"
           fullWidth
           loading={submitting}
@@ -212,12 +213,12 @@ export default function RegisterScreen() {
         />
 
         <View style={styles.footer}>
-          <AppText variant="body" color={colors.textSecondary} align="center">
+          <AppText variant="body" tone="secondary" align="center">
             Already have an account?
           </AppText>
           <Link href="/login" asChild>
             <Pressable accessibilityRole="link" hitSlop={8}>
-              <AppText variant="body" color={colors.primary} weight="semibold">
+              <AppText variant="body" color={colors.primary} weight="bold">
                 {' '}
                 Log in
               </AppText>
@@ -251,7 +252,7 @@ const styles = StyleSheet.create({
   errorBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FDECEA',
+    backgroundColor: '#FDE9ED',
     borderRadius: radius.md,
     padding: spacing.sm,
     marginBottom: spacing.md,
@@ -270,7 +271,7 @@ const styles = StyleSheet.create({
   },
   confirmCard: {
     backgroundColor: colors.surface,
-    borderRadius: radius.lg,
+    borderRadius: radius.xxl,
     borderWidth: 1,
     borderColor: colors.border,
     padding: spacing.lg,
@@ -279,7 +280,7 @@ const styles = StyleSheet.create({
   confirmIcon: {
     width: 72,
     height: 72,
-    borderRadius: 36,
+    borderRadius: radius.blob,
     backgroundColor: colors.primarySoft,
     alignItems: 'center',
     justifyContent: 'center',

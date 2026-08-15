@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { useAuth } from '@/lib/auth';
 import { fetchStories, subscribeToStories } from '@/lib/stories';

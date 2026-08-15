@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { router, useFocusEffect } from 'expo-router';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
@@ -12,16 +13,14 @@ import {
 
 import { Avatar } from '@/components/Avatar';
 import { RealtimeBanner } from '@/components/RealtimeBanner';
-import { AppText, Screen } from '@/components/ui';
-import { colors, radius, spacing } from '@/constants/theme';
+import { AppButton, AppText, EmptyState, Screen, SectionHeader } from '@/components/ui';
+import { colors, gradients, radius, shadows, spacing } from '@/constants/theme';
 import { useCommunities } from '@/hooks/useCommunities';
-import { useAuth } from '@/lib/auth';
 import { joinCommunity, joinMyClassCommunity, resolveCommunityAvatarUrl } from '@/lib/communities';
 import { CommunityListEntry } from '@/types/database';
 import { formatChatTime } from '@/utils/format';
 
 export default function CommunitiesScreen() {
-  const { user } = useAuth();
   const { items, loading, refreshing, setRefreshing, error, realtime, refresh } =
     useCommunities();
 
@@ -76,7 +75,7 @@ export default function CommunitiesScreen() {
     return (
       <Pressable
         accessibilityRole="button"
-        style={styles.row}
+        style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
         onPress={() => {
           if (item.is_member) {
             router.push({
@@ -87,25 +86,25 @@ export default function CommunitiesScreen() {
         }}
         disabled={!item.is_member}
       >
-        <Avatar uri={avatarPath} name={item.name} size={52} />
+        <Avatar uri={avatarPath} name={item.name} size={52} ring={item.is_member} />
         <View style={styles.middle}>
           <View style={styles.titleRow}>
             {!item.is_member ? (
               <Ionicons name="lock-closed" size={12} color={colors.textMuted} />
             ) : null}
-            <AppText variant="body" weight="semibold" numberOfLines={1} style={styles.title}>
+            <AppText variant="body" weight="bold" numberOfLines={1} style={styles.title}>
               {item.name}
             </AppText>
           </View>
-          <AppText variant="caption" color={colors.textSecondary} numberOfLines={1}>
+          <AppText variant="caption" tone="secondary" numberOfLines={1}>
             {classLabel}
           </AppText>
-          <AppText variant="caption" color={colors.textMuted} numberOfLines={1}>
+          <AppText variant="caption" tone="muted" numberOfLines={1}>
             {item.member_count} {item.member_count === 1 ? 'member' : 'members'}
           </AppText>
         </View>
         <View style={styles.side}>
-          <AppText variant="caption" color={colors.textMuted} style={styles.time}>
+          <AppText variant="caption" tone="muted" style={styles.time}>
             {formatChatTime(item.last_at)}
           </AppText>
           {item.is_member ? (
@@ -137,7 +136,13 @@ export default function CommunitiesScreen() {
                 });
               }}
             >
-              <AppText variant="caption" color={colors.primary} weight="semibold">
+              <LinearGradient
+                colors={gradients.candy}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={StyleSheet.absoluteFill}
+              />
+              <AppText variant="caption" color={colors.surface} weight="bold">
                 Join
               </AppText>
             </Pressable>
@@ -148,19 +153,34 @@ export default function CommunitiesScreen() {
   };
 
   return (
-    <Screen padding={0}>
-      <View style={styles.header}>
-        <AppText variant="heading" weight="bold">
-          Circles
-        </AppText>
-      </View>
+    <Screen padding={0} blobbed>
+      <LinearGradient
+        colors={gradients.sunset}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.headerBand}
+      >
+        <View style={styles.header}>
+          <View>
+            <AppText variant="caption" weight="bold" color={colors.surface} style={styles.headerLabel}>
+              YOUR CREW
+            </AppText>
+            <AppText variant="display" weight="bold" color={colors.surface}>
+              Circles
+            </AppText>
+          </View>
+          <View style={styles.headerSticker}>
+            <Ionicons name="color-palette" size={20} color={colors.surface} />
+          </View>
+        </View>
+      </LinearGradient>
 
       <RealtimeBanner status={realtime} />
 
       {loading ? (
         <View style={styles.state}>
           <ActivityIndicator color={colors.primary} />
-          <AppText variant="label" color={colors.textSecondary} style={styles.stateText}>
+          <AppText variant="label" tone="secondary" style={styles.stateText}>
             Loading communities…
           </AppText>
         </View>
@@ -168,57 +188,46 @@ export default function CommunitiesScreen() {
         <View style={styles.state}>
           <AppText
             variant="body"
-            color={colors.textSecondary}
+            tone="secondary"
             align="center"
             style={styles.errorText}
           >
             {error}
           </AppText>
           <Pressable accessibilityRole="button" hitSlop={8} onPress={() => void refresh()}>
-            <AppText variant="label" color={colors.primary} weight="semibold">
+            <AppText variant="label" color={colors.primary} weight="bold">
               Retry
             </AppText>
           </Pressable>
         </View>
       ) : !hasMemberRow && items.length === 0 ? (
         <View style={styles.state}>
-          <Ionicons name="people-outline" size={48} color={colors.textMuted} />
-          <AppText variant="heading" weight="bold" align="center" style={styles.emptyTitle}>
-            No class community yet
-          </AppText>
-          <AppText
-            variant="body"
-            color={colors.textSecondary}
-            align="center"
-            style={styles.emptyBody}
-          >
-            Join your class community to chat with your schoolmates, share notes and
-            stay up to date.
-          </AppText>
+          <EmptyState
+            icon="people-outline"
+            title="No class community yet"
+            description="Join your class community to chat with your schoolmates, share notes and stay up to date."
+            action={
+              <AppButton
+                title="Join your class"
+                variant="sunset"
+                size="lg"
+                loading={joining}
+                disabled={joining}
+                onPress={() => void handleJoin()}
+              />
+            }
+          />
           {joinError ? (
-            <AppText variant="caption" color={colors.danger} align="center" style={styles.joinError}>
+            <AppText variant="caption" tone="danger" align="center" style={styles.joinError}>
               {joinError}
             </AppText>
           ) : null}
-          <Pressable
-            accessibilityRole="button"
-            disabled={joining}
-            style={[styles.emptyButton, joining ? styles.disabled : null]}
-            onPress={() => void handleJoin()}
-          >
-            {joining ? (
-              <ActivityIndicator color={colors.surface} size="small" />
-            ) : (
-              <AppText variant="label" weight="semibold" color={colors.surface}>
-                Join your class
-              </AppText>
-            )}
-          </Pressable>
         </View>
       ) : (
         <FlatList
           data={items}
           keyExtractor={(item) => item.community_id}
+          ListHeaderComponent={<SectionHeader title="Circles around you" />}
           renderItem={renderItem}
           contentContainerStyle={styles.list}
           refreshControl={
@@ -234,7 +243,7 @@ export default function CommunitiesScreen() {
           }
           ListFooterComponent={
             joinError ? (
-              <AppText variant="caption" color={colors.danger} align="center" style={styles.footerError}>
+              <AppText variant="caption" tone="danger" align="center" style={styles.footerError}>
                 {joinError}
               </AppText>
             ) : null
@@ -246,16 +255,36 @@ export default function CommunitiesScreen() {
 }
 
 const styles = StyleSheet.create({
+  headerBand: {
+    paddingTop: spacing.sm,
+    paddingBottom: spacing.lg,
+    borderBottomLeftRadius: radius.xxl,
+    borderBottomRightRadius: radius.xxl,
+    paddingHorizontal: spacing.lg,
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: spacing.lg,
     paddingVertical: spacing.sm,
+  },
+  headerLabel: {
+    letterSpacing: 1.2,
+    opacity: 0.95,
+  },
+  headerSticker: {
+    width: 42,
+    height: 42,
+    borderRadius: radius.pill,
+    backgroundColor: 'rgba(255,255,255,0.22)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    transform: [{ rotate: '8deg' }],
   },
   list: {
     paddingHorizontal: spacing.lg,
     paddingBottom: spacing.xxl,
+    paddingTop: spacing.sm,
   },
   row: {
     flexDirection: 'row',
@@ -263,6 +292,9 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.md,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
+  },
+  rowPressed: {
+    opacity: 0.7,
   },
   middle: {
     flex: 1,
@@ -287,7 +319,7 @@ const styles = StyleSheet.create({
     minWidth: 20,
     height: 20,
     borderRadius: radius.pill,
-    backgroundColor: colors.primary,
+    backgroundColor: colors.pink,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 6,
@@ -300,7 +332,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.sm,
     paddingVertical: spacing.xxs,
     borderRadius: radius.pill,
-    backgroundColor: colors.primarySoft,
+    overflow: 'hidden',
+    ...shadows.soft,
   },
   state: {
     flex: 1,
@@ -314,23 +347,6 @@ const styles = StyleSheet.create({
   errorText: {
     marginBottom: spacing.sm,
     lineHeight: 22,
-  },
-  emptyTitle: {
-    marginTop: spacing.md,
-  },
-  emptyBody: {
-    marginTop: spacing.sm,
-    lineHeight: 22,
-  },
-  emptyButton: {
-    marginTop: spacing.lg,
-    backgroundColor: colors.primary,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.sm,
-    borderRadius: radius.pill,
-  },
-  disabled: {
-    opacity: 0.6,
   },
   joinError: {
     marginTop: spacing.sm,

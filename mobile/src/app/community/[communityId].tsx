@@ -227,7 +227,7 @@ export default function CommunityScreen() {
                   Events
                 </AppText>
                 <AppText variant="caption" color={colors.textSecondary} numberOfLines={1}>
-                  Plan meetups, track who's coming
+                  Plan meetups, track who&apos;s coming
                 </AppText>
               </View>
               <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />

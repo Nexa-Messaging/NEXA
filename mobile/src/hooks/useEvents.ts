@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { useAuth } from '@/lib/auth';
 import { fetchCommunityEvents, subscribeToCommunityEvents } from '@/lib/events';
-import { CommunityEventFeed, EventResponse } from '@/types/database';
+import { CommunityEventFeed } from '@/types/database';
 
 /**
  * Powers a community's event list: upcoming + past events with the caller's

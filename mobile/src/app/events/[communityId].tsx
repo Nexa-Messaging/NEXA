@@ -180,7 +180,7 @@ export default function CommunityEventsScreen() {
         void refresh();
       }
     },
-    [busyEventId],
+    [busyEventId, refresh],
   );
 
   if (loading) {

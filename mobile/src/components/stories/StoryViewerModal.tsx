@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useVideoPlayer, VideoView } from 'expo-video';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
@@ -18,7 +19,7 @@ import { Image } from 'expo-image';
 
 import { Avatar } from '@/components/Avatar';
 import { AppText } from '@/components/ui/AppText';
-import { colors, radius, spacing } from '@/constants/theme';
+import { colors, gradients, radius, spacing } from '@/constants/theme';
 import { StoryFeedEntry } from '@/hooks/useStories';
 import {
   deleteStory,
@@ -71,6 +72,20 @@ function timeAgo(iso: string): string {
     return `${hrs}h`;
   }
   return `${Math.floor(hrs / 24)}d`;
+}
+
+/** Picks a vibrant, immersive background gradient for text stories. */
+const TEXT_STORY_GRADIENTS = [
+  gradients.brand,
+  gradients.sunset,
+  gradients.ocean,
+  gradients.candy,
+  gradients.meadow,
+] as const;
+
+function textGradientFor(storyId: string): readonly [string, string, ...string[]] {
+  const key = storyId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  return TEXT_STORY_GRADIENTS[key % TEXT_STORY_GRADIENTS.length];
 }
 
 /**
@@ -581,11 +596,19 @@ function StoryContent({
   }
   if (story.kind === 'text') {
     return (
-      <View style={styles.textStory}>
+      <LinearGradient
+        colors={textGradientFor(story.story_id)}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.textStory}
+      >
+        <View style={styles.textStoryBlob}>
+          <Ionicons name="sparkles" size={30} color="rgba(255,255,255,0.5)" />
+        </View>
         <AppText variant="display" weight="bold" color={colors.surface} align="center" style={styles.textStoryBody}>
           {story.body}
         </AppText>
-      </View>
+      </LinearGradient>
     );
   }
   if (!url) {
@@ -638,7 +661,7 @@ function StoryVideo({ uri, paused }: { uri: string; paused: boolean }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0B0B12',
+    backgroundColor: '#14102A',
   },
   fill: {
     position: 'absolute',
@@ -654,7 +677,7 @@ const styles = StyleSheet.create({
     right: 0,
     paddingTop: spacing.sm,
     paddingHorizontal: spacing.sm,
-    backgroundColor: 'rgba(0,0,0,0.18)',
+    backgroundColor: 'rgba(10, 8, 24, 0.25)',
   },
   barsRow: {
     flexDirection: 'row',
@@ -795,10 +818,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: spacing.xl,
-    backgroundColor: colors.primary,
+  },
+  textStoryBlob: {
+    position: 'absolute',
+    top: '12%',
+    alignSelf: 'center',
+    opacity: 0.9,
   },
   textStoryBody: {
     lineHeight: 44,
+    textShadowColor: 'rgba(0,0,0,0.25)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 6,
   },
   loadingArea: {
     flex: 1,

@@ -20,11 +20,11 @@ export function RealtimeBanner({ status }: RealtimeBannerProps) {
 
   let text = 'Connecting…';
   let icon: keyof typeof Ionicons.glyphMap = 'cloud-outline';
-  let color = colors.warning;
+  let color: string = colors.warning;
   if (status === 'error' || status === 'disconnected') {
     text = 'Reconnecting… Live updates paused';
     icon = 'cloud-offline-outline';
-    color = colors.warning;
+    color = colors.coral;
   }
 
   return (
@@ -42,7 +42,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#FDF6E3',
+    backgroundColor: colors.sunSoft,
     paddingVertical: spacing.xs,
     paddingHorizontal: spacing.md,
   },

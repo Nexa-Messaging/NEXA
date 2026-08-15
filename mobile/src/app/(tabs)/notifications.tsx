@@ -1,11 +1,12 @@
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, RefreshControl, StyleSheet, View } from 'react-native';
 
 import { NotificationCard } from '@/components/NotificationCard';
 import { RealtimeBanner } from '@/components/RealtimeBanner';
-import { AppText, AppButton, Screen } from '@/components/ui';
-import { colors, spacing } from '@/constants/theme';
+import { AppText, AppButton, EmptyState, Screen } from '@/components/ui';
+import { colors, gradients, radius, spacing } from '@/constants/theme';
 import { RealtimeStatus, subscribeToRealtimeStatus } from '@/lib/messaging';
 import { openNotification } from '@/lib/notifications';
 import { useNotifications } from '@/hooks/useNotifications';
@@ -40,20 +41,33 @@ export default function NotificationsScreen() {
   }
 
   return (
-    <Screen padding={0}>
-      <View style={styles.header}>
-        <AppText variant="heading" weight="bold" style={styles.headerTitle}>
-          Notifications
-        </AppText>
-        {unreadCount > 0 ? (
-          <AppButton
-            title="Mark all read"
-            variant="ghost"
-            size="sm"
-            onPress={() => void markAllRead()}
-          />
-        ) : null}
-      </View>
+    <Screen padding={0} blobbed>
+      <LinearGradient
+        colors={gradients.candy}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.headerBand}
+      >
+        <View style={styles.header}>
+          <View>
+            <AppText variant="caption" weight="bold" color={colors.surface} style={styles.headerLabel}>
+              STAY IN THE LOOP
+            </AppText>
+            <AppText variant="display" weight="bold" color={colors.surface}>
+              Alerts
+            </AppText>
+          </View>
+          {unreadCount > 0 ? (
+            <AppButton
+              title="Mark all read"
+              variant="outline"
+              size="sm"
+              style={styles.markAllButton}
+              onPress={() => void markAllRead()}
+            />
+          ) : null}
+        </View>
+      </LinearGradient>
 
       <RealtimeBanner status={realtime} />
 
@@ -64,12 +78,11 @@ export default function NotificationsScreen() {
           <NotificationCard item={item} onPress={() => handlePress(item.id)} />
         )}
         ListEmptyComponent={
-          <View style={styles.empty}>
-            <Ionicons name="notifications-off-outline" size={40} color={colors.textMuted} />
-            <AppText variant="body" color={colors.textSecondary} align="center" style={styles.emptyText}>
-              You're all caught up. Notifications for messages, requests, stories, polls and events land here.
-            </AppText>
-          </View>
+          <EmptyState
+            icon="notifications-off-outline"
+            title="You're all caught up"
+            description="Notifications for messages, requests, stories, polls and events land here."
+          />
         }
         contentContainerStyle={styles.list}
         refreshControl={
@@ -87,7 +100,7 @@ export default function NotificationsScreen() {
 
       {error ? (
         <View style={styles.errorBanner}>
-          <AppText variant="label" color={colors.danger} style={styles.flex}>
+          <AppText variant="label" tone="danger" style={styles.flex}>
             {error}
           </AppText>
           <Pressable accessibilityRole="button" accessibilityLabel="Retry" hitSlop={10} onPress={() => void refresh()}>
@@ -103,36 +116,37 @@ const styles = StyleSheet.create({
   flex: {
     flex: 1,
   },
+  headerBand: {
+    paddingTop: spacing.sm,
+    paddingBottom: spacing.lg,
+    borderBottomLeftRadius: radius.xxl,
+    borderBottomRightRadius: radius.xxl,
+    paddingHorizontal: spacing.lg,
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
   },
-  headerTitle: {
-    flex: 1,
+  headerLabel: {
+    letterSpacing: 1.2,
+    opacity: 0.95,
+  },
+  markAllButton: {
+    borderColor: colors.surface,
   },
   list: {
     paddingHorizontal: spacing.lg,
     paddingBottom: spacing.xxl,
     paddingTop: spacing.sm,
   },
-  empty: {
-    alignItems: 'center',
-    paddingHorizontal: spacing.xl,
-    paddingVertical: spacing.xxl,
-  },
-  emptyText: {
-    marginTop: spacing.sm,
-    lineHeight: 22,
-  },
   errorBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FDECEA',
+    backgroundColor: '#FDE9ED',
     marginHorizontal: spacing.lg,
-    borderRadius: 12,
+    borderRadius: radius.md,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
     marginBottom: spacing.sm,

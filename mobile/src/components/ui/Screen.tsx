@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { Backdrop, BlobStyle } from '@/components/ui/Backdrop';
 import { colors, layout, radius } from '@/constants/theme';
 
 export interface ScreenProps {
@@ -21,12 +22,16 @@ export interface ScreenProps {
   padding?: number;
   /** Card-style white rounded container for screen content. */
   card?: boolean;
+  /** Show the soft-graffiti blob backdrop behind the screen content. */
+  blobbed?: boolean;
+  /** Custom blob shapes. Ignored when `blobbed` is false. */
+  blobs?: BlobStyle[];
   style?: ViewStyle;
 }
 
 /**
  * Shared screen container: safe area, background color, optional scrolling,
- * vertical centering and a card container.
+ * vertical centering, a card container and the soft-graffiti blob backdrop.
  */
 export function Screen({
   children,
@@ -34,6 +39,8 @@ export function Screen({
   centered = false,
   padding = layout.screenPadding,
   card = false,
+  blobbed = false,
+  blobs,
   style,
 }: ScreenProps) {
   const content = (
@@ -51,6 +58,7 @@ export function Screen({
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'right', 'bottom', 'left']}>
+      {blobbed ? <Backdrop blobs={blobs} /> : null}
       <KeyboardAvoidingView
         style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}

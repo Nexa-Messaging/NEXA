@@ -39,14 +39,15 @@ export function FormField({
   const [hidden, setHidden] = useState(secure);
 
   const borderColor = error ? colors.danger : isFocused ? colors.primary : colors.border;
+  const backgroundColor = isFocused ? colors.surface : colors.surface;
 
   return (
     <View style={styles.container}>
-      <AppText variant="label" weight="medium" color={colors.textSecondary}>
+      <AppText variant="label" weight="semibold" color={colors.textSecondary}>
         {label}
       </AppText>
 
-      <View style={[styles.inputRow, { borderColor }]}>
+      <View style={[styles.inputRow, { borderColor, backgroundColor }]}>
         <TextInput
           style={styles.input}
           placeholderTextColor={colors.textMuted}
@@ -83,11 +84,11 @@ export function FormField({
       </View>
 
       {error ? (
-        <AppText variant="caption" color={colors.danger} style={styles.message}>
+        <AppText variant="caption" tone="danger" style={styles.message}>
           {error}
         </AppText>
       ) : hint ? (
-        <AppText variant="caption" color={colors.textMuted} style={styles.message}>
+        <AppText variant="caption" tone="muted" style={styles.message}>
           {hint}
         </AppText>
       ) : null}
@@ -103,14 +104,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginTop: spacing.xs,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    backgroundColor: colors.surface,
+    borderRadius: radius.lg,
+    borderWidth: 1.5,
     paddingHorizontal: spacing.md,
   },
   input: {
     flex: 1,
-    height: 52,
+    height: 54,
     color: colors.text,
     fontSize: typography.body,
   },

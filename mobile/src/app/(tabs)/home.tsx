@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
@@ -7,7 +8,7 @@ import { StoriesFeedSection } from '@/components/stories/StoriesFeedSection';
 import { StoryComposerModal } from '@/components/stories/StoryComposerModal';
 import { StoryViewerModal } from '@/components/stories/StoryViewerModal';
 import { AppText, Screen } from '@/components/ui';
-import { colors } from '@/constants/theme';
+import { colors, gradients, radius, shadows, spacing } from '@/constants/theme';
 import { useAuth } from '@/lib/auth';
 import { useStories } from '@/hooks/useStories';
 
@@ -29,26 +30,43 @@ export default function HomeScreen() {
     void refresh();
   };
 
+  const firstName = profile?.display_name?.split(' ')[0] ?? '';
+
   return (
-    <Screen padding={0}>
+    <Screen padding={0} blobbed>
       <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
-        <View style={styles.titleRow}>
-          <AppText variant="heading" weight="bold">
-            Home
-          </AppText>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Search"
-            hitSlop={12}
-            style={styles.searchButton}
-            onPress={() => router.push('/search')}
-          >
-            <Ionicons name="search" size={22} color={colors.text} />
-          </Pressable>
-        </View>
+        <LinearGradient
+          colors={gradients.brand}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.hero}
+        >
+          <View style={styles.heroRow}>
+            <View style={styles.heroText}>
+              <AppText variant="caption" weight="bold" color={colors.surface} style={styles.heroLabel}>
+                GOOD DAY, {firstName ? firstName.toUpperCase() : 'FRIEND'} ✦
+              </AppText>
+              <AppText variant="display" weight="bold" color={colors.surface}>
+                Home
+              </AppText>
+              <AppText variant="body" color={colors.surface} style={styles.heroBody}>
+                Drop a story, reply to friends, feel the vibe.
+              </AppText>
+            </View>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Search"
+              hitSlop={12}
+              style={styles.searchButton}
+              onPress={() => router.push('/search')}
+            >
+              <Ionicons name="search" size={22} color={colors.surface} />
+            </Pressable>
+          </View>
+        </LinearGradient>
 
         {loading ? null : error ? (
-          <AppText variant="caption" color={colors.danger} style={styles.error}>
+          <AppText variant="caption" tone="danger" style={styles.error}>
             {error}
           </AppText>
         ) : null}
@@ -59,6 +77,7 @@ export default function HomeScreen() {
           entries={entries}
           onOpenUser={openUser}
           onOpenComposer={() => setComposerOpen(true)}
+          onBrowseFriends={() => router.push('/friends')}
         />
       </ScrollView>
 
@@ -87,21 +106,44 @@ const styles = StyleSheet.create({
   },
   content: {
     paddingTop: 0,
+    paddingBottom: spacing.xxl,
   },
-  titleRow: {
+  hero: {
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.lg,
+    borderBottomLeftRadius: radius.xxl,
+    borderBottomRightRadius: radius.xxl,
+  },
+  heroRow: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     justifyContent: 'space-between',
-    paddingRight: 20,
+  },
+  heroText: {
+    flex: 1,
+  },
+  heroLabel: {
+    letterSpacing: 1.2,
+    opacity: 0.95,
+  },
+  heroBody: {
+    marginTop: spacing.xs,
+    opacity: 0.95,
+    lineHeight: 22,
   },
   searchButton: {
-    width: 36,
-    height: 36,
+    width: 40,
+    height: 40,
+    borderRadius: radius.pill,
+    backgroundColor: 'rgba(255,255,255,0.22)',
     alignItems: 'center',
     justifyContent: 'center',
+    marginLeft: spacing.sm,
+    ...shadows.soft,
   },
   error: {
-    paddingHorizontal: 20,
-    marginTop: 8,
+    paddingHorizontal: spacing.lg,
+    marginTop: spacing.sm,
   },
 });

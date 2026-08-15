@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Avatar } from '@/components/Avatar';
 import { AppText } from '@/components/ui/AppText';
-import { colors, radius, spacing } from '@/constants/theme';
+import { colors, gradients, radius, shadows, spacing } from '@/constants/theme';
 import { ChatListItem } from '@/hooks/useConversations';
 import { formatChatTime } from '@/utils/format';
 
@@ -19,11 +19,15 @@ export interface ConversationListItemProps {
 export function ConversationListItem({ item, onPress }: ConversationListItemProps) {
   const preview = item.lastMessage ?? (item.kind === 'group' ? 'Group created' : 'No messages yet — say hi!');
   return (
-    <Pressable accessibilityRole="button" style={styles.row} onPress={onPress}>
-      <Avatar uri={item.avatarPath} name={item.name} size={52} />
+    <Pressable
+      accessibilityRole="button"
+      style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
+      onPress={onPress}
+    >
+      <Avatar uri={item.avatarPath} name={item.name} size={52} ring={item.kind === 'group'} />
 
       <View style={styles.middle}>
-        <AppText variant="body" weight="semibold" numberOfLines={1}>
+        <AppText variant="body" weight="bold" numberOfLines={1}>
           {item.name}
         </AppText>
         <AppText
@@ -38,7 +42,7 @@ export function ConversationListItem({ item, onPress }: ConversationListItemProp
       </View>
 
       <View style={styles.side}>
-        <AppText variant="caption" color={colors.textMuted} style={styles.time}>
+        <AppText variant="caption" tone="muted" style={styles.time}>
           {formatChatTime(item.lastAt)}
         </AppText>
         {item.unreadCount > 0 ? (
@@ -66,6 +70,9 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
   },
+  rowPressed: {
+    opacity: 0.7,
+  },
   middle: {
     flex: 1,
     marginLeft: spacing.sm,
@@ -81,16 +88,19 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xxs,
   },
   badge: {
-    minWidth: 20,
-    height: 20,
+    minWidth: 22,
+    height: 22,
     borderRadius: radius.pill,
-    backgroundColor: colors.primary,
+    backgroundColor: colors.pink,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 6,
+    ...shadows.soft,
   },
   badgeText: {
     fontSize: 11,
     lineHeight: 14,
   },
 });
+
+export const groupBadgeGradient = gradients.brand;

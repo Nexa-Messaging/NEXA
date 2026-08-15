@@ -9,11 +9,9 @@ import { ReportSheet } from '@/components/ReportSheet';
 import { AppText, Screen } from '@/components/ui';
 import { colors, radius, spacing } from '@/constants/theme';
 import { useFriendStatus } from '@/hooks/useFriendStatus';
-import { useAuth } from '@/lib/auth';
-import { fetchProfileByUsername } from '@/lib/auth';
+import { useAuth , fetchProfileByUsername } from '@/lib/auth';
 import { startConversationWith } from '@/lib/messaging';
-import { reportUser } from '@/lib/moderation';
-import { ReportCategory } from '@/lib/moderation';
+import { reportUser , ReportCategory } from '@/lib/moderation';
 import { Profile } from '@/types/database';
 import { formatDateJoined } from '@/utils/format';
 

@@ -1,10 +1,10 @@
+import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 
 import { AppText } from '@/components/ui/AppText';
 import { Screen } from '@/components/ui/Screen';
-import { colors, fontWeights, radius, spacing } from '@/constants/theme';
+import { colors, radius, spacing } from '@/constants/theme';
 
 export interface FeaturePlaceholderProps {
   icon: keyof typeof Ionicons.glyphMap;
@@ -21,7 +21,7 @@ export interface FeaturePlaceholderProps {
  */
 export function FeaturePlaceholder({ icon, title, description, phase }: FeaturePlaceholderProps) {
   return (
-    <Screen centered>
+    <Screen blobbed centered>
       <View style={[styles.container, styles.card]}>
         <View style={styles.iconWrap}>
           <Ionicons name={icon} size={40} color={colors.primary} />
@@ -29,12 +29,12 @@ export function FeaturePlaceholder({ icon, title, description, phase }: FeatureP
         <AppText variant="heading" weight="bold" align="center">
           {title}
         </AppText>
-        <AppText variant="body" color={colors.textSecondary} align="center" style={styles.description}>
+        <AppText variant="body" tone="secondary" align="center" style={styles.description}>
           {description}
         </AppText>
         {phase ? (
           <View style={styles.phaseTag}>
-            <AppText variant="caption" color={colors.primary} weight="semibold">
+            <AppText variant="caption" color={colors.primary} weight="bold">
               {phase}
             </AppText>
           </View>
@@ -50,7 +50,7 @@ const styles = StyleSheet.create({
   },
   card: {
     backgroundColor: colors.surface,
-    borderRadius: radius.lg,
+    borderRadius: radius.xxl,
     borderWidth: 1,
     borderColor: colors.border,
     alignItems: 'center',
@@ -60,7 +60,7 @@ const styles = StyleSheet.create({
   iconWrap: {
     width: 80,
     height: 80,
-    borderRadius: 40,
+    borderRadius: radius.blob,
     backgroundColor: colors.primarySoft,
     alignItems: 'center',
     justifyContent: 'center',

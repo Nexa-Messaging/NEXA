@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import * as ImagePicker from 'expo-image-picker';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -24,7 +25,7 @@ import { RealtimeBanner } from '@/components/RealtimeBanner';
 import { ReportSheet } from '@/components/ReportSheet';
 import { VoiceRecorderBar } from '@/components/VoiceRecorderBar';
 import { AppText, Screen } from '@/components/ui';
-import { colors, spacing } from '@/constants/theme';
+import { colors, gradients, radius, spacing } from '@/constants/theme';
 import { PendingGroupMessage, useGroupMessages } from '@/hooks/useGroupMessages';
 import { useAuth } from '@/lib/auth';
 import {
@@ -40,8 +41,7 @@ import {
   isConversationMuted,
   reportGroupMessage,
   setConversationMuted,
-} from '@/lib/moderation';
-import { ReportCategory } from '@/lib/moderation';
+ ReportCategory } from '@/lib/moderation';
 import { GroupChatInfo, GroupMemberInfo, GroupMessageFeed } from '@/types/database';
 import { pickCompressedVideo } from '@/utils/mediaCompression';
 
@@ -438,51 +438,58 @@ export default function GroupChatScreen() {
 
   return (
     <Screen padding={0}>
-      <View style={styles.header}>
-        <Pressable
-          accessibilityRole="button"
-          hitSlop={12}
-          style={styles.backButton}
-          onPress={() => router.back()}
-          accessibilityLabel="Back"
-        >
-          <Ionicons name="arrow-back" size={22} color={colors.text} />
-        </Pressable>
-        <Pressable
-          accessibilityRole="button"
-          style={styles.peer}
-          disabled={!group}
-          onPress={() => group && router.push({ pathname: '/group-info/[chatId]', params: { chatId } })}
-        >
-          <Avatar uri={avatarUrl} name={group?.name} size={34} />
-          <View style={styles.peerText}>
-            <AppText variant="body" weight="semibold" numberOfLines={1}>
-              {group ? group.name : 'Loading…'}
-            </AppText>
-            {group ? (
-              <AppText variant="caption" color={colors.textSecondary} numberOfLines={1}>
-                {members.length > 0
-                  ? `${members.length} ${members.length === 1 ? 'member' : 'members'}`
-                  : 'Group'}
-              </AppText>
-            ) : null}
-          </View>
-        </Pressable>
-        <View style={styles.backButton}>
+      <LinearGradient
+        colors={gradients.grape}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.headerBand}
+      >
+        <View style={styles.header}>
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel={muted ? 'Unmute group' : 'Mute group'}
             hitSlop={12}
-            onPress={toggleMute}
+            style={styles.backButton}
+            onPress={() => router.back()}
+            accessibilityLabel="Back"
           >
-            <Ionicons
-              name={muted ? 'notifications-off-outline' : 'notifications-outline'}
-              size={22}
-              color={muted ? colors.danger : colors.textSecondary}
-            />
+            <Ionicons name="arrow-back" size={22} color={colors.surface} />
           </Pressable>
+          <Pressable
+            accessibilityRole="button"
+            style={styles.peer}
+            disabled={!group}
+            onPress={() => group && router.push({ pathname: '/group-info/[chatId]', params: { chatId } })}
+          >
+            <Avatar uri={avatarUrl} name={group?.name} size={36} />
+            <View style={styles.peerText}>
+              <AppText variant="body" weight="bold" color={colors.surface} numberOfLines={1}>
+                {group ? group.name : 'Loading…'}
+              </AppText>
+              {group ? (
+                <AppText variant="caption" color={colors.surface} numberOfLines={1} style={styles.peerSub}>
+                  {members.length > 0
+                    ? `${members.length} ${members.length === 1 ? 'member' : 'members'}`
+                    : 'Group'}
+                </AppText>
+              ) : null}
+            </View>
+          </Pressable>
+          <View style={styles.backButton}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={muted ? 'Unmute group' : 'Mute group'}
+              hitSlop={12}
+              onPress={toggleMute}
+            >
+              <Ionicons
+                name={muted ? 'notifications-off-outline' : 'notifications-outline'}
+                size={22}
+                color={muted ? colors.sun : colors.surface}
+              />
+            </Pressable>
+          </View>
         </View>
-      </View>
+      </LinearGradient>
 
       <RealtimeBanner status={chat.realtime} />
 
@@ -665,10 +672,22 @@ const styles = StyleSheet.create({
   flex: {
     flex: 1,
   },
+  headerBand: {
+    paddingHorizontal: spacing.md,
+    paddingTop: spacing.xs,
+    paddingBottom: spacing.xs,
+    borderBottomLeftRadius: radius.xxl,
+    borderBottomRightRadius: radius.xxl,
+    marginHorizontal: spacing.md,
+    shadowColor: '#1D1A2F',
+    shadowOpacity: 0.12,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 3,
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: spacing.md,
     paddingVertical: spacing.xs,
   },
   backButton: {
@@ -686,6 +705,9 @@ const styles = StyleSheet.create({
   peerText: {
     marginLeft: spacing.sm,
     maxWidth: '70%',
+  },
+  peerSub: {
+    opacity: 0.85,
   },
   list: {
     paddingHorizontal: spacing.md,

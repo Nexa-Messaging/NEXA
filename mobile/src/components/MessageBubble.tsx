@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Image } from 'expo-image';
 import { useVideoPlayer, VideoView } from 'expo-video';
 import React from 'react';
@@ -6,7 +7,7 @@ import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 
 import { AppText } from '@/components/ui/AppText';
 import { VoiceNotePlayer } from '@/components/VoiceNotePlayer';
-import { colors, radius, spacing } from '@/constants/theme';
+import { colors, gradients, radius, shadows, spacing } from '@/constants/theme';
 import { PendingCommunityMessage } from '@/hooks/useCommunityMessages';
 import { PendingGroupMessage } from '@/hooks/useGroupMessages';
 import { PendingMessage } from '@/hooks/useMessages';
@@ -75,6 +76,7 @@ export function groupReactions(
 /**
  * One message bubble: reply quote, media (photo/video/voice) or text body,
  * timestamp, delivery receipts for the sender and a reaction chip row.
+ * Mine are painted with the NEXA gradient, theirs are soft calm surfaces.
  */
 export function MessageBubble({
   item,
@@ -122,7 +124,7 @@ export function MessageBubble({
   const receipt = (() => {
     if (isPending) {
       return item.status === 'sending' || item.status === 'uploading' ? (
-        <ActivityIndicator size={10} color={colors.textMuted} style={styles.receipt} />
+        <ActivityIndicator size={10} color={colors.primaryMuted} style={styles.receipt} />
       ) : null;
     }
     // Group messages do not carry read/delivered receipts (unread is tracked
@@ -135,28 +137,25 @@ export function MessageBubble({
         <Ionicons
           name="checkmark-done"
           size={14}
-          color={colors.primary}
+          color={colors.surface}
           style={styles.receipt}
         />
       );
     }
     if (item.delivered_at) {
       return (
-        <Ionicons name="checkmark-done" size={14} color={colors.textMuted} style={styles.receipt} />
+        <Ionicons name="checkmark-done" size={14} color={colors.primaryMuted} style={styles.receipt} />
       );
     }
-    return <Ionicons name="checkmark" size={14} color={colors.textMuted} style={styles.receipt} />;
+    return <Ionicons name="checkmark" size={14} color={colors.primaryMuted} style={styles.receipt} />;
   })();
-
-  const bubbleStyle = isMine ? styles.bubbleMine : styles.bubbleTheirs;
-  const textColor = isMine ? colors.surface : colors.text;
 
   return (
     <View style={[styles.row, isMine ? styles.rowMine : styles.rowTheirs]}>
       {!isMine && senderName ? (
         <AppText
           variant="caption"
-          weight="semibold"
+          weight="bold"
           color={colors.primary}
           numberOfLines={1}
           style={styles.senderName}
@@ -175,14 +174,22 @@ export function MessageBubble({
         }
         onLongPress={onLongPress}
         delayLongPress={300}
-        style={[styles.bubble, bubbleStyle, isFailed && styles.bubbleFailed]}
+        style={[styles.bubble, isMine ? styles.bubbleMineWrap : styles.bubbleTheirs, isFailed && styles.bubbleFailed]}
       >
+        {isMine ? (
+          <LinearGradient
+            colors={gradients.brand}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={[StyleSheet.absoluteFill, styles.bubbleMine]}
+          />
+        ) : null}
         {replyText ? (
           <View style={[styles.replyBox, isMine ? styles.replyMine : styles.replyTheirs]}>
             <AppText
               variant="caption"
-              weight="semibold"
-              color={isMine ? colors.primarySoft : colors.primary}
+              weight="bold"
+              color={isMine ? colors.surface : colors.primary}
               numberOfLines={1}
             >
               Reply
@@ -200,11 +207,11 @@ export function MessageBubble({
         {media ? <MediaBlock media={media} isMine={isMine} /> : null}
 
         {isDeleted ? (
-          <AppText variant="body" color={isMine ? colors.primaryMuted : colors.textMuted}>
+          <AppText variant="body" color={isMine ? colors.surface : colors.textMuted}>
             This message was deleted
           </AppText>
         ) : body ? (
-          <AppText variant="body" color={textColor}>
+          <AppText variant="body" color={isMine ? colors.surface : colors.text}>
             {body}
           </AppText>
         ) : null}
@@ -212,7 +219,7 @@ export function MessageBubble({
         {isFailed ? (
           <Pressable accessibilityRole="button" onPress={onRetry} style={styles.retry}>
             <Ionicons name="alert-circle" size={16} color={colors.danger} />
-            <AppText variant="caption" color={colors.danger} weight="semibold">
+            <AppText variant="caption" tone="danger" weight="bold">
               Tap to retry
             </AppText>
           </Pressable>
@@ -222,7 +229,7 @@ export function MessageBubble({
           {isMine ? receipt : null}
           <AppText
             variant="caption"
-            color={isMine ? colors.primaryMuted : colors.textMuted}
+            color={isMine ? colors.surface : colors.textMuted}
             style={styles.time}
           >
             {formatMessageTime(createdAt)}
@@ -240,7 +247,7 @@ export function MessageBubble({
               style={[styles.reaction, group.mine && styles.reactionMine]}
             >
               <AppText variant="caption">{group.emoji}</AppText>
-              <AppText variant="caption" weight="semibold" style={styles.reactionCount}>
+              <AppText variant="caption" weight="bold" style={styles.reactionCount}>
                 {group.count}
               </AppText>
             </Pressable>
@@ -309,7 +316,7 @@ function MediaPlaceholder({
   icon?: keyof typeof Ionicons.glyphMap;
   loading?: boolean;
 }) {
-  const tint = isMine ? colors.primaryMuted : colors.textMuted;
+  const tint = isMine ? colors.surface : colors.textMuted;
   return (
     <View style={[styles.mediaPlaceholder, isMine ? styles.placeholderMine : styles.placeholderTheirs]}>
       {loading ? (
@@ -328,7 +335,7 @@ function ProgressOverlay({ progress = 0 }: { progress?: number }) {
   const fraction = Math.min(1, Math.max(0, progress ?? 0));
   return (
     <View style={styles.overlay}>
-      <AppText variant="label" weight="semibold" color={colors.surface}>
+      <AppText variant="label" weight="bold" color={colors.surface}>
         {Math.round(fraction * 100)}%
       </AppText>
       <View style={styles.progressTrack}>
@@ -355,13 +362,20 @@ const styles = StyleSheet.create({
     borderRadius: radius.lg,
     paddingHorizontal: spacing.sm,
     paddingVertical: spacing.sm,
+    overflow: 'hidden',
+  },
+  bubbleMineWrap: {
+    shadowColor: colors.primaryDeep,
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 3,
   },
   senderName: {
     marginBottom: spacing.xxs,
     marginLeft: spacing.xs,
   },
   bubbleMine: {
-    backgroundColor: colors.primary,
     borderBottomRightRadius: radius.sm,
   },
   bubbleTheirs: {
@@ -369,6 +383,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
     borderBottomLeftRadius: radius.sm,
+    ...shadows.soft,
   },
   bubbleFailed: {
     borderWidth: 1,
@@ -382,7 +397,7 @@ const styles = StyleSheet.create({
     paddingLeft: spacing.sm,
   },
   replyMine: {
-    backgroundColor: 'rgba(255,255,255,0.16)',
+    backgroundColor: 'rgba(255,255,255,0.18)',
   },
   replyTheirs: {
     backgroundColor: colors.surfaceMuted,
@@ -415,7 +430,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xs,
   },
   placeholderMine: {
-    backgroundColor: 'rgba(255,255,255,0.12)',
+    backgroundColor: 'rgba(255,255,255,0.18)',
   },
   placeholderTheirs: {
     backgroundColor: colors.surfaceMuted,
@@ -426,7 +441,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: 'rgba(22, 22, 31, 0.45)',
+    backgroundColor: colors.overlay,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -476,10 +491,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.xs,
     paddingVertical: 2,
     marginRight: spacing.xxs,
+    ...shadows.soft,
   },
   reactionMine: {
-    borderColor: colors.primary,
-    backgroundColor: colors.primarySoft,
+    borderColor: colors.pink,
+    backgroundColor: colors.pinkSoft,
   },
   reactionCount: {
     marginLeft: 2,

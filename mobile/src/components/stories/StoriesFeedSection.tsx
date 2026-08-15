@@ -1,8 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Image } from 'expo-image';
 import React from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
+import { Avatar } from '@/components/Avatar';
 import { AppText } from '@/components/ui/AppText';
 import { colors, radius, spacing } from '@/constants/theme';
 import { StoryFeedEntry } from '@/hooks/useStories';
@@ -17,6 +17,8 @@ export interface StoriesFeedSectionProps {
   entries: StoryFeedEntry[];
   onOpenUser: (userId: string) => void;
   onOpenComposer: () => void;
+  /** Optional callback to open the friends screen (Home personality card). */
+  onBrowseFriends?: () => void;
 }
 
 /**
@@ -30,6 +32,7 @@ export function StoriesFeedSection({
   entries,
   onOpenUser,
   onOpenComposer,
+  onBrowseFriends,
 }: StoriesFeedSectionProps) {
   const own = entries.find((entry) => entry.user_id === meId) ?? null;
   const friends = entries.filter((entry) => entry.user_id !== meId);
@@ -54,7 +57,7 @@ export function StoriesFeedSection({
       {friends.length === 0 && !own ? (
         <Pressable style={styles.emptyCard} onPress={onOpenComposer}>
           <Ionicons name="camera-outline" size={20} color={colors.primary} />
-          <AppText variant="body" color={colors.textSecondary} style={styles.emptyText}>
+          <AppText variant="body" tone="secondary" style={styles.emptyText}>
             Post your first story — photos, video or text.
           </AppText>
         </Pressable>
@@ -85,6 +88,22 @@ export function StoriesFeedSection({
           ))}
         </ScrollView>
       )}
+
+      {onBrowseFriends ? (
+        <Pressable
+          accessibilityRole="button"
+          style={styles.friendsCard}
+          onPress={onBrowseFriends}
+        >
+          <View style={styles.friendsIcon}>
+            <Ionicons name="people" size={20} color={colors.surface} />
+          </View>
+          <AppText variant="body" weight="bold" style={styles.friendsText}>
+            See your crew
+          </AppText>
+          <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
+        </Pressable>
+      ) : null}
     </View>
   );
 }
@@ -125,7 +144,7 @@ function StoryTile({
           hasStories && hasUnseen ? styles.ringUnseen : styles.ringSeen,
         ]}
       >
-        <AvatarCircle uri={avatarUri} name={name} size={AVATAR_SIZE} />
+        <Avatar uri={avatarUri} name={name} size={AVATAR_SIZE} ring={hasStories && hasUnseen} />
       </View>
       {isAdd ? (
         <View style={styles.addBadge}>
@@ -136,56 +155,6 @@ function StoryTile({
         {label}
       </AppText>
     </Pressable>
-  );
-}
-
-function AvatarCircle({
-  uri,
-  name,
-  size,
-}: {
-  uri?: string | null;
-  name: string | null;
-  size: number;
-}) {
-  const radius = size / 2;
-  if (uri) {
-    return (
-      <Image
-        source={{ uri }}
-        style={{ width: size, height: size, borderRadius: radius }}
-        contentFit="cover"
-        transition={120}
-        accessibilityLabel={`${name ?? 'User'} story avatar`}
-      />
-    );
-  }
-  const initials = (name ?? '')
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase() ?? '')
-    .join('');
-  return (
-    <View
-      style={{
-        width: size,
-        height: size,
-        borderRadius: radius,
-        backgroundColor: colors.primarySoft,
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}
-    >
-      {initials ? (
-        <AppText variant="heading" weight="bold" color={colors.primary} style={{ fontSize: 22 }}>
-          {initials}
-        </AppText>
-      ) : (
-        <Ionicons name="person" size={26} color={colors.primary} />
-      )}
-    </View>
   );
 }
 
@@ -223,7 +192,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   ringUnseen: {
-    borderColor: colors.primary,
+    borderColor: colors.pink,
   },
   ringSeen: {
     borderColor: colors.border,
@@ -235,7 +204,7 @@ const styles = StyleSheet.create({
     width: 22,
     height: 22,
     borderRadius: 11,
-    backgroundColor: colors.primary,
+    backgroundColor: colors.pink,
     borderWidth: 2,
     borderColor: colors.background,
     alignItems: 'center',
@@ -258,6 +227,29 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     marginLeft: spacing.sm,
+    flex: 1,
+  },
+  friendsCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginHorizontal: spacing.lg,
+    marginTop: spacing.sm,
+    padding: spacing.md,
+    borderRadius: radius.lg,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  friendsIcon: {
+    width: 34,
+    height: 34,
+    borderRadius: radius.pill,
+    backgroundColor: colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: spacing.sm,
+  },
+  friendsText: {
     flex: 1,
   },
 });

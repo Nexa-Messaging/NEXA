@@ -1,9 +1,10 @@
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import React from 'react';
 import { Keyboard, Pressable, StyleSheet, TextInput, View } from 'react-native';
 
 import { AppText } from '@/components/ui/AppText';
-import { colors, radius, spacing } from '@/constants/theme';
+import { colors, gradients, radius, shadows, spacing } from '@/constants/theme';
 
 export interface MessageInputProps {
   value: string;
@@ -19,7 +20,7 @@ export interface MessageInputProps {
 
 /**
  * Composer: an attach button, a multiline field with an optional reply-quote
- * bar and a send button that is only active with text.
+ * bar and a gradient send button that is only active with text.
  */
 export function MessageInput({
   value,
@@ -37,12 +38,12 @@ export function MessageInput({
       {replyingTo ? (
         <View style={styles.replyBar}>
           <View style={styles.replyTextWrap}>
-            <AppText variant="caption" weight="semibold" color={colors.primary}>
+            <AppText variant="caption" weight="bold" color={colors.primary}>
               Replying to {replyingTo.name}
             </AppText>
             <AppText
               variant="caption"
-              color={colors.textSecondary}
+              tone="secondary"
               numberOfLines={1}
               style={styles.replyText}
             >
@@ -89,6 +90,14 @@ export function MessageInput({
           }}
           style={[styles.sendButton, !canSend && styles.sendButtonDisabled]}
         >
+          {canSend ? (
+            <LinearGradient
+              colors={gradients.brand}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={StyleSheet.absoluteFill}
+            />
+          ) : null}
           <Ionicons name="arrow-up" size={20} color={colors.surface} />
         </Pressable>
       </View>
@@ -108,8 +117,8 @@ const styles = StyleSheet.create({
   replyBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.surfaceMuted,
-    borderRadius: radius.sm,
+    backgroundColor: colors.primarySoft,
+    borderRadius: radius.md,
     paddingHorizontal: spacing.sm,
     paddingVertical: spacing.xxs,
     marginBottom: spacing.sm,
@@ -149,9 +158,11 @@ const styles = StyleSheet.create({
     height: 44,
     marginLeft: spacing.xs,
     borderRadius: radius.pill,
-    backgroundColor: colors.primary,
+    backgroundColor: colors.primaryMuted,
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'hidden',
+    ...shadows.card,
   },
   sendButtonDisabled: {
     backgroundColor: colors.textMuted,

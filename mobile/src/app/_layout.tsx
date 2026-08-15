@@ -72,23 +72,26 @@ function RootNavigator() {
 
       <Stack.Protected guard={isAuthenticated}>
         <Stack.Screen name="(tabs)" />
-        <Stack.Screen name="edit-profile" />
-        <Stack.Screen name="users/[username]" />
-        <Stack.Screen name="friends" />
-        <Stack.Screen name="new-chat" />
-        <Stack.Screen name="new-group" />
-        <Stack.Screen name="search" />
-        <Stack.Screen name="chat/[conversationId]" />
-        <Stack.Screen name="group/[chatId]" />
-        <Stack.Screen name="group-info/[chatId]" />
-        <Stack.Screen name="community/[communityId]" />
-        <Stack.Screen name="community-info/[communityId]" />
-        <Stack.Screen name="channel/[channelId]" />
-        <Stack.Screen name="polls/[communityId]" />
-        <Stack.Screen name="new-poll/[communityId]" />
-        <Stack.Screen name="events/[communityId]" />
-        <Stack.Screen name="event/[eventId]" />
-        <Stack.Screen name="new-event/[communityId]" />
+        <Stack.Screen
+          name="edit-profile"
+          options={{ animation: 'fade_from_bottom' }}
+        />
+        <Stack.Screen name="users/[username]" options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="friends" options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="new-chat" options={{ animation: 'slide_from_bottom' }} />
+        <Stack.Screen name="new-group" options={{ animation: 'slide_from_bottom' }} />
+        <Stack.Screen name="search" options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="chat/[conversationId]" options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="group/[chatId]" options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="group-info/[chatId]" options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="community/[communityId]" options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="community-info/[communityId]" options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="channel/[channelId]" options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="polls/[communityId]" options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="new-poll/[communityId]" options={{ animation: 'slide_from_bottom' }} />
+        <Stack.Screen name="events/[communityId]" options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="event/[eventId]" options={{ animation: 'slide_from_right' }} />
+        <Stack.Screen name="new-event/[communityId]" options={{ animation: 'slide_from_bottom' }} />
       </Stack.Protected>
     </Stack>
   );

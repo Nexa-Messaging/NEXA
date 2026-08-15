@@ -10,7 +10,7 @@ import {
   View,
 } from 'react-native';
 
-import { FriendRow, FriendRowMode } from '@/components/FriendRow';
+import { FriendRow } from '@/components/FriendRow';
 import { AppText, Screen } from '@/components/ui';
 import { colors, radius, spacing } from '@/constants/theme';
 import { useAuth } from '@/lib/auth';

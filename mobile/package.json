@@ -9,11 +9,13 @@
     "expo": "~57.0.13",
     "expo-asset": "~57.0.11",
     "expo-audio": "~57.0.3",
+    "expo-blur": "~57.0.2",
     "expo-constants": "~57.0.11",
     "expo-crypto": "~57.0.1",
     "expo-font": "~57.0.1",
     "expo-image": "~57.0.3",
     "expo-image-picker": "~57.0.10",
+    "expo-linear-gradient": "~57.0.1",
     "expo-linking": "~57.0.6",
     "expo-notifications": "~57.0.11",
     "expo-router": "~57.0.13",
@@ -29,6 +31,8 @@
   },
   "devDependencies": {
     "@types/react": "~19.2.2",
+    "eslint": "^9.0.0",
+    "eslint-config-expo": "~57.0.1",
     "typescript": "~6.0.3"
   },
   "scripts": {
@@ -39,7 +43,8 @@
     "typecheck": "tsc --noEmit",
     "verify": "node scripts/verify.mjs",
     "types:gen": "node scripts/gen-types.mjs",
-    "types:gen:local": "node scripts/gen-types.mjs --local"
+    "types:gen:local": "node scripts/gen-types.mjs --local",
+    "lint": "expo lint"
   },
   "private": true
 }

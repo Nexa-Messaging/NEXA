@@ -3,29 +3,30 @@ import React from 'react';
 import { Pressable, StyleSheet, View, ViewStyle } from 'react-native';
 
 import { AppText } from '@/components/ui/AppText';
-import { colors, radius, spacing } from '@/constants/theme';
+import { colors, radius, shadows, spacing } from '@/constants/theme';
 import { NotificationFeed, NotificationType } from '@/types/database';
 import { timeAgoShort } from '@/utils/format';
 
 interface TypeMeta {
   icon: keyof typeof Ionicons.glyphMap;
   color: string;
+  bg: string;
 }
 
 const TYPE_META: Record<string, TypeMeta> = {
-  message: { icon: 'chatbubble-ellipses', color: colors.primary },
-  friend_request: { icon: 'person-add', color: colors.success },
-  friend_request_accepted: { icon: 'people', color: colors.success },
-  message_reaction: { icon: 'heart', color: colors.danger },
-  story_reaction: { icon: 'heart', color: colors.danger },
-  story_reply: { icon: 'chatbubble', color: colors.primary },
-  community_announcement: { icon: 'megaphone', color: colors.warning },
-  poll: { icon: 'bar-chart', color: colors.success },
-  event_reminder: { icon: 'calendar', color: colors.primary },
-  mention: { icon: 'at', color: colors.primary },
+  message: { icon: 'chatbubble-ellipses', color: colors.primary, bg: colors.primarySoft },
+  friend_request: { icon: 'person-add', color: colors.success, bg: '#E2F6EF' },
+  friend_request_accepted: { icon: 'people', color: colors.success, bg: '#E2F6EF' },
+  message_reaction: { icon: 'heart', color: colors.pink, bg: colors.pinkSoft },
+  story_reaction: { icon: 'heart', color: colors.pink, bg: colors.pinkSoft },
+  story_reply: { icon: 'chatbubble', color: colors.primary, bg: colors.primarySoft },
+  community_announcement: { icon: 'megaphone', color: colors.coral, bg: colors.coralSoft },
+  poll: { icon: 'bar-chart', color: colors.mint, bg: colors.mintSoft },
+  event_reminder: { icon: 'calendar', color: colors.sky, bg: colors.skySoft },
+  mention: { icon: 'at', color: colors.sun, bg: colors.sunSoft },
 };
 
-const FALLBACK_META: TypeMeta = { icon: 'notifications', color: colors.textMuted };
+const FALLBACK_META: TypeMeta = { icon: 'notifications', color: colors.textMuted, bg: colors.surfaceMuted };
 
 function metaFor(type: string): TypeMeta {
   return TYPE_META[type as NotificationType] ?? FALLBACK_META;
@@ -37,7 +38,7 @@ export interface NotificationCardProps {
   style?: ViewStyle;
 }
 
-/** One row in the notifications list: type icon, title/body and read state. */
+/** One row in the notifications list: sticker icon chip, title/body and unread state. */
 export function NotificationCard({ item, onPress, style }: NotificationCardProps) {
   const meta = metaFor(item.type);
   const unread = !item.is_read;
@@ -53,7 +54,7 @@ export function NotificationCard({ item, onPress, style }: NotificationCardProps
         style,
       ]}
     >
-      <View style={[styles.iconWrap, { backgroundColor: `${meta.color}1A` }]}>
+      <View style={[styles.iconWrap, { backgroundColor: meta.bg }]}>
         <Ionicons name={meta.icon} size={20} color={meta.color} />
       </View>
       <View style={styles.content}>
@@ -61,12 +62,12 @@ export function NotificationCard({ item, onPress, style }: NotificationCardProps
           <AppText variant="body" weight={unread ? 'bold' : 'semibold'} numberOfLines={1} style={styles.title}>
             {item.title}
           </AppText>
-          <AppText variant="caption" color={colors.textMuted} style={styles.time}>
+          <AppText variant="caption" tone="muted" style={styles.time}>
             {timeAgoShort(item.created_at)}
           </AppText>
         </View>
         {item.body ? (
-          <AppText variant="caption" color={colors.textSecondary} numberOfLines={2} style={styles.body}>
+          <AppText variant="caption" tone="secondary" numberOfLines={2} style={styles.body}>
             {item.body}
           </AppText>
         ) : null}
@@ -86,18 +87,19 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
     padding: spacing.sm,
     marginBottom: spacing.sm,
+    ...shadows.soft,
   },
   cardUnread: {
-    borderColor: colors.primarySoft,
-    backgroundColor: '#FBFBFF',
+    borderColor: colors.primaryMuted,
+    backgroundColor: '#FDFCFF',
   },
   cardPressed: {
     opacity: 0.8,
   },
   iconWrap: {
-    width: 40,
-    height: 40,
-    borderRadius: radius.md,
+    width: 42,
+    height: 42,
+    borderRadius: radius.lg,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -124,7 +126,7 @@ const styles = StyleSheet.create({
     width: 10,
     height: 10,
     borderRadius: radius.pill,
-    backgroundColor: colors.primary,
+    backgroundColor: colors.pink,
     marginLeft: spacing.xs,
   },
 });

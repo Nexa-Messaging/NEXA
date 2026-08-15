@@ -5,7 +5,7 @@ import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 
 import { Avatar } from '@/components/Avatar';
 import { AppText } from '@/components/ui/AppText';
-import { colors, fontWeights, radius } from '@/constants/theme';
+import { colors, radius } from '@/constants/theme';
 
 export interface PickedAsset {
   uri: string | null;

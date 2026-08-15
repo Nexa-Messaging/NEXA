@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { router, useLocalSearchParams } from 'expo-router';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Image,
@@ -22,7 +22,6 @@ import {
   updateCommunityEvent,
   uploadEventImage,
 } from '@/lib/events';
-import { CommunityEventFeed } from '@/types/database';
 import { formatDateTime } from '@/utils/format';
 
 const START_CHOICES: { label: string; fromNowMs: number }[] = [

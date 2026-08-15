@@ -1,11 +1,12 @@
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 
 import { Avatar } from '@/components/Avatar';
-import { AppButton, AppText, Screen } from '@/components/ui';
-import { colors, radius, spacing } from '@/constants/theme';
+import { AppButton, AppText, Card, Screen } from '@/components/ui';
+import { colors, gradients, radius, spacing } from '@/constants/theme';
 import { useAuth } from '@/lib/auth';
 import { formatDateJoined } from '@/utils/format';
 
@@ -28,25 +29,37 @@ export default function ProfileScreen() {
   const username = profile?.username ?? user?.email;
 
   return (
-    <Screen padding={0}>
+    <Screen padding={0} blobbed>
       <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
-        <AppText variant="heading" weight="bold">
-          Profile
-        </AppText>
+        <LinearGradient
+          colors={gradients.violet}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.hero}
+        >
+          <AppText variant="caption" weight="bold" color={colors.surface} style={styles.heroLabel}>
+            YOUR SPACE ✦
+          </AppText>
+          <AppText variant="display" weight="bold" color={colors.surface}>
+            Profile
+          </AppText>
+        </LinearGradient>
 
-        <View style={styles.card}>
+        <Card variant="pop" style={styles.card}>
           <View style={styles.identity}>
-            <Avatar uri={profile?.avatar_url} name={profile?.display_name} size={80} />
+            <Avatar uri={profile?.avatar_url} name={profile?.display_name} size={84} ring />
             <View style={styles.identityText}>
               <AppText variant="heading" weight="bold">
                 {profile?.display_name ?? 'Loading…'}
               </AppText>
-              <AppText variant="body" color={colors.textSecondary}>
+              <AppText variant="body" tone="secondary">
                 @{username}
               </AppText>
-              <AppText variant="caption" color={colors.textMuted}>
-                {formatDateJoined(profile?.created_at)}
-              </AppText>
+              <View style={styles.joinedSticker}>
+                <AppText variant="caption" weight="bold" color={colors.mint}>
+                  {formatDateJoined(profile?.created_at)}
+                </AppText>
+              </View>
             </View>
           </View>
 
@@ -54,16 +67,20 @@ export default function ProfileScreen() {
             <AppText variant="body" color={colors.text} style={styles.bio}>
               {profile.bio}
             </AppText>
-          ) : null}
+          ) : (
+            <AppText variant="body" tone="muted" style={styles.bio}>
+              No bio yet — tell people who you are.
+            </AppText>
+          )}
 
           <ProfileInfoRow icon="school-outline" label="School" value={profile?.school} />
           <ProfileInfoRow icon="layers-outline" label="Department" value={profile?.department} />
           <ProfileInfoRow icon="trending-up-outline" label="Level" value={profile?.level} />
-        </View>
+        </Card>
 
         <AppButton
           title="Edit profile"
-          variant="primary"
+          variant="gradient"
           size="md"
           fullWidth
           style={{ marginTop: spacing.md }}
@@ -92,7 +109,7 @@ export default function ProfileScreen() {
         />
 
         {signOutError ? (
-          <AppText variant="caption" color={colors.danger} align="center" style={{ marginTop: spacing.md }}>
+          <AppText variant="caption" tone="danger" align="center" style={{ marginTop: spacing.md }}>
             {signOutError}
           </AppText>
         ) : null}
@@ -125,11 +142,13 @@ function ProfileInfoRow({
   }
   return (
     <View style={styles.infoRow}>
-      <Ionicons name={icon} size={18} color={colors.primary} />
-      <AppText variant="label" color={colors.textSecondary} style={styles.infoLabel}>
+      <View style={styles.infoIcon}>
+        <Ionicons name={icon} size={16} color={colors.primary} />
+      </View>
+      <AppText variant="label" tone="secondary" style={styles.infoLabel}>
         {label}
       </AppText>
-      <AppText variant="body" weight="medium" style={styles.infoValue} numberOfLines={1}>
+      <AppText variant="body" weight="semibold" style={styles.infoValue} numberOfLines={1}>
         {value}
       </AppText>
     </View>
@@ -141,16 +160,23 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
-    padding: spacing.lg,
     paddingBottom: spacing.xxl,
   },
+  hero: {
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.lg,
+    borderBottomLeftRadius: radius.xxl,
+    borderBottomRightRadius: radius.xxl,
+  },
+  heroLabel: {
+    letterSpacing: 1.2,
+    opacity: 0.95,
+  },
   card: {
-    backgroundColor: colors.surface,
-    borderRadius: radius.lg,
-    borderWidth: 1,
-    borderColor: colors.border,
+    marginHorizontal: spacing.lg,
+    marginTop: -spacing.lg,
     padding: spacing.lg,
-    marginTop: spacing.md,
   },
   identity: {
     flexDirection: 'row',
@@ -159,6 +185,14 @@ const styles = StyleSheet.create({
   identityText: {
     flex: 1,
     marginLeft: spacing.md,
+  },
+  joinedSticker: {
+    alignSelf: 'flex-start',
+    marginTop: spacing.xxs,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 2,
+    borderRadius: radius.pill,
+    backgroundColor: colors.mintSoft,
   },
   bio: {
     marginTop: spacing.md,
@@ -172,8 +206,16 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: colors.border,
   },
+  infoIcon: {
+    width: 30,
+    height: 30,
+    borderRadius: radius.pill,
+    backgroundColor: colors.primarySoft,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   infoLabel: {
-    marginLeft: spacing.xs,
+    marginLeft: spacing.sm,
     marginRight: spacing.sm,
   },
   infoValue: {
