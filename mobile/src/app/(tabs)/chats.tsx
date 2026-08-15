@@ -94,12 +94,20 @@ export default function ChatsScreen() {
             title="No chats yet"
             description="Start a conversation with a friend to see it here."
             action={
-              <AppButton
-                title="Start a chat"
-                variant="gradient"
-                size="lg"
-                onPress={() => router.push('/new-chat')}
-              />
+              <View style={styles.emptyActions}>
+                <AppButton
+                  title="Start a chat"
+                  variant="gradient"
+                  size="lg"
+                  onPress={() => router.push('/new-chat')}
+                />
+                <AppButton
+                  title="Browse friends"
+                  variant="secondary"
+                  size="lg"
+                  onPress={() => router.push('/friends')}
+                />
+              </View>
             }
           />
         </View>
@@ -108,7 +116,10 @@ export default function ChatsScreen() {
           data={items}
           keyExtractor={(item) => item.id}
           ListHeaderComponent={
-            <SectionHeader title="Recent" />
+            <View>
+              <FriendsEntry onPress={() => router.push('/friends')} />
+              <SectionHeader title="Recent" />
+            </View>
           }
           renderItem={({ item }) => (
             <ConversationListItem
@@ -138,6 +149,32 @@ export default function ChatsScreen() {
         />
       )}
     </Screen>
+  );
+}
+
+function FriendsEntry({ onPress }: { onPress: () => void }) {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel="Friends"
+      style={({ pressed }) => [styles.friendsCard, pressed && styles.friendsCardPressed]}
+      onPress={onPress}
+    >
+      <View style={styles.friendsIcon}>
+        <Ionicons name="people" size={20} color={colors.primary} />
+      </View>
+      <View style={styles.friendsText}>
+        <AppText variant="body" weight="bold">
+          Friends
+        </AppText>
+        <AppText variant="caption" tone="secondary">
+          Requests, search and manage your crew
+        </AppText>
+      </View>
+      <AppText variant="label" color={colors.primary} weight="bold">
+        Open
+      </AppText>
+    </Pressable>
   );
 }
 
@@ -175,6 +212,35 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     paddingBottom: spacing.xxl,
     paddingTop: spacing.sm,
+  },
+  friendsCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.lg,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.md,
+    marginBottom: spacing.sm,
+  },
+  friendsCardPressed: {
+    opacity: 0.7,
+  },
+  friendsIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: radius.pill,
+    backgroundColor: colors.surfaceMuted,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: spacing.sm,
+  },
+  friendsText: {
+    flex: 1,
+  },
+  emptyActions: {
+    gap: spacing.sm,
   },
   state: {
     flex: 1,

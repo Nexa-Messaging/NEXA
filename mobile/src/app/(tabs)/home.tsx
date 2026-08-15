@@ -11,10 +11,12 @@ import { AppText, Screen } from '@/components/ui';
 import { colors, gradients, radius, shadows, spacing } from '@/constants/theme';
 import { useAuth } from '@/lib/auth';
 import { useStories } from '@/hooks/useStories';
+import { useNotifications } from '@/hooks/useNotifications';
 
 export default function HomeScreen() {
   const { user, profile } = useAuth();
   const { entries, loading, error, refresh } = useStories();
+  const { unreadCount } = useNotifications();
   const [composerOpen, setComposerOpen] = useState(false);
   const [viewerUser, setViewerUser] = useState<string | null>(null);
   const [viewerOpen, setViewerOpen] = useState(false);
@@ -53,15 +55,33 @@ export default function HomeScreen() {
                 Drop a story, reply to friends, feel the vibe.
               </AppText>
             </View>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="Search"
-              hitSlop={12}
-              style={styles.searchButton}
-              onPress={() => router.push('/search')}
-            >
-              <Ionicons name="search" size={22} color={colors.surface} />
-            </Pressable>
+            <View style={styles.heroActions}>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Notifications"
+                hitSlop={12}
+                style={styles.searchButton}
+                onPress={() => router.push('/notifications')}
+              >
+                <Ionicons name="notifications-outline" size={22} color={colors.surface} />
+                {unreadCount > 0 ? (
+                  <View style={styles.heroBadge}>
+                    <AppText variant="caption" weight="bold" color={colors.surface} style={styles.heroBadgeText}>
+                      {unreadCount > 99 ? '99+' : unreadCount}
+                    </AppText>
+                  </View>
+                ) : null}
+              </Pressable>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Search"
+                hitSlop={12}
+                style={styles.searchButton}
+                onPress={() => router.push('/search')}
+              >
+                <Ionicons name="search" size={22} color={colors.surface} />
+              </Pressable>
+            </View>
           </View>
         </LinearGradient>
 
@@ -141,6 +161,26 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginLeft: spacing.sm,
     ...shadows.soft,
+  },
+  heroActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  heroBadge: {
+    position: 'absolute',
+    top: -4,
+    right: -6,
+    minWidth: 18,
+    height: 18,
+    borderRadius: radius.pill,
+    backgroundColor: colors.pink,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 4,
+  },
+  heroBadgeText: {
+    fontSize: 10,
+    lineHeight: 13,
   },
   error: {
     paddingHorizontal: spacing.lg,

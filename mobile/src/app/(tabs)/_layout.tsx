@@ -4,7 +4,8 @@ import React from 'react';
 
 import { FloatingTabBar, TabBarItem } from '@/components/ui/FloatingTabBar';
 import { colors } from '@/constants/theme';
-import { useNotifications } from '@/hooks/useNotifications';
+import { useCommunities } from '@/hooks/useCommunities';
+import { useConversations } from '@/hooks/useConversations';
 
 type IoniconName = keyof typeof Ionicons.glyphMap;
 
@@ -16,16 +17,20 @@ interface TabSpec {
 
 const TABS: Record<string, TabSpec> = {
   home: { title: 'Home', icon: 'home-outline', iconFocused: 'home' },
-  chats: { title: 'Chats', icon: 'chatbubble-ellipses-outline', iconFocused: 'chatbubble-ellipses' },
-  camera: { title: 'Camera', icon: 'camera-outline', iconFocused: 'camera' },
-  notifications: { title: 'Alerts', icon: 'notifications-outline', iconFocused: 'notifications' },
+  chats: { title: 'Chat', icon: 'chatbubble-ellipses-outline', iconFocused: 'chatbubble-ellipses' },
   communities: { title: 'Circles', icon: 'people-outline', iconFocused: 'people' },
   profile: { title: 'Profile', icon: 'person-circle-outline', iconFocused: 'person-circle' },
 };
 
 export default function TabsLayout() {
   const router = useRouter();
-  const { unreadCount } = useNotifications();
+  const { items: conversations } = useConversations();
+  const { items: communities } = useCommunities();
+
+  const chatUnread = conversations.reduce((sum, item) => sum + item.unreadCount, 0);
+  const circlesUnread = communities
+    .filter((entry) => entry.is_member)
+    .reduce((sum, entry) => sum + entry.unread_count, 0);
 
   const items: TabBarItem[] = Object.entries(TABS).map(([name, { title, icon, iconFocused }]) => ({
     name,
@@ -49,11 +54,10 @@ export default function TabsLayout() {
         <FloatingTabBar
           items={items}
           active={props.state.routes[props.state.index].name}
-          unreadBadge={
-            unreadCount > 0
-              ? { name: 'notifications', count: unreadCount }
-              : undefined
-          }
+          badges={{
+            chats: chatUnread,
+            communities: circlesUnread,
+          }}
           onSelect={(name) => {
             const state = props.state;
             if (state.index === state.routes.findIndex((r) => r.name === name)) {

@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, RefreshControl, StyleSheet, View } from 'react-native';
 
@@ -49,7 +50,16 @@ export default function NotificationsScreen() {
         style={styles.headerBand}
       >
         <View style={styles.header}>
-          <View>
+          <Pressable
+            accessibilityRole="button"
+            hitSlop={12}
+            style={styles.backButton}
+            onPress={() => router.back()}
+            accessibilityLabel="Back"
+          >
+            <Ionicons name="arrow-back" size={22} color={colors.surface} />
+          </Pressable>
+          <View style={styles.headerTitle}>
             <AppText variant="caption" weight="bold" color={colors.surface} style={styles.headerLabel}>
               STAY IN THE LOOP
             </AppText>
@@ -65,7 +75,9 @@ export default function NotificationsScreen() {
               style={styles.markAllButton}
               onPress={() => void markAllRead()}
             />
-          ) : null}
+          ) : (
+            <View style={styles.backButton} />
+          )}
         </View>
       </LinearGradient>
 
@@ -128,6 +140,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingVertical: spacing.sm,
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerTitle: {
+    flex: 1,
+    marginLeft: spacing.xs,
   },
   headerLabel: {
     letterSpacing: 1.2,

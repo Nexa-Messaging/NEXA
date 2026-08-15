@@ -99,15 +99,6 @@ export default function ProfileScreen() {
           }}
         />
 
-        <AppButton
-          title="Friends"
-          variant="secondary"
-          size="md"
-          fullWidth
-          style={{ marginTop: spacing.sm }}
-          onPress={() => router.push('/friends')}
-        />
-
         {signOutError ? (
           <AppText variant="caption" tone="danger" align="center" style={{ marginTop: spacing.md }}>
             {signOutError}

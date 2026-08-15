@@ -15,7 +15,8 @@ export interface TabBarItem {
 export interface FloatingTabBarProps {
   items: TabBarItem[];
   active: string;
-  unreadBadge?: { name: string; count: number };
+  /** Per-tab unread badge counts, keyed by tab `name`. Hidden when absent/zero. */
+  badges?: Record<string, number>;
   onSelect: (name: string) => void;
 }
 
@@ -24,13 +25,13 @@ export interface FloatingTabBarProps {
  * tab, each tab keeps its label readable, and the whole bar floats above the
  * content with a soft shadow (instead of a hard-edged default tab bar).
  */
-export function FloatingTabBar({ items, active, unreadBadge, onSelect }: FloatingTabBarProps) {
+export function FloatingTabBar({ items, active, badges, onSelect }: FloatingTabBarProps) {
   return (
     <SafeAreaView edges={['bottom']} style={styles.safe}>
       <View style={styles.bar}>
         {items.map((item) => {
           const focused = item.name === active;
-          const badge = unreadBadge?.name === item.name ? unreadBadge.count : 0;
+          const badge = badges?.[item.name] ?? 0;
           return (
             <Pressable
               key={item.name}
