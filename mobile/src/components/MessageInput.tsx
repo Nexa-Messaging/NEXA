@@ -13,6 +13,9 @@ export interface MessageInputProps {
   /** Reply-quote preview bar (null hides it). */
   replyingTo?: { name: string; text: string } | null;
   onCancelReply?: () => void;
+  /** Edit-mode preview bar (null hides it). */
+  editing?: { text: string } | null;
+  onCancelEdit?: () => void;
   /** Opens the attachment picker (photos, videos, voice notes). */
   onAttach?: () => void;
   disabled?: boolean;
@@ -28,6 +31,8 @@ export function MessageInput({
   onSend,
   replyingTo,
   onCancelReply,
+  editing,
+  onCancelEdit,
   onAttach,
   disabled = false,
 }: MessageInputProps) {
@@ -56,6 +61,27 @@ export function MessageInput({
         </View>
       ) : null}
 
+      {editing ? (
+        <View style={styles.replyBar}>
+          <View style={styles.replyTextWrap}>
+            <AppText variant="caption" weight="bold" color={colors.sun}>
+              Editing message
+            </AppText>
+            <AppText
+              variant="caption"
+              tone="secondary"
+              numberOfLines={1}
+              style={styles.replyText}
+            >
+              {editing.text}
+            </AppText>
+          </View>
+          <Pressable accessibilityRole="button" accessibilityLabel="Cancel edit" hitSlop={10} onPress={onCancelEdit}>
+            <Ionicons name="close" size={20} color={colors.textSecondary} />
+          </Pressable>
+        </View>
+      ) : null}
+
       <View style={styles.inputRow}>
         {onAttach ? (
           <Pressable
@@ -73,10 +99,15 @@ export function MessageInput({
           style={styles.input}
           value={value}
           onChangeText={onChangeText}
-          placeholder="Message…"
+          placeholder={editing ? 'Edit message…' : 'Message…'}
           placeholderTextColor={colors.textMuted}
           multiline
           maxLength={4000}
+          blurOnSubmit={false}
+          returnKeyType="default"
+          onSubmitEditing={() => {
+            if (canSend) onSend();
+          }}
           accessibilityLabel="Message input"
         />
         <Pressable

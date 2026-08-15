@@ -2,8 +2,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Image } from 'expo-image';
 import { useVideoPlayer, VideoView } from 'expo-video';
-import React from 'react';
+import React, { useCallback } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 
 import { AppText } from '@/components/ui/AppText';
 import { VoiceNotePlayer } from '@/components/VoiceNotePlayer';
@@ -26,17 +27,17 @@ export type ChatItem =
 export interface MessageBubbleProps {
   item: ChatItem;
   isMine: boolean;
-  /** Resolved reply text (quoted bubble), empty when there is no reply. */
   replyText?: string | null;
-  /** Who is reacting; used to highlight "my" reaction chips. */
   meId: string;
-  /** Shown above the bubble for other senders in group chats. */
   senderName?: string | null;
-  /** Signed URL for server media rows, resolved by the chat screen. */
   mediaUrl?: string | null;
   onLongPress: () => void;
   onRetry?: () => void;
   onReact?: (emoji: string, hasMine: boolean) => void;
+  /** Double-tap / swipe-right to reply — passes the message ID. */
+  onReply?: (messageId: string) => void;
+  /** Tap the reply-quote to scroll to the original message. */
+  onScrollToReply?: (replyToId: string) => void;
 }
 
 interface ReactionGroup {
@@ -73,11 +74,21 @@ export function groupReactions(
   return [...map.values()];
 }
 
-/**
- * One message bubble: reply quote, media (photo/video/voice) or text body,
- * timestamp, delivery receipts for the sender and a reaction chip row.
- * Mine are painted with the NEXA gradient, theirs are soft calm surfaces.
- */
+function getMessageId(item: ChatItem): string | undefined {
+  if ('id' in item && typeof item.id === 'string') return item.id;
+  return undefined;
+}
+
+function getReplyToId(item: ChatItem): string | null {
+  if (!('reply_to_id' in item)) return null;
+  return (item as { reply_to_id?: string | null }).reply_to_id ?? null;
+}
+
+function getEditedAt(item: ChatItem): string | null {
+  if (!('edited_at' in item)) return null;
+  return (item as { edited_at?: string | null }).edited_at ?? null;
+}
+
 export function MessageBubble({
   item,
   isMine,
@@ -88,6 +99,8 @@ export function MessageBubble({
   onLongPress,
   onRetry,
   onReact,
+  onReply,
+  onScrollToReply,
 }: MessageBubbleProps) {
   const isPending = 'status' in item;
   const isFailed = isPending && item.status === 'failed';
@@ -95,6 +108,30 @@ export function MessageBubble({
   const body = isPending ? item.body : item.body;
   const createdAt = isPending ? item.createdAt : item.created_at;
   const reactions = isPending || isDeleted ? [] : groupReactions(item.reactions, meId);
+  const replyToId = getReplyToId(item);
+  const editedAt = getEditedAt(item);
+  const msgId = getMessageId(item);
+
+  const doubleTap = Gesture.Tap()
+    .numberOfTaps(2)
+    .onEnd(() => {
+      if (msgId) onReply?.(msgId);
+    });
+
+  const swipeRight = Gesture.Pan()
+    .activeOffsetX(30)
+    .failOffsetY(10)
+    .onEnd((e) => {
+      if (e.translationX > 40 && msgId) {
+        onReply?.(msgId);
+      }
+    });
+
+  const composed = Gesture.Race(doubleTap, swipeRight);
+
+  const handleReplyBoxPress = useCallback(() => {
+    if (replyToId) onScrollToReply?.(replyToId);
+  }, [replyToId, onScrollToReply]);
 
   const media = (() => {
     if (isPending) {
@@ -127,8 +164,6 @@ export function MessageBubble({
         <ActivityIndicator size={10} color={colors.primaryMuted} style={styles.receipt} />
       ) : null;
     }
-    // Group messages do not carry read/delivered receipts (unread is tracked
-    // with a per-member watermark instead).
     if (!('read_at' in item)) {
       return null;
     }
@@ -163,79 +198,96 @@ export function MessageBubble({
           {senderName}
         </AppText>
       ) : null}
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel={
-          media
-            ? media.kind === 'voice'
-              ? 'Voice message, double tap and hold for options'
-              : `${media.kind} message, double tap and hold for options`
-            : undefined
-        }
-        onLongPress={onLongPress}
-        delayLongPress={300}
-        style={[styles.bubble, isMine ? styles.bubbleMineWrap : styles.bubbleTheirs, isFailed && styles.bubbleFailed]}
-      >
-        {isMine ? (
-          <LinearGradient
-            colors={gradients.brand}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={[StyleSheet.absoluteFill, styles.bubbleMine]}
-          />
-        ) : null}
-        {replyText ? (
-          <View style={[styles.replyBox, isMine ? styles.replyMine : styles.replyTheirs]}>
-            <AppText
-              variant="caption"
-              weight="bold"
-              color={isMine ? colors.surface : colors.primary}
-              numberOfLines={1}
+      <GestureDetector gesture={composed}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={
+            media
+              ? media.kind === 'voice'
+                ? 'Voice message, double tap and hold for options'
+                : `${media.kind} message, double tap and hold for options`
+              : undefined
+          }
+          onLongPress={onLongPress}
+          delayLongPress={300}
+          style={[styles.bubble, isMine ? styles.bubbleMineWrap : styles.bubbleTheirs, isFailed && styles.bubbleFailed]}
+        >
+          {isMine ? (
+            <LinearGradient
+              colors={gradients.brand}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={[StyleSheet.absoluteFill, styles.bubbleMine]}
+            />
+          ) : null}
+
+          {replyText ? (
+            <Pressable
+              onPress={handleReplyBoxPress}
+              style={[styles.replyBox, isMine ? styles.replyMine : styles.replyTheirs]}
             >
-              Reply
+              <AppText
+                variant="caption"
+                weight="bold"
+                color={isMine ? colors.surface : colors.primary}
+                numberOfLines={1}
+              >
+                Reply
+              </AppText>
+              <AppText
+                variant="caption"
+                color={isMine ? colors.surface : colors.textSecondary}
+                numberOfLines={2}
+              >
+                {replyText}
+              </AppText>
+            </Pressable>
+          ) : null}
+
+          {media ? <MediaBlock media={media} isMine={isMine} /> : null}
+
+          {isDeleted ? (
+            <AppText variant="body" color={isMine ? colors.surface : colors.textMuted}>
+              This message was deleted
             </AppText>
+          ) : body ? (
+            <View style={styles.bodyRow}>
+              <AppText variant="body" color={isMine ? colors.surface : colors.text}>
+                {body}
+              </AppText>
+              {editedAt ? (
+                <AppText
+                  variant="caption"
+                  color={isMine ? 'rgba(255,255,255,0.55)' : colors.textMuted}
+                  style={styles.editedTag}
+                >
+                  (edited)
+                </AppText>
+              ) : null}
+            </View>
+          ) : null}
+
+          {isFailed ? (
+            <Pressable accessibilityRole="button" onPress={onRetry} style={styles.retry}>
+              <Ionicons name="alert-circle" size={16} color={colors.danger} />
+              <AppText variant="caption" tone="danger" weight="bold">
+                Tap to retry
+              </AppText>
+            </Pressable>
+          ) : null}
+
+          <View style={styles.meta}>
+            {isMine ? receipt : null}
             <AppText
               variant="caption"
-              color={isMine ? colors.surface : colors.textSecondary}
-              numberOfLines={2}
+              color={isMine ? colors.surface : colors.textMuted}
+              style={styles.time}
             >
-              {replyText}
+              {formatMessageTime(createdAt)}
             </AppText>
           </View>
-        ) : null}
-
-        {media ? <MediaBlock media={media} isMine={isMine} /> : null}
-
-        {isDeleted ? (
-          <AppText variant="body" color={isMine ? colors.surface : colors.textMuted}>
-            This message was deleted
-          </AppText>
-        ) : body ? (
-          <AppText variant="body" color={isMine ? colors.surface : colors.text}>
-            {body}
-          </AppText>
-        ) : null}
-
-        {isFailed ? (
-          <Pressable accessibilityRole="button" onPress={onRetry} style={styles.retry}>
-            <Ionicons name="alert-circle" size={16} color={colors.danger} />
-            <AppText variant="caption" tone="danger" weight="bold">
-              Tap to retry
-            </AppText>
-          </Pressable>
-        ) : null}
-
-        <View style={styles.meta}>
-          {isMine ? receipt : null}
-          <AppText
-            variant="caption"
-            color={isMine ? colors.surface : colors.textMuted}
-            style={styles.time}
-          >
-            {formatMessageTime(createdAt)}
-          </AppText>
-        </View>
-      </Pressable>
+        </Pressable>
+      </GestureDetector>
 
       {reactions.length > 0 ? (
         <View style={styles.reactionsRow}>
@@ -401,6 +453,17 @@ const styles = StyleSheet.create({
   },
   replyTheirs: {
     backgroundColor: colors.surfaceMuted,
+  },
+  bodyRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    flexWrap: 'wrap',
+  },
+  editedTag: {
+    fontSize: 10,
+    marginLeft: 4,
+    fontStyle: 'italic',
+    marginTop: 2,
   },
   mediaWrap: {
     marginBottom: spacing.xs,

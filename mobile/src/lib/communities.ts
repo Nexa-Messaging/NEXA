@@ -207,6 +207,16 @@ export async function deleteCommunityMessage(messageId: string): Promise<string 
   return error ? fallbackMessage(error, 'Could not delete the message.') : null;
 }
 
+export async function editCommunityMessage(messageId: string, body: string): Promise<string | null> {
+  const supabase = getSupabase();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { error } = await (supabase as any).rpc('edit_community_message', {
+    p_message: messageId,
+    p_body: body,
+  });
+  return error ? fallbackMessage(error, 'Could not edit the message.') : null;
+}
+
 export async function reactToCommunityMessage(
   messageId: string,
   emoji: string,

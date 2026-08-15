@@ -30,6 +30,7 @@ import { PendingCommunityMessage, useCommunityMessages } from '@/hooks/useCommun
 import { useAuth } from '@/lib/auth';
 import {
   deleteCommunityMessage,
+  editCommunityMessage,
   fetchChannelInfo,
   fetchCommunityMembers,
   reactToCommunityMessage,
@@ -54,6 +55,16 @@ interface ReplyState {
   messageId: string;
   text: string;
   senderName: string;
+}
+
+interface EditState {
+  messageId: string;
+  text: string;
+}
+
+function canEditMessage(createdAt: string): boolean {
+  const diff = Date.now() - new Date(createdAt).getTime();
+  return diff < 10 * 60 * 1000;
 }
 
 function buildMemberMap(
@@ -81,6 +92,7 @@ export default function ChannelChatScreen() {
   const [members, setMembers] = useState<MemberInfo[]>([]);
   const [input, setInput] = useState('');
   const [replying, setReplying] = useState<ReplyState | null>(null);
+  const [editing, setEditing] = useState<EditState | null>(null);
   const [sheetItem, setSheetItem] = useState<CommunityMessageFeed | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [pickerVisible, setPickerVisible] = useState(false);
@@ -297,6 +309,14 @@ export default function ChannelChatScreen() {
     if (!text) {
       return;
     }
+    if (editing) {
+      void editCommunityMessage(editing.messageId, text).then((error) => {
+        if (error) setActionError(error);
+      });
+      setEditing(null);
+      setInput('');
+      return;
+    }
     chat.send(text, replying?.messageId ?? null, replying?.text ?? undefined);
     setInput('');
     setReplying(null);
@@ -305,6 +325,25 @@ export default function ChannelChatScreen() {
   const onOpenPicker = () => {
     Keyboard.dismiss();
     setPickerVisible(true);
+  };
+
+  const handleReply = (messageId: string) => {
+    const msg = chat.messages.find((m) => m.id === messageId);
+    if (!msg) return;
+    const text = msg.deleted_at ? 'This message was deleted' : (msg.body ?? '');
+    setReplying({
+      messageId: msg.id,
+      text,
+      senderName: msg.sender_id === meId ? 'you' : displayNameFor(msg.sender_id),
+    });
+    setEditing(null);
+  };
+
+  const handleScrollToReply = (replyToId: string) => {
+    const idx = items.findIndex((m) => !('status' in m) && m.id === replyToId);
+    if (idx >= 0) {
+      listRef.current?.scrollToIndex({ index: idx, animated: true, viewPosition: 0.5 });
+    }
   };
 
   const handlePickImage = async () => {
@@ -432,6 +471,8 @@ export default function ChannelChatScreen() {
             void toggleReaction(item as CommunityMessageFeed, emoji, hasMine);
           }
         }}
+        onReply={handleReply}
+        onScrollToReply={handleScrollToReply}
       />
     );
   };
@@ -527,8 +568,8 @@ export default function ChannelChatScreen() {
       ) : (
         <KeyboardAvoidingView
           style={styles.flex}
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-          keyboardVerticalOffset={Platform.OS === 'ios' ? 8 : 0}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 88 : 0}
         >
           {items.length === 0 ? (
             <View style={styles.emptyChat}>
@@ -547,6 +588,14 @@ export default function ChannelChatScreen() {
               keyboardShouldPersistTaps="handled"
               onScroll={onScroll}
               scrollEventThrottle={64}
+              onScrollToIndexFailed={({ index }) => {
+                listRef.current?.scrollToOffset({ offset: index * 120, animated: true });
+              }}
+              getItemLayout={(_, index) => ({
+                length: 100,
+                offset: 100 * index,
+                index,
+              })}
               onContentSizeChange={() => {
                 if (stickToBottom.current) {
                   listRef.current?.scrollToEnd({ animated: true });
@@ -589,6 +638,8 @@ export default function ChannelChatScreen() {
                   replying ? { name: replying.senderName, text: replying.text } : null
                 }
                 onCancelReply={() => setReplying(null)}
+                editing={editing ? { text: editing.text } : null}
+                onCancelEdit={() => { setEditing(null); setInput(''); }}
                 onAttach={onOpenPicker}
               />
             )
@@ -627,6 +678,18 @@ export default function ChannelChatScreen() {
         visible={sheetItem !== null}
         isMine={sheetItem ? sheetItem.sender_id === meId : false}
         canDelete={sheetItem ? sheetItem.sender_id === meId || isAdminOrOwner : false}
+        canEdit={
+          sheetItem
+            ? sheetItem.sender_id === meId &&
+              !sheetItem.deleted_at &&
+              canEditMessage(sheetItem.created_at)
+            : false
+        }
+        messageText={
+          sheetItem?.deleted_at
+            ? 'This message was deleted'
+            : (sheetItem?.body ?? '')
+        }
         onClose={() => setSheetItem(null)}
         onReply={() => {
           if (!sheetItem) {
@@ -638,6 +701,14 @@ export default function ChannelChatScreen() {
             text,
             senderName: sheetItem.sender_id === meId ? 'you' : displayNameFor(sheetItem.sender_id),
           });
+          setEditing(null);
+          setSheetItem(null);
+        }}
+        onEdit={() => {
+          if (!sheetItem) return;
+          setEditing({ messageId: sheetItem.id, text: sheetItem.body ?? '' });
+          setInput(sheetItem.body ?? '');
+          setReplying(null);
           setSheetItem(null);
         }}
         onDelete={() => {

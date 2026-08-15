@@ -138,6 +138,16 @@ export async function deleteGroupMessage(messageId: string): Promise<string | nu
   return error ? fallbackMessage(error, 'Could not delete the message.') : null;
 }
 
+export async function editGroupMessage(messageId: string, body: string): Promise<string | null> {
+  const supabase = getSupabase();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { error } = await (supabase as any).rpc('edit_group_message', {
+    p_message: messageId,
+    p_body: body,
+  });
+  return error ? fallbackMessage(error, 'Could not edit the message.') : null;
+}
+
 export async function reactToGroupMessage(messageId: string, emoji: string): Promise<string | null> {
   const supabase = getSupabase();
   const { error } = await supabase.rpc('react_to_group_message', {

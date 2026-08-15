@@ -176,6 +176,22 @@ export async function deleteMessage(messageId: string): Promise<string | null> {
   return error ? fallbackMessage(error, 'Could not delete the message.') : null;
 }
 
+/** Edits a message body. Enforces 10-minute ownership window server-side. */
+export async function editMessage(
+  messageId: string,
+  body: string,
+): Promise<string | null> {
+  const supabase = getSupabase();
+  // edit_message RPC is defined in migration 20260815000000; types will
+  // be regenerated on the next `types:gen` run.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { error } = await (supabase as any).rpc('edit_message', {
+    p_message: messageId,
+    p_body: body,
+  });
+  return error ? fallbackMessage(error, 'Could not edit the message.') : null;
+}
+
 // ---------------------------------------------------------------------------
 // Media (photos, videos, voice notes)
 // ---------------------------------------------------------------------------

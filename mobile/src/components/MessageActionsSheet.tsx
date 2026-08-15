@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import * as Clipboard from 'expo-clipboard';
 import React from 'react';
 import { Modal, Pressable, StyleSheet, View } from 'react-native';
 
@@ -12,27 +13,41 @@ export interface MessageActionsSheetProps {
   /** Whether the target message is the current user's own. */
   isMine: boolean;
   canDelete: boolean;
+  /** Whether editing is still allowed (≤10 min old + own). */
+  canEdit: boolean;
+  /** Plain text of the message, used for copy/edit preview. */
+  messageText?: string;
   onClose: () => void;
   onReply: () => void;
   onDelete?: () => void;
+  onEdit?: () => void;
   onReport?: () => void;
   onReact: (emoji: string) => void;
 }
 
 /**
  * Bottom sheet opened by long-pressing a message: reply, react (quick emoji
- * row), delete for the sender's own messages and report for other people's.
+ * row), copy, edit (own messages within 10 min), delete for the sender's own
+ * messages and report for other people's.
  */
 export function MessageActionsSheet({
   visible,
   isMine,
   canDelete,
+  canEdit,
+  messageText = '',
   onClose,
   onReply,
   onDelete,
+  onEdit,
   onReport,
   onReact,
 }: MessageActionsSheetProps) {
+  const handleCopy = async () => {
+    await Clipboard.setStringAsync(messageText);
+    onClose();
+  };
+
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <Pressable accessibilityRole="button" accessibilityLabel="Close menu" style={styles.backdrop} onPress={onClose}>
@@ -43,6 +58,17 @@ export function MessageActionsSheet({
 
           <View style={styles.row}>
             <ActionItem icon="arrow-undo-outline" label="Reply" onPress={onReply} />
+            <ActionItem
+              icon="copy-outline"
+              label="Copy"
+              onPress={handleCopy}
+            />
+            {isMine && canEdit && onEdit ? (
+              <ActionItem icon="pencil-outline" label="Edit" onPress={onEdit} />
+            ) : null}
+          </View>
+
+          <View style={styles.row}>
             {isMine && canDelete && onDelete ? (
               <ActionItem icon="trash-outline" label="Delete" danger onPress={onDelete} />
             ) : !isMine && onReport ? (
