@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, View, ViewStyle } from 'react-native';
 
 import { AppText } from '@/components/ui/AppText';
 import { colors, radius, shadows, spacing } from '@/constants/theme';
+import { useAppTheme } from '@/lib/theme';
 import { NotificationFeed, NotificationType } from '@/types/database';
 import { timeAgoShort } from '@/utils/format';
 
@@ -40,6 +41,7 @@ export interface NotificationCardProps {
 
 /** One row in the notifications list: sticker icon chip, title/body and unread state. */
 export function NotificationCard({ item, onPress, style }: NotificationCardProps) {
+  const { colors } = useAppTheme();
   const meta = metaFor(item.type);
   const unread = !item.is_read;
   return (

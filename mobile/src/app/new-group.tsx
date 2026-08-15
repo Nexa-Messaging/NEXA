@@ -12,6 +12,7 @@ import {
 import { Avatar } from '@/components/Avatar';
 import { AppButton, AppText, FormField, Screen } from '@/components/ui';
 import { colors, radius, spacing } from '@/constants/theme';
+import { useAppTheme } from '@/lib/theme';
 import { useAuth } from '@/lib/auth';
 import { listFriends } from '@/lib/friends';
 import { createGroup } from '@/lib/groups';
@@ -19,6 +20,7 @@ import { Profile } from '@/types/database';
 import { validateGroupName } from '@/utils/validation';
 
 export default function NewGroupScreen() {
+  const { colors } = useAppTheme();
   const { user } = useAuth();
   const [name, setName] = useState('');
   const [friends, setFriends] = useState<Profile[]>([]);

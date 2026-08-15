@@ -13,6 +13,7 @@ import {
 import { FriendRow } from '@/components/FriendRow';
 import { AppText, Screen } from '@/components/ui';
 import { colors, radius, spacing } from '@/constants/theme';
+import { useAppTheme } from '@/lib/theme';
 import { useAuth } from '@/lib/auth';
 import {
   listFriends,
@@ -32,6 +33,7 @@ const SEGMENTS: { key: Segment; label: string }[] = [
 ];
 
 export default function FriendsScreen() {
+  const { colors } = useAppTheme();
   const { user } = useAuth();
   const [segment, setSegment] = useState<Segment>('requests');
 

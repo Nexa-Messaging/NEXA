@@ -6,6 +6,7 @@ import { Avatar } from '@/components/Avatar';
 import { AppText } from '@/components/ui/AppText';
 import { colors, radius, spacing } from '@/constants/theme';
 import { StoryFeedEntry } from '@/hooks/useStories';
+import { useAppTheme } from '@/lib/theme';
 
 const AVATAR_SIZE = 64;
 const TILE_WIDTH = 78;
@@ -34,6 +35,7 @@ export function StoriesFeedSection({
   onOpenComposer,
   onBrowseFriends,
 }: StoriesFeedSectionProps) {
+  const { colors } = useAppTheme();
   const own = entries.find((entry) => entry.user_id === meId) ?? null;
   const friends = entries.filter((entry) => entry.user_id !== meId);
 

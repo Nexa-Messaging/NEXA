@@ -21,6 +21,7 @@ import { Avatar } from '@/components/Avatar';
 import { AppText } from '@/components/ui/AppText';
 import { colors, gradients, radius, spacing } from '@/constants/theme';
 import { StoryFeedEntry } from '@/hooks/useStories';
+import { useAppTheme } from '@/lib/theme';
 import {
   deleteStory,
   fetchStoryReplies,
@@ -102,6 +103,7 @@ export function StoryViewerModal({
   onClose,
   onStoriesChanged,
 }: StoryViewerModalProps) {
+  const { colors } = useAppTheme();
   const [userId, setUserId] = useState<string | null>(initialUserId);
   const [storyIndex, setStoryIndex] = useState(0);
   const [paused, setPaused] = useState(false);

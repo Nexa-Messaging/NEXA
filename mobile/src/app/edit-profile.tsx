@@ -6,6 +6,7 @@ import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { AvatarPicker, PickedAsset } from '@/components/AvatarPicker';
 import { AppButton, AppText, FormField, Screen } from '@/components/ui';
 import { colors, radius, spacing } from '@/constants/theme';
+import { useAppTheme } from '@/lib/theme';
 import { useAuth } from '@/lib/auth';
 import { isUsernameTaken, updateOwnAvatar, updateOwnProfile } from '@/lib/profiles';
 import {
@@ -42,6 +43,7 @@ interface EditFormErrors {
 }
 
 export default function EditProfileScreen() {
+  const { colors } = useAppTheme();
   const { profile, user, refreshProfile } = useAuth();
 
   const [displayName, setDisplayName] = useState(profile?.display_name ?? '');

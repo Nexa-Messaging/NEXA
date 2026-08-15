@@ -10,6 +10,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 import { AppText } from '@/components/ui/AppText';
 import { colors, radius, spacing, typography } from '@/constants/theme';
+import { useAppTheme } from '@/lib/theme';
 
 export interface FormFieldProps extends TextInputProps {
   label: string;
@@ -35,6 +36,7 @@ export function FormField({
   editable,
   ...rest
 }: FormFieldProps) {
+  const { colors } = useAppTheme();
   const [isFocused, setIsFocused] = useState(false);
   const [hidden, setHidden] = useState(secure);
 

@@ -4,6 +4,7 @@ import { Pressable, PressableProps, StyleProp, StyleSheet, ViewStyle } from 'rea
 
 import { AppText } from '@/components/ui/AppText';
 import { colors, radius } from '@/constants/theme';
+import { useAppTheme } from '@/lib/theme';
 
 export type ChipTone = 'primary' | 'pink' | 'mint' | 'sun' | 'sky' | 'neutral';
 
@@ -44,6 +45,7 @@ export function Chip({
   style,
   ...rest
 }: ChipProps) {
+  const { colors } = useAppTheme();
   return (
     <Pressable
       accessibilityRole="button"

@@ -14,6 +14,7 @@ import {
 import { AppText, AppButton, Screen } from '@/components/ui';
 import { RealtimeBanner } from '@/components/RealtimeBanner';
 import { colors, radius, spacing } from '@/constants/theme';
+import { useAppTheme } from '@/lib/theme';
 import { useAuth } from '@/lib/auth';
 import {
   deleteCommunityEvent,
@@ -35,6 +36,7 @@ const RESPONSE_LABELS: Record<EventResponse, { label: string; icon: keyof typeof
 const RESPONSES: EventResponse[] = ['going', 'maybe', 'not_going'];
 
 export default function EventDetailScreen() {
+  const { colors } = useAppTheme();
   const params = useLocalSearchParams<{ eventId: string; communityId: string }>();
   const eventId = params.eventId;
   const communityId = params.communityId;

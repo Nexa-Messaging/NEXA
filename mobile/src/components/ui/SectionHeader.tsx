@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { AppText } from '@/components/ui/AppText';
 import { colors, spacing } from '@/constants/theme';
+import { useAppTheme } from '@/lib/theme';
 
 export interface SectionHeaderProps {
   title: string;
@@ -18,6 +19,7 @@ export interface SectionHeaderProps {
  * "chunk" headers on Home, Chats and Circles.
  */
 export function SectionHeader({ title, actionLabel, onAction, actionIcon }: SectionHeaderProps) {
+  const { colors } = useAppTheme();
   return (
     <View style={styles.row}>
       <AppText variant="heading" weight="bold">

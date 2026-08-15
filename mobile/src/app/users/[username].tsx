@@ -8,6 +8,7 @@ import { FriendStatusActions } from '@/components/FriendStatusActions';
 import { ReportSheet } from '@/components/ReportSheet';
 import { AppText, Screen } from '@/components/ui';
 import { colors, radius, spacing } from '@/constants/theme';
+import { useAppTheme } from '@/lib/theme';
 import { useFriendStatus } from '@/hooks/useFriendStatus';
 import { useAuth , fetchProfileByUsername } from '@/lib/auth';
 import { startConversationWith } from '@/lib/messaging';
@@ -16,6 +17,7 @@ import { Profile } from '@/types/database';
 import { formatDateJoined } from '@/utils/format';
 
 export default function PublicProfileScreen() {
+  const { colors } = useAppTheme();
   const params = useLocalSearchParams<{ username: string | string[] }>();
   const username = Array.isArray(params.username) ? params.username[0] : params.username;
   const { user } = useAuth();

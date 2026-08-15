@@ -14,6 +14,7 @@ import {
 import { Avatar } from '@/components/Avatar';
 import { AppText, Screen } from '@/components/ui';
 import { colors, radius, spacing } from '@/constants/theme';
+import { useAppTheme } from '@/lib/theme';
 import { resolveCommunityAvatarUrl } from '@/lib/communities';
 import {
   addRecentSearch,
@@ -51,6 +52,7 @@ const RESULT_ICONS: Record<SearchResultRow['category'], IoniconName> = {
 const DEBOUNCE_MS = 300;
 
 export default function SearchScreen() {
+  const { colors } = useAppTheme();
   const params = useLocalSearchParams<{ q?: string }>();
 
   const [query, setQuery] = useState(params.q ?? '');

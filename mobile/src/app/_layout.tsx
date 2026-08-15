@@ -9,17 +9,25 @@ import { Screen } from '@/components/ui';
 import { AppText } from '@/components/ui/AppText';
 import { colors, radius, spacing } from '@/constants/theme';
 import { AuthProvider, useAuth } from '@/lib/auth';
+import { ThemeProvider, useAppTheme } from '@/lib/theme';
 
 export default function RootLayout() {
   return (
-    <AuthProvider>
-      <ErrorBoundary>
-        <RootNavigator />
-        <PushNavigation />
-      </ErrorBoundary>
-      <StatusBar style="dark" />
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <ErrorBoundary>
+          <RootNavigator />
+          <PushNavigation />
+        </ErrorBoundary>
+        <ThemedStatusBar />
+      </AuthProvider>
+    </ThemeProvider>
   );
+}
+
+function ThemedStatusBar() {
+  const { resolvedMode } = useAppTheme();
+  return <StatusBar style={resolvedMode === 'dark' ? 'light' : 'dark'} />;
 }
 
 /**
@@ -29,6 +37,7 @@ export default function RootLayout() {
  */
 function RootNavigator() {
   const { isLoading, isConfigured, isAuthenticated } = useAuth();
+  const { colors } = useAppTheme();
 
   if (!isConfigured) {
     return (
@@ -93,6 +102,7 @@ function RootNavigator() {
         <Stack.Screen name="events/[communityId]" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen name="event/[eventId]" options={{ animation: 'slide_from_right' }} />
         <Stack.Screen name="new-event/[communityId]" options={{ animation: 'slide_from_bottom' }} />
+        <Stack.Screen name="settings/appearance" options={{ animation: 'slide_from_right' }} />
       </Stack.Protected>
     </Stack>
   );

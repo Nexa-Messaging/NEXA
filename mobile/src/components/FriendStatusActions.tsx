@@ -5,6 +5,7 @@ import { AppButton, AppButtonProps } from '@/components/ui/AppButton';
 import { AppText } from '@/components/ui/AppText';
 import { spacing } from '@/constants/theme';
 import { FriendshipStatus } from '@/lib/friends';
+import { useAppTheme } from '@/lib/theme';
 
 export interface FriendStatusActionsProps {
   status: FriendshipStatus | 'loading';
@@ -39,6 +40,7 @@ const EMPTY_CALLBACKS = {
  * public profile; row lists render their own compact controls.
  */
 export function FriendStatusActions(props: FriendStatusActionsProps) {
+  const { colors } = useAppTheme();
   const {
     status,
     busy = false,

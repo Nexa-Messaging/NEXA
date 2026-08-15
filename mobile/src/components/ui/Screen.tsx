@@ -11,6 +11,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Backdrop, BlobStyle } from '@/components/ui/Backdrop';
 import { colors, layout, radius } from '@/constants/theme';
+import { useAppTheme } from '@/lib/theme';
 
 export interface ScreenProps {
   children: React.ReactNode;
@@ -43,6 +44,7 @@ export function Screen({
   blobs,
   style,
 }: ScreenProps) {
+  const { colors } = useAppTheme();
   const content = (
     <View
       style={[

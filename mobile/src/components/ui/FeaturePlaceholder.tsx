@@ -5,6 +5,7 @@ import { StyleSheet, View } from 'react-native';
 import { AppText } from '@/components/ui/AppText';
 import { Screen } from '@/components/ui/Screen';
 import { colors, radius, spacing } from '@/constants/theme';
+import { useAppTheme } from '@/lib/theme';
 
 export interface FeaturePlaceholderProps {
   icon: keyof typeof Ionicons.glyphMap;
@@ -20,6 +21,7 @@ export interface FeaturePlaceholderProps {
  * a later development phase. No fake data or mock logic is rendered.
  */
 export function FeaturePlaceholder({ icon, title, description, phase }: FeaturePlaceholderProps) {
+  const { colors } = useAppTheme();
   return (
     <Screen blobbed centered>
       <View style={[styles.container, styles.card]}>

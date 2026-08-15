@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AppText } from '@/components/ui/AppText';
 import { colors, gradients, radius, shadows, spacing } from '@/constants/theme';
+import { useAppTheme } from '@/lib/theme';
 
 export interface TabBarItem {
   name: string;
@@ -26,6 +27,7 @@ export interface FloatingTabBarProps {
  * content with a soft shadow (instead of a hard-edged default tab bar).
  */
 export function FloatingTabBar({ items, active, badges, onSelect }: FloatingTabBarProps) {
+  const { colors } = useAppTheme();
   return (
     <SafeAreaView edges={['bottom']} style={styles.safe}>
       <View style={styles.bar}>

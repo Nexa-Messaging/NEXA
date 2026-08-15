@@ -3,8 +3,8 @@ import { Tabs, useRouter } from 'expo-router';
 import React from 'react';
 
 import { FloatingTabBar, TabBarItem } from '@/components/ui/FloatingTabBar';
-import { colors } from '@/constants/theme';
 import { useCommunities } from '@/hooks/useCommunities';
+import { useAppTheme } from '@/lib/theme';
 import { useConversations } from '@/hooks/useConversations';
 
 type IoniconName = keyof typeof Ionicons.glyphMap;
@@ -23,6 +23,7 @@ const TABS: Record<string, TabSpec> = {
 };
 
 export default function TabsLayout() {
+  const { colors } = useAppTheme();
   const router = useRouter();
   const { items: conversations } = useConversations();
   const { items: communities } = useCommunities();

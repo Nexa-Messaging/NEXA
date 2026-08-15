@@ -26,6 +26,7 @@ import { ReportSheet } from '@/components/ReportSheet';
 import { VoiceRecorderBar } from '@/components/VoiceRecorderBar';
 import { AppText, Screen } from '@/components/ui';
 import { colors, gradients, radius, spacing } from '@/constants/theme';
+import { useAppTheme } from '@/lib/theme';
 import { PendingGroupMessage, useGroupMessages } from '@/hooks/useGroupMessages';
 import { useAuth } from '@/lib/auth';
 import {
@@ -71,6 +72,7 @@ function buildMemberMap(members: GroupMemberInfo[]): Record<string, GroupMemberI
 }
 
 export default function GroupChatScreen() {
+  const { colors } = useAppTheme();
   const params = useLocalSearchParams<{ chatId: string }>();
   const chatId = params.chatId;
   const { user } = useAuth();
@@ -563,8 +565,8 @@ export default function GroupChatScreen() {
       ) : (
         <KeyboardAvoidingView
           style={styles.flex}
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          keyboardVerticalOffset={Platform.OS === 'ios' ? 88 : 0}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'padding'}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 88 : 88}
         >
           {items.length === 0 ? (
             <View style={styles.emptyChat}>
@@ -583,6 +585,7 @@ export default function GroupChatScreen() {
               keyboardShouldPersistTaps="handled"
               onScroll={onScroll}
               scrollEventThrottle={64}
+              maintainVisibleContentPosition={{ minIndexForVisible: 0 }}
               onScrollToIndexFailed={({ index }) => {
                 listRef.current?.scrollToOffset({ offset: index * 120, animated: true });
               }}

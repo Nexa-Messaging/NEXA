@@ -5,6 +5,7 @@ import { Keyboard, Pressable, StyleSheet, TextInput, View } from 'react-native';
 
 import { AppText } from '@/components/ui/AppText';
 import { colors, gradients, radius, shadows, spacing } from '@/constants/theme';
+import { useAppTheme } from '@/lib/theme';
 
 export interface MessageInputProps {
   value: string;
@@ -36,6 +37,7 @@ export function MessageInput({
   onAttach,
   disabled = false,
 }: MessageInputProps) {
+  const { colors } = useAppTheme();
   const canSend = value.trim().length > 0 && !disabled;
 
   return (

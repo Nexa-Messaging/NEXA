@@ -26,6 +26,7 @@ import { ReportSheet } from '@/components/ReportSheet';
 import { VoiceRecorderBar } from '@/components/VoiceRecorderBar';
 import { AppText, Screen } from '@/components/ui';
 import { colors, gradients, radius, spacing } from '@/constants/theme';
+import { useAppTheme } from '@/lib/theme';
 import { PendingMessage, useMessages } from '@/hooks/useMessages';
 import { useAuth } from '@/lib/auth';
 import {
@@ -61,6 +62,7 @@ function canEditMessage(createdAt: string): boolean {
 }
 
 export default function ChatScreen() {
+  const { colors } = useAppTheme();
   const params = useLocalSearchParams<{ conversationId: string }>();
   const conversationId = params.conversationId;
   const { user } = useAuth();
@@ -503,8 +505,8 @@ export default function ChatScreen() {
       ) : (
         <KeyboardAvoidingView
           style={styles.flex}
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          keyboardVerticalOffset={Platform.OS === 'ios' ? 88 : 0}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'padding'}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 88 : 88}
         >
           {items.length === 0 ? (
             <View style={styles.emptyChat}>

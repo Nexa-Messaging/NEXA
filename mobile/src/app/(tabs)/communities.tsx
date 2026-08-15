@@ -15,12 +15,14 @@ import { Avatar } from '@/components/Avatar';
 import { RealtimeBanner } from '@/components/RealtimeBanner';
 import { AppButton, AppText, EmptyState, Screen, SectionHeader } from '@/components/ui';
 import { colors, gradients, radius, shadows, spacing } from '@/constants/theme';
+import { useAppTheme } from '@/lib/theme';
 import { useCommunities } from '@/hooks/useCommunities';
 import { joinCommunity, joinMyClassCommunity, resolveCommunityAvatarUrl } from '@/lib/communities';
 import { CommunityListEntry } from '@/types/database';
 import { formatChatTime } from '@/utils/format';
 
 export default function CommunitiesScreen() {
+  const { colors } = useAppTheme();
   const { items, loading, refreshing, setRefreshing, error, realtime, refresh } =
     useCommunities();
 

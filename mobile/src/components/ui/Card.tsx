@@ -3,6 +3,7 @@ import React from 'react';
 import { StyleProp, StyleSheet, View, ViewStyle } from 'react-native';
 
 import { colors, radius, shadows } from '@/constants/theme';
+import { useAppTheme } from '@/lib/theme';
 
 export interface CardProps {
   children: React.ReactNode;
@@ -24,6 +25,7 @@ const VARIANTS = {
  * the shared building block for NEXA's sticker-like surfaces.
  */
 export function Card({ children, variant = 'flat', gradient, style }: CardProps) {
+  const { colors } = useAppTheme();
   return (
     <View style={[styles.base, VARIANTS[variant], style]}>
       {gradient ? (

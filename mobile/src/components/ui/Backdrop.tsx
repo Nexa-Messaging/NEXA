@@ -2,6 +2,7 @@ import React from 'react';
 import { StyleSheet, View, ViewStyle } from 'react-native';
 
 import { colors } from '@/constants/theme';
+import { useAppTheme } from '@/lib/theme';
 
 export interface BlobStyle {
   size: number;
@@ -38,6 +39,7 @@ const DEFAULT_BLOBS: BlobStyle[] = [
  * corner radii to give the NEXA soft-graffiti personality.
  */
 export function Backdrop({ blobs = DEFAULT_BLOBS, style, children }: BackdropProps) {
+  const { colors } = useAppTheme();
   return (
     <View pointerEvents="none" style={[styles.container, style]}>
       {blobs.map((blob, index) => (

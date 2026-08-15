@@ -13,6 +13,7 @@ import {
 
 import { AppText, AppButton, FormField, Screen } from '@/components/ui';
 import { colors, radius, spacing } from '@/constants/theme';
+import { useAppTheme } from '@/lib/theme';
 import { useAuth } from '@/lib/auth';
 import {
   buildEventImagePath,
@@ -32,6 +33,7 @@ const START_CHOICES: { label: string; fromNowMs: number }[] = [
 ];
 
 export default function EventFormScreen() {
+  const { colors } = useAppTheme();
   const params = useLocalSearchParams<{ communityId: string; eventId?: string }>();
   const communityId = params.communityId;
   const editingEventId = params.eventId;

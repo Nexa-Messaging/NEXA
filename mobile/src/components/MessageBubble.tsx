@@ -9,6 +9,7 @@ import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { AppText } from '@/components/ui/AppText';
 import { VoiceNotePlayer } from '@/components/VoiceNotePlayer';
 import { colors, gradients, radius, shadows, spacing } from '@/constants/theme';
+import { useAppTheme } from '@/lib/theme';
 import { PendingCommunityMessage } from '@/hooks/useCommunityMessages';
 import { PendingGroupMessage } from '@/hooks/useGroupMessages';
 import { PendingMessage } from '@/hooks/useMessages';
@@ -102,6 +103,7 @@ export function MessageBubble({
   onReply,
   onScrollToReply,
 }: MessageBubbleProps) {
+  const { colors } = useAppTheme();
   const isPending = 'status' in item;
   const isFailed = isPending && item.status === 'failed';
   const isDeleted = !isPending && item.deleted_at != null;
@@ -117,17 +119,6 @@ export function MessageBubble({
     .onEnd(() => {
       if (msgId) onReply?.(msgId);
     });
-
-  const swipeRight = Gesture.Pan()
-    .activeOffsetX(30)
-    .failOffsetY(10)
-    .onEnd((e) => {
-      if (e.translationX > 40 && msgId) {
-        onReply?.(msgId);
-      }
-    });
-
-  const composed = Gesture.Race(doubleTap, swipeRight);
 
   const handleReplyBoxPress = useCallback(() => {
     if (replyToId) onScrollToReply?.(replyToId);
@@ -198,7 +189,7 @@ export function MessageBubble({
           {senderName}
         </AppText>
       ) : null}
-      <GestureDetector gesture={composed}>
+      <GestureDetector gesture={doubleTap}>
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={

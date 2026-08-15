@@ -17,6 +17,7 @@ import {
 import { AppText } from '@/components/ui/AppText';
 import { colors, radius, spacing } from '@/constants/theme';
 import { buildStoryPath, postStory, uploadStoryMedia } from '@/lib/stories';
+import { useAppTheme } from '@/lib/theme';
 
 type Step = 'pick' | 'media' | 'text';
 
@@ -42,6 +43,7 @@ export interface StoryComposerModalProps {
  * the private `stories-media` bucket before the row is registered.
  */
 export function StoryComposerModal({ visible, meId, onClose, onPosted }: StoryComposerModalProps) {
+  const { colors } = useAppTheme();
   const [step, setStep] = useState<Step>('pick');
   const [draft, setDraft] = useState<DraftMedia | null>(null);
   const [caption, setCaption] = useState('');

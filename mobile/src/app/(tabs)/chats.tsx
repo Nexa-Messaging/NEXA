@@ -15,9 +15,11 @@ import { ConversationListItem } from '@/components/ConversationListItem';
 import { RealtimeBanner } from '@/components/RealtimeBanner';
 import { AppButton, AppText, EmptyState, Screen, SectionHeader } from '@/components/ui';
 import { colors, gradients, radius, spacing } from '@/constants/theme';
+import { useAppTheme } from '@/lib/theme';
 import { useConversations } from '@/hooks/useConversations';
 
 export default function ChatsScreen() {
+  const { colors } = useAppTheme();
   const { items, loading, refreshing, setRefreshing, error, realtime, refresh } =
     useConversations();
 
@@ -153,6 +155,7 @@ export default function ChatsScreen() {
 }
 
 function FriendsEntry({ onPress }: { onPress: () => void }) {
+  const { colors } = useAppTheme();
   return (
     <Pressable
       accessibilityRole="button"

@@ -4,6 +4,7 @@ import { StyleSheet, View } from 'react-native';
 
 import { AppText } from '@/components/ui/AppText';
 import { colors, radius, spacing } from '@/constants/theme';
+import { useAppTheme } from '@/lib/theme';
 
 export interface EmptyStateProps {
   icon?: keyof typeof Ionicons.glyphMap;
@@ -18,6 +19,7 @@ export interface EmptyStateProps {
  * title and description. Used across feeds when there is nothing to show.
  */
 export function EmptyState({ icon = 'sparkles-outline', title, description, action }: EmptyStateProps) {
+  const { colors } = useAppTheme();
   return (
     <View style={styles.container}>
       <View style={styles.badge}>

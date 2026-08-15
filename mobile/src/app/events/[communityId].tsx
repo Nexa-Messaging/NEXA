@@ -14,6 +14,7 @@ import {
 import { AppText, Screen } from '@/components/ui';
 import { RealtimeBanner } from '@/components/RealtimeBanner';
 import { colors, radius, spacing } from '@/constants/theme';
+import { useAppTheme } from '@/lib/theme';
 import { subscribeToRealtimeStatus, RealtimeStatus } from '@/lib/messaging';
 import { respondToEvent, toggleEventReminder } from '@/lib/events';
 import { useEvents } from '@/hooks/useEvents';
@@ -138,6 +139,7 @@ function EventRow({
 }
 
 export default function CommunityEventsScreen() {
+  const { colors } = useAppTheme();
   const params = useLocalSearchParams<{ communityId: string }>();
   const communityId = params.communityId;
   const { events, loading, refreshing, setRefreshing, error, refresh } = useEvents(communityId);

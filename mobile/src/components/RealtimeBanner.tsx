@@ -4,6 +4,7 @@ import { StyleSheet, View } from 'react-native';
 
 import { AppText } from '@/components/ui/AppText';
 import { colors, spacing } from '@/constants/theme';
+import { useAppTheme } from '@/lib/theme';
 import { RealtimeStatus } from '@/lib/messaging';
 
 export interface RealtimeBannerProps {
@@ -14,6 +15,7 @@ export interface RealtimeBannerProps {
  * Thin banner shown while realtime has not stabilised. Hidden once connected.
  */
 export function RealtimeBanner({ status }: RealtimeBannerProps) {
+  const { colors } = useAppTheme();
   if (status === 'connected') {
     return null;
   }

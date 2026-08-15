@@ -5,6 +5,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { AppText } from '@/components/ui/AppText';
 import { colors, radius, spacing } from '@/constants/theme';
+import { useAppTheme } from '@/lib/theme';
 import { formatDuration } from '@/utils/format';
 
 export interface VoiceNotePlayerProps {
@@ -20,6 +21,7 @@ export interface VoiceNotePlayerProps {
  * Used both for message bubbles and inside the recorder's review step.
  */
 export function VoiceNotePlayer({ uri, durationSeconds, isMine = false }: VoiceNotePlayerProps) {
+  const { colors } = useAppTheme();
   const player = useAudioPlayer(null);
   const status = useAudioPlayerStatus(player);
 

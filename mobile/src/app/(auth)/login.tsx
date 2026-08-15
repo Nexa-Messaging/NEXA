@@ -5,6 +5,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { AppButton, AppText, FormField, GradientText, Screen } from '@/components/ui';
 import { colors, radius, spacing } from '@/constants/theme';
+import { useAppTheme } from '@/lib/theme';
 import { useAuth } from '@/lib/auth';
 import { validateEmail, validatePassword } from '@/utils/validation';
 
@@ -14,6 +15,7 @@ interface LoginFormErrors {
 }
 
 export default function LoginScreen() {
+  const { colors } = useAppTheme();
   const { signIn } = useAuth();
 
   const [email, setEmail] = useState('');

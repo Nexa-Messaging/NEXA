@@ -14,6 +14,7 @@ import { Avatar } from '@/components/Avatar';
 import { RealtimeBanner } from '@/components/RealtimeBanner';
 import { AppText, Screen } from '@/components/ui';
 import { colors, radius, spacing } from '@/constants/theme';
+import { useAppTheme } from '@/lib/theme';
 import {
   fetchCommunityChannels,
   fetchCommunityInfo,
@@ -45,6 +46,7 @@ function channelIcon(kind: string): keyof typeof Ionicons.glyphMap {
 }
 
 export default function CommunityScreen() {
+  const { colors } = useAppTheme();
   const params = useLocalSearchParams<{ communityId: string }>();
   const communityId = params.communityId;
 

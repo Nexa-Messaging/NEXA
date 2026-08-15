@@ -12,6 +12,7 @@ import {
 
 import { AppText } from '@/components/ui/AppText';
 import { colors, gradients, radius, shadows, spacing } from '@/constants/theme';
+import { useAppTheme } from '@/lib/theme';
 
 export type ButtonVariant =
   | 'primary'
@@ -63,6 +64,7 @@ export function AppButton({
   style,
   ...rest
 }: AppButtonProps) {
+  const { colors } = useAppTheme();
   const config = VARIANT_COLORS[variant];
   const isDisabled = disabled || loading;
   const textColor = isDisabled ? colors.textMuted : config.text;

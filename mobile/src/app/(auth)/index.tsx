@@ -6,8 +6,10 @@ import { StyleSheet, View } from 'react-native';
 import { AppButton, GradientText, Screen } from '@/components/ui';
 import { AppText } from '@/components/ui/AppText';
 import { colors, gradients, radius, shadows, spacing } from '@/constants/theme';
+import { useAppTheme } from '@/lib/theme';
 
 export default function WelcomeScreen() {
+  const { colors } = useAppTheme();
   return (
     <Screen blobbed>
       <View style={styles.container}>

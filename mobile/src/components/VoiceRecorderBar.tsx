@@ -13,6 +13,7 @@ import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 
 import { AppText } from '@/components/ui/AppText';
 import { colors, radius, spacing } from '@/constants/theme';
+import { useAppTheme } from '@/lib/theme';
 import { formatDuration } from '@/utils/format';
 
 export interface VoiceRecorderBarProps {
@@ -28,6 +29,7 @@ type Stage = 'preparing' | 'recording' | 'denied' | 'review';
  * bar. A review step lets them preview the clip before sending.
  */
 export function VoiceRecorderBar({ onSend, onCancel }: VoiceRecorderBarProps) {
+  const { colors } = useAppTheme();
   const recorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
   const recorderState = useAudioRecorderState(recorder);
 

@@ -10,6 +10,7 @@ import {
 
 import { AppText, AppButton, FormField, Screen } from '@/components/ui';
 import { colors, radius, spacing } from '@/constants/theme';
+import { useAppTheme } from '@/lib/theme';
 import { createCommunityPoll } from '@/lib/polls';
 
 const EXPIRY_CHOICES: { label: string; ms: number | null }[] = [
@@ -23,6 +24,7 @@ const EXPIRY_CHOICES: { label: string; ms: number | null }[] = [
 const MAX_OPTIONS = 10;
 
 export default function NewPollScreen() {
+  const { colors } = useAppTheme();
   const params = useLocalSearchParams<{ communityId: string }>();
   const communityId = params.communityId;
 

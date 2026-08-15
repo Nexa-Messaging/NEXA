@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { Avatar } from '@/components/Avatar';
 import { AppText } from '@/components/ui/AppText';
 import { colors, gradients, radius, shadows, spacing } from '@/constants/theme';
+import { useAppTheme } from '@/lib/theme';
 import { ChatListItem } from '@/hooks/useConversations';
 import { formatChatTime } from '@/utils/format';
 
@@ -17,6 +18,7 @@ export interface ConversationListItemProps {
  * label and an unread badge. Renders both 1:1 conversations and group chats.
  */
 export function ConversationListItem({ item, onPress }: ConversationListItemProps) {
+  const { colors } = useAppTheme();
   const preview = item.lastMessage ?? (item.kind === 'group' ? 'Group created' : 'No messages yet — say hi!');
   return (
     <Pressable

@@ -5,6 +5,7 @@ import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { AppButton, AppText, FormField, GradientText, Screen } from '@/components/ui';
 import { colors, radius, spacing } from '@/constants/theme';
+import { useAppTheme } from '@/lib/theme';
 import { useAuth } from '@/lib/auth';
 import { isUsernameTaken } from '@/lib/profiles';
 import {
@@ -23,6 +24,7 @@ interface RegisterFormErrors {
 }
 
 export default function RegisterScreen() {
+  const { colors } = useAppTheme();
   const { signUp } = useAuth();
 
   const [displayName, setDisplayName] = useState('');

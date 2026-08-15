@@ -17,6 +17,7 @@ import { Avatar } from '@/components/Avatar';
 import { AvatarPicker, PickedAsset } from '@/components/AvatarPicker';
 import { AppButton, AppText, Screen } from '@/components/ui';
 import { colors, radius, spacing } from '@/constants/theme';
+import { useAppTheme } from '@/lib/theme';
 import { useAuth } from '@/lib/auth';
 import { listFriends } from '@/lib/friends';
 import {
@@ -42,6 +43,7 @@ const ROLE_LABEL: Record<GroupRole, string> = {
 };
 
 export default function GroupInfoScreen() {
+  const { colors } = useAppTheme();
   const params = useLocalSearchParams<{ chatId: string }>();
   const chatId = params.chatId;
   const { user } = useAuth();

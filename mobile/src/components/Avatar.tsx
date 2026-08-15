@@ -6,6 +6,7 @@ import { StyleSheet, View } from 'react-native';
 
 import { AppText } from '@/components/ui/AppText';
 import { colors, gradients } from '@/constants/theme';
+import { useAppTheme } from '@/lib/theme';
 
 export interface AvatarProps {
   uri?: string | null;
@@ -45,6 +46,7 @@ export function gradientForName(name?: string | null): readonly [string, string,
  * an optional gradient ring, so the feed is colourful even without photos.
  */
 export function Avatar({ uri, name, size = 64, ring = false, accessibilityLabel }: AvatarProps) {
+  const { colors } = useAppTheme();
   const radius = size / 2;
   const initials = initialsFrom(name);
   const fallbackGradient = gradientForName(name);

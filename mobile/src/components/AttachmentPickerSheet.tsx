@@ -4,6 +4,7 @@ import { Modal, Pressable, StyleSheet, View } from 'react-native';
 
 import { AppText } from '@/components/ui/AppText';
 import { colors, radius, spacing } from '@/constants/theme';
+import { useAppTheme } from '@/lib/theme';
 
 export interface AttachmentPickerSheetProps {
   visible: boolean;
@@ -24,6 +25,7 @@ export function AttachmentPickerSheet({
   onPickVideo,
   onVoiceNote,
 }: AttachmentPickerSheetProps) {
+  const { colors } = useAppTheme();
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <Pressable accessibilityRole="button" accessibilityLabel="Close" style={styles.backdrop} onPress={onClose}>

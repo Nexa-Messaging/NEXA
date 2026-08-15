@@ -9,6 +9,7 @@ import { AppText } from '@/components/ui/AppText';
 import { colors, radius, spacing } from '@/constants/theme';
 import { useFriendStatus } from '@/hooks/useFriendStatus';
 import { FriendshipStatus } from '@/lib/friends';
+import { useAppTheme } from '@/lib/theme';
 import { Profile } from '@/types/database';
 
 export type FriendRowMode = 'incoming' | 'outgoing' | 'friend' | 'search';
@@ -28,6 +29,7 @@ export interface FriendRowProps {
  * status so actions reflect the freshest server state.
  */
 export function FriendRow({ profile, mode, onPress, onMutated, onMessage }: FriendRowProps) {
+  const { colors } = useAppTheme();
   const friendship = useFriendStatus(profile.id, onMutated);
 
   const renderAction = () => {

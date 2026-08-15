@@ -9,11 +9,13 @@ import { StoryComposerModal } from '@/components/stories/StoryComposerModal';
 import { StoryViewerModal } from '@/components/stories/StoryViewerModal';
 import { AppText, Screen } from '@/components/ui';
 import { colors, gradients, radius, shadows, spacing } from '@/constants/theme';
+import { useAppTheme } from '@/lib/theme';
 import { useAuth } from '@/lib/auth';
 import { useStories } from '@/hooks/useStories';
 import { useNotifications } from '@/hooks/useNotifications';
 
 export default function HomeScreen() {
+  const { colors } = useAppTheme();
   const { user, profile } = useAuth();
   const { entries, loading, error, refresh } = useStories();
   const { unreadCount } = useNotifications();

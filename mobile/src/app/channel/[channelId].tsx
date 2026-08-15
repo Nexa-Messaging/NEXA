@@ -26,6 +26,7 @@ import { ReportSheet } from '@/components/ReportSheet';
 import { VoiceRecorderBar } from '@/components/VoiceRecorderBar';
 import { AppText, Screen } from '@/components/ui';
 import { colors, gradients, radius, spacing } from '@/constants/theme';
+import { useAppTheme } from '@/lib/theme';
 import { PendingCommunityMessage, useCommunityMessages } from '@/hooks/useCommunityMessages';
 import { useAuth } from '@/lib/auth';
 import {
@@ -83,6 +84,7 @@ function buildMemberMap(
 }
 
 export default function ChannelChatScreen() {
+  const { colors } = useAppTheme();
   const params = useLocalSearchParams<{ channelId: string }>();
   const channelId = params.channelId;
   const { user } = useAuth();
@@ -568,8 +570,8 @@ export default function ChannelChatScreen() {
       ) : (
         <KeyboardAvoidingView
           style={styles.flex}
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          keyboardVerticalOffset={Platform.OS === 'ios' ? 88 : 0}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'padding'}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 88 : 88}
         >
           {items.length === 0 ? (
             <View style={styles.emptyChat}>
@@ -588,6 +590,7 @@ export default function ChannelChatScreen() {
               keyboardShouldPersistTaps="handled"
               onScroll={onScroll}
               scrollEventThrottle={64}
+              maintainVisibleContentPosition={{ minIndexForVisible: 0 }}
               onScrollToIndexFailed={({ index }) => {
                 listRef.current?.scrollToOffset({ offset: index * 120, animated: true });
               }}

@@ -6,6 +6,7 @@ import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 import { Avatar } from '@/components/Avatar';
 import { AppText } from '@/components/ui/AppText';
 import { colors, radius } from '@/constants/theme';
+import { useAppTheme } from '@/lib/theme';
 
 export interface PickedAsset {
   uri: string | null;
@@ -33,6 +34,7 @@ export function AvatarPicker({
   onError,
   disabled = false,
 }: AvatarPickerProps) {
+  const { colors } = useAppTheme();
   const [busy, setBusy] = useState(false);
 
   const pickImage = async () => {

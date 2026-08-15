@@ -17,6 +17,7 @@ import { Avatar } from '@/components/Avatar';
 import { AvatarPicker, PickedAsset } from '@/components/AvatarPicker';
 import { AppButton, AppText, Screen } from '@/components/ui';
 import { colors, radius, spacing } from '@/constants/theme';
+import { useAppTheme } from '@/lib/theme';
 import { useAuth } from '@/lib/auth';
 import {
   addCommunityMembers,
@@ -42,6 +43,7 @@ const ROLE_LABEL: Record<CommunityRole, string> = {
 };
 
 export default function CommunityInfoScreen() {
+  const { colors } = useAppTheme();
   const params = useLocalSearchParams<{ communityId: string }>();
   const communityId = params.communityId;
   const { user } = useAuth();

@@ -3,6 +3,7 @@ import { Modal, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react
 
 import { AppText } from '@/components/ui/AppText';
 import { colors, radius, spacing } from '@/constants/theme';
+import { useAppTheme } from '@/lib/theme';
 import {
   REPORT_CATEGORIES,
   REPORT_CATEGORY_LABELS,
@@ -31,6 +32,7 @@ export function ReportSheet({
   onClose,
   onSubmit,
 }: ReportSheetProps) {
+  const { colors } = useAppTheme();
   const [category, setCategory] = useState<ReportCategory | null>(null);
   const [details, setDetails] = useState('');
 

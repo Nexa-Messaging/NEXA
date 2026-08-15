@@ -14,6 +14,7 @@ import {
 import { AppText, Screen } from '@/components/ui';
 import { RealtimeBanner } from '@/components/RealtimeBanner';
 import { colors, radius, spacing } from '@/constants/theme';
+import { useAppTheme } from '@/lib/theme';
 import { useAuth } from '@/lib/auth';
 import { subscribeToRealtimeStatus, RealtimeStatus } from '@/lib/messaging';
 import { deleteCommunityPoll, voteCommunityPoll } from '@/lib/polls';
@@ -142,6 +143,7 @@ function PollCard({
 }
 
 export default function CommunityPollsScreen() {
+  const { colors } = useAppTheme();
   const params = useLocalSearchParams<{ communityId: string }>();
   const communityId = params.communityId;
   const { user } = useAuth();

@@ -8,11 +8,13 @@ import { NotificationCard } from '@/components/NotificationCard';
 import { RealtimeBanner } from '@/components/RealtimeBanner';
 import { AppText, AppButton, EmptyState, Screen } from '@/components/ui';
 import { colors, gradients, radius, spacing } from '@/constants/theme';
+import { useAppTheme } from '@/lib/theme';
 import { RealtimeStatus, subscribeToRealtimeStatus } from '@/lib/messaging';
 import { openNotification } from '@/lib/notifications';
 import { useNotifications } from '@/hooks/useNotifications';
 
 export default function NotificationsScreen() {
+  const { colors } = useAppTheme();
   const { items, unreadCount, loading, refreshing, setRefreshing, error, refresh, markRead, markAllRead } =
     useNotifications();
   const [realtime, setRealtime] = useState<RealtimeStatus>('connecting');

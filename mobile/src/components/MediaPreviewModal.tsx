@@ -14,6 +14,7 @@ import {
 
 import { AppText } from '@/components/ui/AppText';
 import { colors, radius, spacing } from '@/constants/theme';
+import { useAppTheme } from '@/lib/theme';
 
 export interface MediaPreview {
   kind: 'image' | 'video';
@@ -44,6 +45,7 @@ export function MediaPreviewModal({
   onSend,
   onClose,
 }: MediaPreviewModalProps) {
+  const { colors } = useAppTheme();
   const player = useVideoPlayer(media && media.kind === 'video' ? media.uri : null);
   const canSend = !!media;
 

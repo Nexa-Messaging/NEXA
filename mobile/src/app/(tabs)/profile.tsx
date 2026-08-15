@@ -7,10 +7,12 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 import { Avatar } from '@/components/Avatar';
 import { AppButton, AppText, Card, Screen } from '@/components/ui';
 import { colors, gradients, radius, spacing } from '@/constants/theme';
+import { useAppTheme } from '@/lib/theme';
 import { useAuth } from '@/lib/auth';
 import { formatDateJoined } from '@/utils/format';
 
 export default function ProfileScreen() {
+  const { colors } = useAppTheme();
   const { profile, user, signOut } = useAuth();
   const [signingOut, setSigningOut] = useState(false);
   const [signOutError, setSignOutError] = useState<string | null>(null);
@@ -99,6 +101,15 @@ export default function ProfileScreen() {
           }}
         />
 
+        <AppButton
+          title="Appearance"
+          variant="outline"
+          size="md"
+          fullWidth
+          style={{ marginTop: spacing.sm }}
+          onPress={() => router.push('/settings/appearance' as any)}
+        />
+
         {signOutError ? (
           <AppText variant="caption" tone="danger" align="center" style={{ marginTop: spacing.md }}>
             {signOutError}
@@ -128,6 +139,7 @@ function ProfileInfoRow({
   label: string;
   value?: string | null;
 }) {
+  const { colors } = useAppTheme();
   if (!value) {
     return null;
   }

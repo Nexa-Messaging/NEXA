@@ -5,6 +5,7 @@ import { Modal, Pressable, StyleSheet, View } from 'react-native';
 
 import { AppText } from '@/components/ui/AppText';
 import { colors, radius, spacing } from '@/constants/theme';
+import { useAppTheme } from '@/lib/theme';
 
 export const QUICK_EMOJIS = ['❤️', '😂', '👍', '😮', '😢', '🙏'] as const;
 
@@ -43,6 +44,7 @@ export function MessageActionsSheet({
   onReport,
   onReact,
 }: MessageActionsSheetProps) {
+  const { colors } = useAppTheme();
   const handleCopy = async () => {
     await Clipboard.setStringAsync(messageText);
     onClose();
