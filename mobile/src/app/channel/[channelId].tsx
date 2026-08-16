@@ -49,6 +49,7 @@ import {
   CommunityMessageFeed,
 } from '@/types/database';
 import { pickCompressedVideo } from '@/utils/mediaCompression';
+import { useTypingIndicator } from '@/hooks/useTypingIndicator';
 
 type MemberInfo = CommunityMemberInfo;
 
@@ -124,6 +125,7 @@ export default function ChannelChatScreen() {
   }, []);
 
   const chat = useCommunityMessages(channelId, resolveSender, channel?.community_id ?? undefined);
+  const { typingName, onTyping, onSendOrClear } = useTypingIndicator(channelId);
   const memberById = useRef<Record<string, { display_name: string; username: string; avatar_url: string | null }>>({});
   memberById.current = buildMemberMap(members);
 
@@ -307,6 +309,7 @@ export default function ChannelChatScreen() {
   };
 
   const onSend = () => {
+    onSendOrClear();
     const text = input.trim();
     if (!text) {
       return;
@@ -629,13 +632,21 @@ export default function ChannelChatScreen() {
             </View>
           ) : null}
 
+          {typingName ? (
+            <View style={styles.typingBar}>
+              <AppText variant="caption" color={colors.textSecondary} numberOfLines={1}>
+                {typingName} is typing...
+              </AppText>
+            </View>
+          ) : null}
+
           {canPost ? (
             voiceActive ? (
               <VoiceRecorderBar onSend={onVoiceSend} onCancel={() => setVoiceActive(false)} />
             ) : (
               <MessageInput
                 value={input}
-                onChangeText={setInput}
+                onChangeText={(text) => { setInput(text); onTyping(); }}
                 onSend={onSend}
                 replyingTo={
                   replying ? { name: replying.senderName, text: replying.text } : null
@@ -838,6 +849,10 @@ const styles = StyleSheet.create({
   },
   readOnlyText: {
     marginLeft: spacing.xs,
+  },
+  typingBar: {
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xxs,
   },
 });
 

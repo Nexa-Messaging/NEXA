@@ -32,6 +32,7 @@ export interface Database {
           level: string | null;
           created_at: string;
           updated_at: string;
+          last_seen_at: string;
         };
         Insert: {
           id: string;
@@ -45,6 +46,7 @@ export interface Database {
           level?: string | null;
           created_at?: string;
           updated_at?: string;
+          last_seen_at?: string;
         };
         Update: {
           id?: string;
@@ -58,6 +60,7 @@ export interface Database {
           level?: string | null;
           created_at?: string;
           updated_at?: string;
+          last_seen_at?: string;
         };
         Relationships: [
           {
@@ -1379,6 +1382,10 @@ export interface Database {
       };
       unreact_to_message: {
         Args: { p_message: string; p_emoji: string };
+        Returns: undefined;
+      };
+      update_last_seen: {
+        Args: Record<PropertyKey, never>;
         Returns: undefined;
       };
       list_conversations: {

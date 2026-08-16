@@ -25,7 +25,7 @@ import { RealtimeBanner } from '@/components/RealtimeBanner';
 import { ReportSheet } from '@/components/ReportSheet';
 import { VoiceRecorderBar } from '@/components/VoiceRecorderBar';
 import { AppText, Screen } from '@/components/ui';
-import { colors, gradients, radius, spacing } from '@/constants/theme';
+import { gradients, radius, spacing } from '@/constants/theme';
 import { useAppTheme } from '@/lib/theme';
 import { PendingGroupMessage, useGroupMessages } from '@/hooks/useGroupMessages';
 import { useAuth } from '@/lib/auth';
@@ -46,6 +46,7 @@ import {
  ReportCategory } from '@/lib/moderation';
 import { GroupChatInfo, GroupMemberInfo, GroupMessageFeed } from '@/types/database';
 import { pickCompressedVideo } from '@/utils/mediaCompression';
+import { useTypingIndicator } from '@/hooks/useTypingIndicator';
 
 interface ReplyState {
   messageId: string;
@@ -113,6 +114,7 @@ export default function GroupChatScreen() {
   }, []);
 
   const chat = useGroupMessages(chatId, resolveSender);
+  const { typingName, onTyping, onSendOrClear } = useTypingIndicator(chatId);
   const memberById = useRef<Record<string, GroupMemberInfo>>({});
   memberById.current = buildMemberMap(members);
 
@@ -307,6 +309,7 @@ export default function GroupChatScreen() {
   };
 
   const onSend = () => {
+    onSendOrClear();
     const text = input.trim();
     if (!text) {
       return;
@@ -624,12 +627,20 @@ export default function GroupChatScreen() {
             </View>
           ) : null}
 
+          {typingName ? (
+            <View style={styles.typingBar}>
+              <AppText variant="caption" color={colors.textSecondary} numberOfLines={1}>
+                {typingName} is typing...
+              </AppText>
+            </View>
+          ) : null}
+
           {voiceActive ? (
             <VoiceRecorderBar onSend={onVoiceSend} onCancel={() => setVoiceActive(false)} />
           ) : (
             <MessageInput
               value={input}
-              onChangeText={setInput}
+              onChangeText={(text) => { setInput(text); onTyping(); }}
               onSend={onSend}
               replyingTo={
                 replying
@@ -817,5 +828,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#FDEBEA',
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.xs,
+  },
+  typingBar: {
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xxs,
   },
 });

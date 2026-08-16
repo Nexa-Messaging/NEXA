@@ -10,6 +10,7 @@ import { AppText } from '@/components/ui/AppText';
 import { colors, radius, spacing } from '@/constants/theme';
 import { AuthProvider, useAuth } from '@/lib/auth';
 import { ThemeProvider, useAppTheme } from '@/lib/theme';
+import { usePresenceTracker } from '@/hooks/usePresence';
 
 export default function RootLayout() {
   return (
@@ -38,6 +39,7 @@ function ThemedStatusBar() {
 function RootNavigator() {
   const { isLoading, isConfigured, isAuthenticated } = useAuth();
   const { colors } = useAppTheme();
+  usePresenceTracker();
 
   if (!isConfigured) {
     return (

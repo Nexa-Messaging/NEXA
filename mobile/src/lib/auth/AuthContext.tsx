@@ -18,6 +18,8 @@ import {
 } from '@/lib/auth/errors';
 import { fetchProfileById } from '@/lib/profiles';
 import { installNotificationHandler, registerPushToken, unregisterPushToken } from '@/lib/push';
+import { stopPresenceTracking, updateLastSeen } from '@/lib/presence';
+import { cleanupTyping } from '@/lib/typing';
 import { SupabaseNotConfiguredError, getSupabase } from '@/lib/supabase';
 import { Profile } from '@/types/database';
 import { normalizeUsername } from '@/utils/validation';
@@ -111,6 +113,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
       setSession(nextSession);
       if (nextSession) {
         void loadProfile(nextSession.user.id);
+        void updateLastSeen();
         if (event === 'SIGNED_IN') {
           void registerPushToken();
         }
@@ -201,6 +204,8 @@ export function AuthProvider({ children }: PropsWithChildren) {
     // Clear local state immediately even though onAuthStateChange also fires.
     setSession(null);
     setProfile(null);
+    stopPresenceTracking();
+    cleanupTyping();
     return { error: null };
   }, []);
 

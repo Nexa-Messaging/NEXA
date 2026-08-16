@@ -25,7 +25,7 @@ import { RealtimeBanner } from '@/components/RealtimeBanner';
 import { ReportSheet } from '@/components/ReportSheet';
 import { VoiceRecorderBar } from '@/components/VoiceRecorderBar';
 import { AppText, Screen } from '@/components/ui';
-import { colors, gradients, radius, spacing } from '@/constants/theme';
+import { gradients, radius, spacing } from '@/constants/theme';
 import { useAppTheme } from '@/lib/theme';
 import { PendingMessage, useMessages } from '@/hooks/useMessages';
 import { useAuth } from '@/lib/auth';
@@ -37,6 +37,7 @@ import {
   resolveMediaUrl,
   unreactToMessage,
 } from '@/lib/messaging';
+import { fetchProfileById } from '@/lib/profiles';
 import {
   isConversationMuted,
   reportMessage,
@@ -44,6 +45,9 @@ import {
  ReportCategory } from '@/lib/moderation';
 import { MessageRow } from '@/types/database';
 import { pickCompressedVideo } from '@/utils/mediaCompression';
+import { timeAgoShort } from '@/utils/format';
+import { useTypingIndicator } from '@/hooks/useTypingIndicator';
+import { useIsOnline } from '@/hooks/usePresence';
 
 interface ReplyState {
   messageId: string;
@@ -61,6 +65,15 @@ function canEditMessage(createdAt: string): boolean {
   return diff < 10 * 60 * 1000; // 10 minutes
 }
 
+/** "Last seen 3m ago" → "Last seen Aug 4"; avoids "Last seen Just now". */
+function lastSeenLabel(iso: string): string {
+  const rel = timeAgoShort(iso);
+  if (rel === 'Just now') {
+    return 'Active just now';
+  }
+  return rel.includes(' ') ? `Last seen ${rel}` : `Last seen ${rel} ago`;
+}
+
 export default function ChatScreen() {
   const { colors } = useAppTheme();
   const params = useLocalSearchParams<{ conversationId: string }>();
@@ -69,12 +82,15 @@ export default function ChatScreen() {
   const meId = user?.id ?? '';
 
   const chat = useMessages(conversationId);
+  const { typingName, onTyping, onSendOrClear } = useTypingIndicator(conversationId);
   const [peer, setPeer] = useState<{
     id: string;
     displayName: string;
     username: string;
     avatarUrl: string | null;
   } | null>(null);
+  const [peerLastSeen, setPeerLastSeen] = useState<string | null>(null);
+  const peerOnline = useIsOnline(peer?.id);
   const [peerLoading, setPeerLoading] = useState(true);
   const [input, setInput] = useState('');
   const [replying, setReplying] = useState<ReplyState | null>(null);
@@ -165,8 +181,14 @@ export default function ChatScreen() {
           username: data.username,
           avatarUrl: data.avatar_url,
         });
+        void fetchProfileById(data.other_user_id).then(({ data: profile }) => {
+          if (active) {
+            setPeerLastSeen(profile?.last_seen_at ?? null);
+          }
+        });
       } else {
         setPeer(null);
+        setPeerLastSeen(null);
       }
     });
     return () => {
@@ -262,6 +284,7 @@ export default function ChatScreen() {
     if (!text) {
       return;
     }
+    onSendOrClear();
     if (editing) {
       void editMessage(editing.messageId, text).then((error) => {
         if (error) setActionError(error);
@@ -456,9 +479,14 @@ export default function ChatScreen() {
                 {peer ? peer.displayName : 'Loading…'}
               </AppText>
               {peer ? (
-                <AppText variant="caption" color={colors.surface} numberOfLines={1} style={styles.peerSub}>
-                  @{peer.username}
-                </AppText>
+                <View style={styles.peerStatusRow}>
+                  {peerOnline ? (
+                    <View style={styles.onlineDot} />
+                  ) : null}
+                  <AppText variant="caption" color={colors.surface} numberOfLines={1} style={styles.peerSub}>
+                    {peerOnline ? 'online' : peerLastSeen ? lastSeenLabel(peerLastSeen) : `@${peer.username}`}
+                  </AppText>
+                </View>
               ) : null}
             </View>
           </Pressable>
@@ -580,12 +608,20 @@ export default function ChatScreen() {
             </View>
           ) : null}
 
+          {typingName ? (
+            <View style={styles.typingBar}>
+              <AppText variant="caption" color={colors.textSecondary} numberOfLines={1}>
+                {typingName} is typing...
+              </AppText>
+            </View>
+          ) : null}
+
           {voiceActive ? (
             <VoiceRecorderBar onSend={onVoiceSend} onCancel={() => setVoiceActive(false)} />
           ) : (
             <MessageInput
               value={input}
-              onChangeText={setInput}
+              onChangeText={(text) => { setInput(text); onTyping(); }}
               onSend={onSend}
               replyingTo={
                 replying
@@ -782,5 +818,20 @@ const styles = StyleSheet.create({
     backgroundColor: '#FDEBEA',
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.xs,
+  },
+  typingBar: {
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xxs,
+  },
+  peerStatusRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  onlineDot: {
+    width: 7,
+    height: 7,
+    borderRadius: 4,
+    backgroundColor: '#17B978',
+    marginRight: 4,
   },
 });
