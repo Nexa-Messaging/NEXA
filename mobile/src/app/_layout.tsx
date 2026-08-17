@@ -1,11 +1,12 @@
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import React from 'react';
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import React, { useState } from 'react';
+import { StyleSheet, View } from 'react-native';
 
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import { PushNavigation } from '@/components/PushNavigation';
 import { Screen } from '@/components/ui';
+import { SplashScreen } from '@/components/ui/SplashScreen';
 import { AppText } from '@/components/ui/AppText';
 import { radius, spacing } from '@/constants/theme';
 import { AuthProvider, useAuth } from '@/lib/auth';
@@ -39,6 +40,7 @@ function ThemedStatusBar() {
 function RootNavigator() {
   const { isLoading, isConfigured, isAuthenticated } = useAuth();
   const { colors } = useAppTheme();
+  const [splashDone, setSplashDone] = useState(false);
   usePresenceTracker();
 
   if (!isConfigured) {
@@ -58,55 +60,50 @@ function RootNavigator() {
     );
   }
 
-  if (isLoading) {
-    return (
-      <Screen centered>
-        <ActivityIndicator size="large" color={colors.primary} />
-        <AppText variant="label" color={colors.textSecondary} style={{ marginTop: spacing.md }}>
-          Loading NEXA…
-        </AppText>
-      </Screen>
-    );
-  }
-
   return (
-    <Stack
-      screenOptions={{
-        headerShown: false,
-        contentStyle: { backgroundColor: colors.background },
-        animation: 'fade',
-      }}
-    >
-      <Stack.Protected guard={!isAuthenticated}>
-        <Stack.Screen name="(auth)" />
-      </Stack.Protected>
+    <View style={{ flex: 1, backgroundColor: colors.background }}>
+      <Stack
+        screenOptions={{
+          headerShown: false,
+          contentStyle: { backgroundColor: colors.background },
+          animation: 'fade',
+        }}
+      >
+        <Stack.Protected guard={!isAuthenticated}>
+          <Stack.Screen name="(auth)" />
+        </Stack.Protected>
 
-      <Stack.Protected guard={isAuthenticated}>
-        <Stack.Screen name="(tabs)" />
-        <Stack.Screen
-          name="edit-profile"
-          options={{ animation: 'fade_from_bottom' }}
-        />
-        <Stack.Screen name="users/[username]" options={{ animation: 'slide_from_right' }} />
-        <Stack.Screen name="notifications" options={{ animation: 'slide_from_right' }} />
-        <Stack.Screen name="friends" options={{ animation: 'slide_from_right' }} />
-        <Stack.Screen name="new-chat" options={{ animation: 'slide_from_bottom' }} />
-        <Stack.Screen name="new-group" options={{ animation: 'slide_from_bottom' }} />
-        <Stack.Screen name="search" options={{ animation: 'slide_from_right' }} />
-        <Stack.Screen name="chat/[conversationId]" options={{ animation: 'slide_from_right' }} />
-        <Stack.Screen name="group/[chatId]" options={{ animation: 'slide_from_right' }} />
-        <Stack.Screen name="group-info/[chatId]" options={{ animation: 'slide_from_right' }} />
-        <Stack.Screen name="community/[communityId]" options={{ animation: 'slide_from_right' }} />
-        <Stack.Screen name="community-info/[communityId]" options={{ animation: 'slide_from_right' }} />
-        <Stack.Screen name="channel/[channelId]" options={{ animation: 'slide_from_right' }} />
-        <Stack.Screen name="polls/[communityId]" options={{ animation: 'slide_from_right' }} />
-        <Stack.Screen name="new-poll/[communityId]" options={{ animation: 'slide_from_bottom' }} />
-        <Stack.Screen name="events/[communityId]" options={{ animation: 'slide_from_right' }} />
-        <Stack.Screen name="event/[eventId]" options={{ animation: 'slide_from_right' }} />
-        <Stack.Screen name="new-event/[communityId]" options={{ animation: 'slide_from_bottom' }} />
-        <Stack.Screen name="settings/appearance" options={{ animation: 'slide_from_right' }} />
-      </Stack.Protected>
-    </Stack>
+        <Stack.Protected guard={isAuthenticated}>
+          <Stack.Screen name="(tabs)" />
+          <Stack.Screen
+            name="edit-profile"
+            options={{ animation: 'fade_from_bottom' }}
+          />
+          <Stack.Screen name="users/[username]" options={{ animation: 'slide_from_right' }} />
+          <Stack.Screen name="notifications" options={{ animation: 'slide_from_right' }} />
+          <Stack.Screen name="friends" options={{ animation: 'slide_from_right' }} />
+          <Stack.Screen name="new-chat" options={{ animation: 'slide_from_bottom' }} />
+          <Stack.Screen name="new-group" options={{ animation: 'slide_from_bottom' }} />
+          <Stack.Screen name="search" options={{ animation: 'slide_from_right' }} />
+          <Stack.Screen name="chat/[conversationId]" options={{ animation: 'slide_from_right' }} />
+          <Stack.Screen name="group/[chatId]" options={{ animation: 'slide_from_right' }} />
+          <Stack.Screen name="group-info/[chatId]" options={{ animation: 'slide_from_right' }} />
+          <Stack.Screen name="community/[communityId]" options={{ animation: 'slide_from_right' }} />
+          <Stack.Screen name="community-info/[communityId]" options={{ animation: 'slide_from_right' }} />
+          <Stack.Screen name="channel/[channelId]" options={{ animation: 'slide_from_right' }} />
+          <Stack.Screen name="polls/[communityId]" options={{ animation: 'slide_from_right' }} />
+          <Stack.Screen name="new-poll/[communityId]" options={{ animation: 'slide_from_bottom' }} />
+          <Stack.Screen name="events/[communityId]" options={{ animation: 'slide_from_right' }} />
+          <Stack.Screen name="event/[eventId]" options={{ animation: 'slide_from_right' }} />
+          <Stack.Screen name="new-event/[communityId]" options={{ animation: 'slide_from_bottom' }} />
+          <Stack.Screen name="settings/appearance" options={{ animation: 'slide_from_right' }} />
+        </Stack.Protected>
+      </Stack>
+
+      {!splashDone ? (
+        <SplashScreen ready={!isLoading} onDone={() => setSplashDone(true)} />
+      ) : null}
+    </View>
   );
 }
 
