@@ -9,7 +9,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 
 import { AppText } from '@/components/ui/AppText';
-import { colors, radius, spacing, typography } from '@/constants/theme';
+import { radius, spacing, typography } from '@/constants/theme';
 import { useAppTheme } from '@/lib/theme';
 
 export interface FormFieldProps extends TextInputProps {
@@ -41,7 +41,7 @@ export function FormField({
   const [hidden, setHidden] = useState(secure);
 
   const borderColor = error ? colors.danger : isFocused ? colors.primary : colors.border;
-  const backgroundColor = isFocused ? colors.surface : colors.surface;
+  const backgroundColor = isFocused ? colors.surface : colors.inputBg;
 
   return (
     <View style={styles.container}>
@@ -51,7 +51,7 @@ export function FormField({
 
       <View style={[styles.inputRow, { borderColor, backgroundColor }]}>
         <TextInput
-          style={styles.input}
+          style={[styles.input, { color: colors.text }]}
           placeholderTextColor={colors.textMuted}
           secureTextEntry={hidden}
           editable={editable}
@@ -113,7 +113,6 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     height: 54,
-    color: colors.text,
     fontSize: typography.body,
   },
   toggle: {

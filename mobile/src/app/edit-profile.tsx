@@ -5,7 +5,7 @@ import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { AvatarPicker, PickedAsset } from '@/components/AvatarPicker';
 import { AppButton, AppText, FormField, Screen } from '@/components/ui';
-import { colors, radius, spacing } from '@/constants/theme';
+import { radius, spacing } from '@/constants/theme';
 import { useAppTheme } from '@/lib/theme';
 import { useAuth } from '@/lib/auth';
 import { isUsernameTaken, updateOwnAvatar, updateOwnProfile } from '@/lib/profiles';
@@ -208,7 +208,7 @@ export default function EditProfileScreen() {
         />
 
         {formError ? (
-          <View style={styles.errorBanner}>
+          <View style={[styles.errorBanner, { backgroundColor: colors.dangerSoft }]}>
             <Ionicons name="alert-circle" size={18} color={colors.danger} />
             <AppText variant="label" color={colors.danger} style={styles.errorBannerText}>
               {formError}
@@ -318,7 +318,6 @@ const styles = StyleSheet.create({
   errorBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FDECEA',
     borderRadius: radius.md,
     padding: spacing.sm,
     marginTop: spacing.md,

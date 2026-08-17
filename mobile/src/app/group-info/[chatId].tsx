@@ -306,7 +306,7 @@ export default function GroupInfoScreen() {
     const roleToggleable = isOwner && !isMe && item.role !== 'owner';
 
     return (
-      <View style={styles.memberRow}>
+      <View style={[styles.memberRow, { borderBottomColor: colors.border }]}>
         <Avatar uri={item.avatar_url} name={item.display_name} size={44} />
         <View style={styles.memberText}>
           <View style={styles.memberNameLine}>
@@ -323,7 +323,7 @@ export default function GroupInfoScreen() {
             @{item.username}
           </AppText>
         </View>
-        <View style={styles.memberBadge}>
+        <View style={[styles.memberBadge, { backgroundColor: colors.primarySoft }]}>
           <AppText variant="caption" weight="semibold" color={colors.primary}>
             {ROLE_LABEL[item.role as GroupRole] ?? item.role}
           </AppText>
@@ -413,7 +413,7 @@ export default function GroupInfoScreen() {
         </AppText>
 
         {error ? (
-          <View style={styles.errorBanner}>
+          <View style={[styles.errorBanner, { backgroundColor: colors.dangerSoft }]}>
             <Ionicons name="alert-circle" size={18} color={colors.danger} />
             <AppText variant="label" color={colors.danger} style={styles.errorBannerText}>
               {error}
@@ -455,7 +455,7 @@ export default function GroupInfoScreen() {
         </AppText>
 
         {canManage ? (
-          <View style={styles.settingsCard}>
+          <View style={[styles.settingsCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
             <SettingRow icon="create-outline" label="Rename group" onPress={openRename} disabled={busy} />
           </View>
         ) : null}
@@ -485,13 +485,13 @@ export default function GroupInfoScreen() {
 
       {renameOpen ? (
         <Modal visible transparent animationType="fade" onRequestClose={() => setRenameOpen(false)}>
-          <Pressable accessibilityRole="button" accessibilityLabel="Close" style={styles.backdrop} onPress={() => setRenameOpen(false)}>
-            <Pressable style={styles.dialog} onPress={() => {}}>
+          <Pressable accessibilityRole="button" accessibilityLabel="Close" style={[styles.backdrop, { backgroundColor: colors.overlay }]} onPress={() => setRenameOpen(false)}>
+            <Pressable style={[styles.dialog, { backgroundColor: colors.surface }]} onPress={() => {}}>
               <AppText variant="label" weight="semibold" color={colors.textSecondary} style={styles.dialogTitle}>
                 RENAME GROUP
               </AppText>
               <TextInput
-                style={styles.dialogInput}
+                style={[styles.dialogInput, { backgroundColor: colors.surfaceMuted, color: colors.text }]}
                 value={nameDraft}
                 onChangeText={setNameDraft}
                 placeholder="Group name"
@@ -520,8 +520,8 @@ export default function GroupInfoScreen() {
 
       {addingOpen ? (
         <Modal visible transparent animationType="fade" onRequestClose={() => setAddingOpen(false)}>
-          <Pressable accessibilityRole="button" accessibilityLabel="Close" style={styles.backdrop} onPress={() => setAddingOpen(false)}>
-            <Pressable style={[styles.dialog, styles.addDialog]} onPress={() => {}}>
+          <Pressable accessibilityRole="button" accessibilityLabel="Close" style={[styles.backdrop, { backgroundColor: colors.overlay }]} onPress={() => setAddingOpen(false)}>
+            <Pressable style={[styles.dialog, styles.addDialog, { backgroundColor: colors.surface }]} onPress={() => {}}>
               <AppText variant="label" weight="semibold" color={colors.textSecondary} style={styles.dialogTitle}>
                 ADD MEMBERS
               </AppText>
@@ -543,7 +543,7 @@ export default function GroupInfoScreen() {
                         key={friend.user_id}
                         accessibilityRole="checkbox"
                         accessibilityState={{ checked: selected }}
-                        style={styles.friendRow}
+                        style={[styles.friendRow, { borderBottomColor: colors.border }]}
                         onPress={() =>
                           setSelectedIds((prev) => {
                             const next = new Set(prev);
@@ -647,7 +647,6 @@ const styles = StyleSheet.create({
   errorBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FDECEA',
     borderRadius: radius.md,
     padding: spacing.sm,
     marginTop: spacing.md,
@@ -669,7 +668,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: spacing.sm,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
   },
   memberText: {
     flex: 1,
@@ -681,7 +679,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   memberBadge: {
-    backgroundColor: colors.primarySoft,
     borderRadius: radius.pill,
     paddingHorizontal: spacing.sm,
     paddingVertical: 3,
@@ -697,10 +694,8 @@ const styles = StyleSheet.create({
     marginTop: spacing.sm,
   },
   settingsCard: {
-    backgroundColor: colors.surface,
     borderRadius: radius.md,
     borderWidth: 1,
-    borderColor: colors.border,
     marginTop: spacing.xs,
   },
   settingRow: {
@@ -715,12 +710,10 @@ const styles = StyleSheet.create({
   },
   backdrop: {
     flex: 1,
-    backgroundColor: colors.overlay,
     justifyContent: 'center',
     paddingHorizontal: spacing.lg,
   },
   dialog: {
-    backgroundColor: colors.surface,
     borderRadius: radius.lg,
     padding: spacing.lg,
   },
@@ -731,11 +724,9 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   dialogInput: {
-    backgroundColor: colors.surfaceMuted,
     borderRadius: radius.md,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
-    color: colors.text,
   },
   dialogButtons: {
     flexDirection: 'row',
@@ -757,7 +748,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: spacing.sm,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
   },
   friendText: {
     flex: 1,

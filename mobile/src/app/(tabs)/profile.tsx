@@ -6,7 +6,7 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 
 import { Avatar } from '@/components/Avatar';
 import { AppButton, AppText, Card, Screen } from '@/components/ui';
-import { colors, gradients, radius, spacing } from '@/constants/theme';
+import { gradients, radius, spacing } from '@/constants/theme';
 import { useAppTheme } from '@/lib/theme';
 import { useAuth } from '@/lib/auth';
 import { formatDateJoined } from '@/utils/format';
@@ -39,10 +39,10 @@ export default function ProfileScreen() {
           end={{ x: 1, y: 1 }}
           style={styles.hero}
         >
-          <AppText variant="caption" weight="bold" color={colors.surface} style={styles.heroLabel}>
+          <AppText variant="caption" weight="bold" color={colors.headerText} style={styles.heroLabel}>
             YOUR SPACE ✦
           </AppText>
-          <AppText variant="display" weight="bold" color={colors.surface}>
+          <AppText variant="display" weight="bold" color={colors.headerText}>
             Profile
           </AppText>
         </LinearGradient>
@@ -57,7 +57,7 @@ export default function ProfileScreen() {
               <AppText variant="body" tone="secondary">
                 @{username}
               </AppText>
-              <View style={styles.joinedSticker}>
+              <View style={[styles.joinedSticker, { backgroundColor: colors.mintSoft }]}>
                 <AppText variant="caption" weight="bold" color={colors.mint}>
                   {formatDateJoined(profile?.created_at)}
                 </AppText>
@@ -144,8 +144,8 @@ function ProfileInfoRow({
     return null;
   }
   return (
-    <View style={styles.infoRow}>
-      <View style={styles.infoIcon}>
+    <View style={[styles.infoRow, { borderTopColor: colors.border }]}>
+      <View style={[styles.infoIcon, { backgroundColor: colors.primarySoft }]}>
         <Ionicons name={icon} size={16} color={colors.primary} />
       </View>
       <AppText variant="label" tone="secondary" style={styles.infoLabel}>
@@ -195,7 +195,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.sm,
     paddingVertical: 2,
     borderRadius: radius.pill,
-    backgroundColor: colors.mintSoft,
   },
   bio: {
     marginTop: spacing.md,
@@ -207,13 +206,11 @@ const styles = StyleSheet.create({
     marginTop: spacing.md,
     paddingTop: spacing.md,
     borderTopWidth: 1,
-    borderTopColor: colors.border,
   },
   infoIcon: {
     width: 30,
     height: 30,
     borderRadius: radius.pill,
-    backgroundColor: colors.primarySoft,
     alignItems: 'center',
     justifyContent: 'center',
   },

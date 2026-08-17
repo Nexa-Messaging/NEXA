@@ -61,13 +61,13 @@ export function ReportSheet({
       <Pressable
         accessibilityRole="button"
         accessibilityLabel="Close"
-        style={styles.backdrop}
+        style={[styles.backdrop, { backgroundColor: colors.overlay }]}
         onPress={() => {
           reset();
           onClose();
         }}
       >
-        <Pressable style={styles.sheet} onPress={() => {}}>
+        <Pressable style={[styles.sheet, { backgroundColor: colors.surface }]} onPress={() => {}}>
           <AppText variant="label" weight="semibold" color={colors.textSecondary} align="center">
             {title.toUpperCase()}
           </AppText>
@@ -82,11 +82,11 @@ export function ReportSheet({
                 <Pressable
                   key={item}
                   accessibilityRole="button"
-                  style={[styles.category, selected && styles.categorySelected]}
+                  style={[styles.category, { backgroundColor: colors.surfaceMuted }, selected && [styles.categorySelected, { backgroundColor: colors.primarySoft }]]}
                   onPress={() => setCategory(item)}
                 >
                   <View
-                    style={[styles.radio, selected && styles.radioSelected]}
+                    style={[styles.radio, { borderColor: colors.textMuted }, selected && styles.radioSelected]}
                     testID={`report-category-${item}`}
                   />
                   <AppText
@@ -102,7 +102,7 @@ export function ReportSheet({
           </ScrollView>
 
           <TextInput
-            style={styles.details}
+            style={[styles.details, { borderColor: colors.border, backgroundColor: colors.surfaceMuted, color: colors.text }]}
             placeholder="Add details (optional)"
             placeholderTextColor={colors.textMuted}
             value={details}
@@ -121,7 +121,7 @@ export function ReportSheet({
           <View style={styles.actions}>
             <Pressable
               accessibilityRole="button"
-              style={[styles.button, styles.cancel]}
+              style={[styles.button, styles.cancel, { backgroundColor: colors.surfaceMuted }]}
               disabled={submitting}
               onPress={() => {
                 reset();
@@ -134,7 +134,7 @@ export function ReportSheet({
             </Pressable>
             <Pressable
               accessibilityRole="button"
-              style={[styles.button, styles.submit, !category && styles.buttonDisabled]}
+              style={[styles.button, styles.submit, !category && [styles.buttonDisabled, { backgroundColor: colors.surfaceMuted }]]}
               disabled={!category || submitting}
               onPress={submit}
             >
@@ -156,11 +156,9 @@ export function ReportSheet({
 const styles = StyleSheet.create({
   backdrop: {
     flex: 1,
-    backgroundColor: colors.overlay,
     justifyContent: 'flex-end',
   },
   sheet: {
-    backgroundColor: colors.surface,
     borderTopLeftRadius: radius.lg,
     borderTopRightRadius: radius.lg,
     padding: spacing.lg,
@@ -184,17 +182,13 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.md,
     borderRadius: radius.md,
-    backgroundColor: colors.surfaceMuted,
   },
-  categorySelected: {
-    backgroundColor: colors.primarySoft,
-  },
+  categorySelected: {},
   radio: {
     width: 18,
     height: 18,
     borderRadius: 9,
     borderWidth: 2,
-    borderColor: colors.textMuted,
     marginRight: spacing.sm,
   },
   radioSelected: {
@@ -206,11 +200,8 @@ const styles = StyleSheet.create({
     marginTop: spacing.md,
     borderRadius: radius.md,
     borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.surfaceMuted,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
-    color: colors.text,
     textAlignVertical: 'top',
     fontSize: 14,
   },
@@ -230,13 +221,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginHorizontal: spacing.xxs,
   },
-  cancel: {
-    backgroundColor: colors.surfaceMuted,
-  },
+  cancel: {},
   submit: {
     backgroundColor: colors.danger,
   },
-  buttonDisabled: {
-    backgroundColor: colors.surfaceMuted,
-  },
+  buttonDisabled: {},
 });

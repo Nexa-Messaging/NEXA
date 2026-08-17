@@ -179,7 +179,7 @@ export default function SearchScreen() {
         {showAvatar ? (
           <Avatar uri={avatarUri} name={item.title} size={46} />
         ) : (
-          <View style={styles.resultIcon}>
+          <View style={[styles.resultIcon, { backgroundColor: colors.primarySoft }]}>
             <Ionicons
               name={RESULT_ICONS[item.category]}
               size={22}
@@ -213,7 +213,7 @@ export default function SearchScreen() {
       style={styles.row}
       onPress={() => runRecent(item.query)}
     >
-      <View style={styles.resultIcon}>
+      <View style={[styles.resultIcon, { backgroundColor: colors.primarySoft }]}>
         <Ionicons name="time-outline" size={20} color={colors.textMuted} />
       </View>
       <AppText variant="body" numberOfLines={1} style={styles.resultText}>
@@ -235,14 +235,14 @@ export default function SearchScreen() {
         >
           <Ionicons name="arrow-back" size={22} color={colors.text} />
         </Pressable>
-        <View style={styles.searchBox}>
+        <View style={[styles.searchBox, { backgroundColor: colors.surfaceMuted }]}>
           <Ionicons name="search" size={18} color={colors.textMuted} />
           <TextInput
             value={query}
             onChangeText={setQuery}
             placeholder="Search NEXA…"
             placeholderTextColor={colors.textMuted}
-            style={styles.input}
+            style={[styles.input, { color: colors.text }]}
             autoFocus
             autoCorrect={false}
             autoCapitalize="none"
@@ -257,7 +257,7 @@ export default function SearchScreen() {
         </View>
       </View>
 
-      <View style={styles.tabs}>
+      <View style={[styles.tabs, { borderBottomColor: colors.border }]}>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -269,7 +269,7 @@ export default function SearchScreen() {
               <Pressable
                 key={tab.key}
                 accessibilityRole="button"
-                style={[styles.tab, active && styles.tabActive]}
+                style={[styles.tab, { backgroundColor: colors.surfaceMuted }, active && styles.tabActive]}
                 onPress={() => setCategory(tab.key)}
               >
                 <Ionicons
@@ -374,7 +374,6 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.surfaceMuted,
     borderRadius: radius.pill,
     paddingHorizontal: spacing.sm,
     height: 40,
@@ -382,13 +381,11 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     marginHorizontal: spacing.xs,
-    color: colors.text,
     fontSize: 16,
     padding: 0,
   },
   tabs: {
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
   },
   tabsContent: {
     paddingHorizontal: spacing.md,
@@ -402,7 +399,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.sm,
     paddingVertical: spacing.xs,
     borderRadius: radius.pill,
-    backgroundColor: colors.surfaceMuted,
   },
   tabActive: {
     backgroundColor: colors.primary,
@@ -422,7 +418,6 @@ const styles = StyleSheet.create({
     width: 46,
     height: 46,
     borderRadius: 23,
-    backgroundColor: colors.primarySoft,
     alignItems: 'center',
     justifyContent: 'center',
   },

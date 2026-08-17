@@ -3,7 +3,7 @@ import React from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { AppText } from '@/components/ui/AppText';
-import { colors, radius, spacing } from '@/constants/theme';
+import { radius, spacing } from '@/constants/theme';
 import { useAppTheme } from '@/lib/theme';
 
 export interface EmptyStateProps {
@@ -22,7 +22,7 @@ export function EmptyState({ icon = 'sparkles-outline', title, description, acti
   const { colors } = useAppTheme();
   return (
     <View style={styles.container}>
-      <View style={styles.badge}>
+      <View style={[styles.badge, { backgroundColor: colors.primarySoft }]}>
         <Ionicons name={icon} size={34} color={colors.primary} />
       </View>
       <AppText variant="heading" weight="bold" align="center">
@@ -48,7 +48,6 @@ const styles = StyleSheet.create({
     width: 76,
     height: 76,
     borderRadius: radius.blob,
-    backgroundColor: colors.primarySoft,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: spacing.md,

@@ -210,7 +210,7 @@ export default function NewPollScreen() {
               key={choice.label}
               accessibilityRole="button"
               onPress={() => setExpiryMs(choice.ms)}
-              style={[styles.chip, active && styles.chipActive]}
+              style={[styles.chip, { borderColor: colors.border, backgroundColor: colors.surface }, active && styles.chipActive]}
             >
               <AppText
                 variant="caption"
@@ -300,12 +300,10 @@ const styles = StyleSheet.create({
   chip: {
     borderRadius: radius.pill,
     borderWidth: 1,
-    borderColor: colors.border,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.xs,
     marginRight: spacing.xs,
     marginBottom: spacing.xs,
-    backgroundColor: colors.surface,
   },
   chipActive: {
     backgroundColor: colors.primary,

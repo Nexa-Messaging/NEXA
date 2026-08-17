@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { AppButton, AppText, FormField, GradientText, Screen } from '@/components/ui';
-import { colors, radius, spacing } from '@/constants/theme';
+import { radius, spacing } from '@/constants/theme';
 import { useAppTheme } from '@/lib/theme';
 import { useAuth } from '@/lib/auth';
 import { validateEmail, validatePassword } from '@/utils/validation';
@@ -83,7 +83,7 @@ export default function LoginScreen() {
         </AppText>
 
         {formError ? (
-          <View style={styles.errorBanner}>
+          <View style={[styles.errorBanner, { backgroundColor: colors.dangerSoft }]}>
             <Ionicons name="alert-circle" size={18} color={colors.danger} />
             <AppText variant="label" tone="danger" style={styles.errorBannerText}>
               {formError}
@@ -168,7 +168,6 @@ const styles = StyleSheet.create({
   errorBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FDE9ED',
     borderRadius: radius.md,
     padding: spacing.sm,
     marginBottom: spacing.md,

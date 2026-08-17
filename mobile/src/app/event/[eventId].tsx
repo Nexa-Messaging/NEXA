@@ -13,7 +13,7 @@ import {
 
 import { AppText, AppButton, Screen } from '@/components/ui';
 import { RealtimeBanner } from '@/components/RealtimeBanner';
-import { colors, radius, spacing } from '@/constants/theme';
+import { radius, spacing } from '@/constants/theme';
 import { useAppTheme } from '@/lib/theme';
 import { useAuth } from '@/lib/auth';
 import {
@@ -239,7 +239,7 @@ export default function EventDetailScreen() {
               </View>
               <View style={styles.countsRow}>
                 {RESPONSES.map((response) => (
-                  <View key={response} style={styles.countChip}>
+                  <View key={response} style={[styles.countChip, { backgroundColor: colors.surfaceMuted }]}>
                     <AppText variant="heading" weight="bold" color={colors.primary}>
                       {response === 'going' ? event.going_count : response === 'maybe' ? event.maybe_count : event.not_going_count}
                     </AppText>
@@ -351,7 +351,6 @@ const styles = StyleSheet.create({
   countChip: {
     flex: 1,
     alignItems: 'center',
-    backgroundColor: colors.surfaceMuted,
     borderRadius: radius.md,
     paddingVertical: spacing.sm,
     marginRight: spacing.xs,

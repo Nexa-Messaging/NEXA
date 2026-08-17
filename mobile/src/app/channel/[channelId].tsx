@@ -25,7 +25,7 @@ import { RealtimeBanner } from '@/components/RealtimeBanner';
 import { ReportSheet } from '@/components/ReportSheet';
 import { VoiceRecorderBar } from '@/components/VoiceRecorderBar';
 import { AppText, Screen } from '@/components/ui';
-import { colors, gradients, radius, spacing } from '@/constants/theme';
+import { gradients, radius, spacing } from '@/constants/theme';
 import { useAppTheme } from '@/lib/theme';
 import { PendingCommunityMessage, useCommunityMessages } from '@/hooks/useCommunityMessages';
 import { useAuth } from '@/lib/auth';
@@ -498,7 +498,7 @@ export default function ChannelChatScreen() {
             onPress={() => router.back()}
             accessibilityLabel="Back"
           >
-            <Ionicons name="arrow-back" size={22} color={colors.surface} />
+            <Ionicons name="arrow-back" size={22} color={colors.headerText} />
           </Pressable>
           <Pressable
             accessibilityRole="button"
@@ -514,11 +514,11 @@ export default function ChannelChatScreen() {
           >
             <Avatar uri={null} name={channel?.name} size={36} />
             <View style={styles.peerText}>
-              <AppText variant="body" weight="bold" color={colors.surface} numberOfLines={1}>
+              <AppText variant="body" weight="bold" color={colors.headerText} numberOfLines={1}>
                 {channel ? channel.name : 'Loading…'}
               </AppText>
               {channel ? (
-                <AppText variant="caption" color={colors.surface} numberOfLines={1} style={styles.peerSub}>
+                <AppText variant="caption" color={colors.headerText} numberOfLines={1} style={styles.peerSub}>
                   {channel.community_name}
                   {canPost ? '' : ' · read only'}
                 </AppText>
@@ -611,7 +611,7 @@ export default function ChannelChatScreen() {
           )}
 
           {chat.sendError ? (
-            <View style={styles.sendErrorBar}>
+            <View style={[styles.sendErrorBar, { backgroundColor: colors.dangerSoft }]}>
               <AppText variant="caption" color={colors.danger} style={styles.flex}>
                 {chat.sendError}
               </AppText>
@@ -622,7 +622,7 @@ export default function ChannelChatScreen() {
           ) : null}
 
           {actionError ? (
-            <View style={styles.sendErrorBar}>
+            <View style={[styles.sendErrorBar, { backgroundColor: colors.dangerSoft }]}>
               <AppText variant="caption" color={colors.danger} style={styles.flex}>
                 {actionError}
               </AppText>
@@ -658,7 +658,7 @@ export default function ChannelChatScreen() {
               />
             )
           ) : (
-            <View style={styles.readOnlyBar}>
+            <View style={[styles.readOnlyBar, { backgroundColor: colors.surfaceMuted }]}>
               <Ionicons name="lock-closed" size={14} color={colors.textSecondary} />
               <AppText variant="caption" color={colors.textSecondary} style={styles.readOnlyText}>
                 Only admins can post in this channel.
@@ -836,7 +836,6 @@ const styles = StyleSheet.create({
   sendErrorBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FDEBEA',
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.xs,
   },
@@ -845,7 +844,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: spacing.sm,
-    backgroundColor: colors.surfaceMuted,
   },
   readOnlyText: {
     marginLeft: spacing.xs,

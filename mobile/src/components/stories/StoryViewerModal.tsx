@@ -398,16 +398,16 @@ export function StoryViewerModal({
 
           <View style={styles.header}>
             <Pressable accessibilityRole="button" accessibilityLabel="Close story" hitSlop={12} onPress={onClose} style={styles.headerButton}>
-              <Ionicons name="chevron-down" size={26} color={colors.surface} />
+              <Ionicons name="chevron-down" size={26} color={colors.headerText} />
             </Pressable>
             {story ? (
               <>
                 <Avatar uri={entry?.avatar_url} name={entry?.display_name} size={34} />
                 <View style={styles.headerIdentity}>
-                  <AppText variant="label" weight="semibold" color={colors.surface} numberOfLines={1}>
+                  <AppText variant="label" weight="semibold" color={colors.headerText} numberOfLines={1}>
                     {entry?.display_name}
                   </AppText>
-                  <AppText variant="caption" color={colors.surface} style={styles.headerTime}>
+                  <AppText variant="caption" color={colors.headerText} style={styles.headerTime}>
                     {timeAgo(story.created_at)}
                     {isMine ? ` · ${story.view_count} ${story.view_count === 1 ? 'view' : 'views'}` : ''}
                   </AppText>
@@ -418,10 +418,10 @@ export function StoryViewerModal({
               {isMine ? (
                 <>
                   <Pressable accessibilityRole="button" accessibilityLabel="View story insights" hitSlop={8} onPress={() => void openInsights()} style={styles.headerButton}>
-                    <Ionicons name="eye-outline" size={22} color={colors.surface} />
+                    <Ionicons name="eye-outline" size={22} color={colors.headerText} />
                   </Pressable>
                   <Pressable accessibilityRole="button" accessibilityLabel="Delete story" hitSlop={8} onPress={confirmDelete} style={styles.headerButton}>
-                    <Ionicons name="trash-outline" size={22} color={colors.surface} />
+                    <Ionicons name="trash-outline" size={22} color={colors.headerText} />
                   </Pressable>
                 </>
               ) : (
@@ -435,7 +435,7 @@ export function StoryViewerModal({
                   }}
                   style={styles.headerButton}
                 >
-                  <Ionicons name="chatbubble-outline" size={22} color={colors.surface} />
+                  <Ionicons name="chatbubble-outline" size={22} color={colors.headerText} />
                 </Pressable>
               )}
             </View>
@@ -445,7 +445,7 @@ export function StoryViewerModal({
         {/* Caption for media stories */}
         {story && !isMine && story.kind !== 'text' && story.body ? (
           <View style={styles.captionOverlay} pointerEvents="none">
-            <AppText variant="body" color={colors.surface} style={styles.captionText}>
+            <AppText variant="body" color={colors.headerText} style={styles.captionText}>
               {story.body}
             </AppText>
           </View>
@@ -455,8 +455,8 @@ export function StoryViewerModal({
         <View style={styles.bottomOverlay} pointerEvents="box-none">
           {isMine ? (
             <Pressable accessibilityRole="button" hitSlop={8} onPress={() => void openInsights()} style={styles.insightsButton}>
-              <Ionicons name="people-outline" size={16} color={colors.surface} />
-              <AppText variant="caption" weight="semibold" color={colors.surface}>
+              <Ionicons name="people-outline" size={16} color={colors.headerText} />
+              <AppText variant="caption" weight="semibold" color={colors.headerText}>
                 Seen by {story ? story.view_count : 0}
               </AppText>
             </Pressable>
@@ -489,11 +489,11 @@ export function StoryViewerModal({
             ) : null}
             <View style={styles.replyRow}>
               <TextInput
-                style={styles.replyInput}
+style={[styles.replyInput, { color: colors.headerText }]}
                 value={replyText}
                 onChangeText={setReplyText}
-                placeholder={`Reply to ${entry?.display_name ?? 'story'}…`}
-                placeholderTextColor={colors.textMuted}
+                placeholder="Reply to their story…"
+                placeholderTextColor="rgba(255,255,255,0.55)"
                 multiline
                 maxLength={2000}
                 accessibilityLabel="Story reply"
@@ -506,9 +506,9 @@ export function StoryViewerModal({
                 style={[styles.sendButton, (!replyText.trim() || sendingReply) && styles.sendButtonDisabled]}
               >
                 {sendingReply ? (
-                  <ActivityIndicator size="small" color={colors.surface} />
+                  <ActivityIndicator size="small" color={colors.headerText} />
                 ) : (
-                  <Ionicons name="arrow-back" size={18} color={colors.surface} style={styles.sendArrow} />
+                  <Ionicons name="arrow-back" size={18} color={colors.headerText} style={styles.sendArrow} />
                 )}
               </Pressable>
             </View>
@@ -518,8 +518,8 @@ export function StoryViewerModal({
         {/* Insights sheet (own stories) */}
         {insightsOpen ? (
           <Modal visible transparent animationType="slide" onRequestClose={() => setInsightsOpen(false)}>
-            <Pressable style={styles.sheetBackdrop} onPress={() => setInsightsOpen(false)}>
-              <Pressable style={styles.sheet} onPress={() => {}}>
+            <Pressable style={[styles.sheetBackdrop, { backgroundColor: colors.overlay }]} onPress={() => setInsightsOpen(false)}>
+              <Pressable style={[styles.sheet, { backgroundColor: colors.sheetBg }]} onPress={() => {}}>
                 <AppText variant="label" weight="semibold" color={colors.textSecondary} align="center">
                   SEEN BY {story ? story.view_count : 0}
                 </AppText>
@@ -607,7 +607,7 @@ function StoryContent({
         <View style={styles.textStoryBlob}>
           <Ionicons name="sparkles" size={30} color="rgba(255,255,255,0.5)" />
         </View>
-        <AppText variant="display" weight="bold" color={colors.surface} align="center" style={styles.textStoryBody}>
+        <AppText variant="display" weight="bold" color={colors.headerText} align="center" style={styles.textStoryBody}>
           {story.body}
         </AppText>
       </LinearGradient>
@@ -616,7 +616,7 @@ function StoryContent({
   if (!url) {
     return (
       <View style={styles.loadingArea}>
-        <ActivityIndicator size="large" color={colors.surface} />
+        <ActivityIndicator size="large" color={colors.headerText} />
       </View>
     );
   }
@@ -792,7 +792,6 @@ const styles = StyleSheet.create({
   replyInput: {
     flex: 1,
     backgroundColor: 'rgba(255,255,255,0.12)',
-    color: colors.surface,
     borderRadius: radius.lg,
     paddingHorizontal: spacing.md,
     paddingTop: spacing.sm,
@@ -849,11 +848,9 @@ const styles = StyleSheet.create({
   },
   sheetBackdrop: {
     flex: 1,
-    backgroundColor: colors.overlay,
     justifyContent: 'flex-end',
   },
   sheet: {
-    backgroundColor: colors.surface,
     borderTopLeftRadius: radius.lg,
     borderTopRightRadius: radius.lg,
     padding: spacing.lg,

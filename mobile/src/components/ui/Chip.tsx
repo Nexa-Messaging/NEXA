@@ -3,28 +3,44 @@ import React from 'react';
 import { Pressable, PressableProps, StyleProp, StyleSheet, ViewStyle } from 'react-native';
 
 import { AppText } from '@/components/ui/AppText';
-import { colors, radius } from '@/constants/theme';
+import { radius } from '@/constants/theme';
 import { useAppTheme } from '@/lib/theme';
 
 export type ChipTone = 'primary' | 'pink' | 'mint' | 'sun' | 'sky' | 'neutral';
 
-const TONE_BG: Record<ChipTone, string> = {
-  primary: colors.primarySoft,
-  pink: colors.pinkSoft,
-  mint: colors.mintSoft,
-  sun: colors.sunSoft,
-  sky: colors.skySoft,
-  neutral: colors.surfaceMuted,
-};
+function toneBg(colors: ReturnType<typeof useAppTheme>['colors'], tone: ChipTone): string {
+  switch (tone) {
+    case 'primary':
+      return colors.primarySoft;
+    case 'pink':
+      return colors.pinkSoft;
+    case 'mint':
+      return colors.mintSoft;
+    case 'sun':
+      return colors.sunSoft;
+    case 'sky':
+      return colors.skySoft;
+    case 'neutral':
+      return colors.surfaceMuted;
+  }
+}
 
-const TONE_TEXT: Record<ChipTone, string> = {
-  primary: colors.primary,
-  pink: colors.pink,
-  mint: '#0FA98B',
-  sun: '#C8860A',
-  sky: '#1E9FE0',
-  neutral: colors.textSecondary,
-};
+function toneText(colors: ReturnType<typeof useAppTheme>['colors'], tone: ChipTone): string {
+  switch (tone) {
+    case 'primary':
+      return colors.primary;
+    case 'pink':
+      return colors.pink;
+    case 'mint':
+      return colors.success;
+    case 'sun':
+      return colors.warning;
+    case 'sky':
+      return colors.sky;
+    case 'neutral':
+      return colors.textSecondary;
+  }
+}
 
 export interface ChipProps extends Omit<PressableProps, 'style'> {
   label: string;
@@ -51,7 +67,7 @@ export function Chip({
       accessibilityRole="button"
       style={({ pressed }) => [
         styles.base,
-        gradient ? null : { backgroundColor: TONE_BG[tone] },
+        gradient ? null : { backgroundColor: toneBg(colors, tone) },
         pressed && styles.pressed,
         style,
       ]}
@@ -59,20 +75,25 @@ export function Chip({
     >
       {gradient ? (
         <LinearGradient
-          colors={gradientsBrand(tone)}
+          colors={gradientsBrand(colors)}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={StyleSheet.absoluteFill}
         />
       ) : null}
-      <AppText variant="caption" weight="bold" color={gradient ? colors.surface : TONE_TEXT[tone]} style={styles.label}>
+      <AppText
+        variant="caption"
+        weight="bold"
+        color={gradient ? colors.headerText : toneText(colors, tone)}
+        style={styles.label}
+      >
         {label}
       </AppText>
     </Pressable>
   );
 }
 
-function gradientsBrand(_tone: ChipTone): readonly [string, string, ...string[]] {
+function gradientsBrand(colors: ReturnType<typeof useAppTheme>['colors']): readonly [string, string, ...string[]] {
   return [colors.primary, colors.pink];
 }
 

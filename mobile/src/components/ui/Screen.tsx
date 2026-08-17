@@ -10,7 +10,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Backdrop, BlobStyle } from '@/components/ui/Backdrop';
-import { colors, layout, radius } from '@/constants/theme';
+import { layout, radius } from '@/constants/theme';
 import { useAppTheme } from '@/lib/theme';
 
 export interface ScreenProps {
@@ -48,7 +48,7 @@ export function Screen({
   const content = (
     <View
       style={[
-        card && styles.card,
+        card && [styles.card, { backgroundColor: colors.surface, borderColor: colors.border }],
         padding !== 0 ? { padding } : null,
         !scroll && !centered && styles.flex,
         style,
@@ -59,7 +59,10 @@ export function Screen({
   );
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top', 'right', 'bottom', 'left']}>
+    <SafeAreaView
+      style={[styles.safeArea, { backgroundColor: colors.background }]}
+      edges={['top', 'right', 'bottom', 'left']}
+    >
       {blobbed ? <Backdrop blobs={blobs} /> : null}
       <KeyboardAvoidingView
         style={styles.flex}
@@ -90,16 +93,13 @@ const styles = StyleSheet.create({
   },
   safeArea: {
     flex: 1,
-    backgroundColor: colors.background,
   },
   centered: {
     flexGrow: 1,
     justifyContent: 'center',
   },
   card: {
-    backgroundColor: colors.surface,
     borderRadius: radius.lg,
     borderWidth: 1,
-    borderColor: colors.border,
   },
 });

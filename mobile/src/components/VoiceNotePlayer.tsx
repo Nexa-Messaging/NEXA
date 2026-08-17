@@ -46,7 +46,7 @@ export function VoiceNotePlayer({ uri, durationSeconds, isMine = false }: VoiceN
   const progress = duration > 0 ? Math.min(1, status.currentTime / duration) : 0;
   const elapsed = status.playing || status.currentTime > 0 ? status.currentTime : 0;
 
-  const accent = isMine ? colors.surface : colors.primary;
+  const accent = isMine ? colors.headerText : colors.primary;
 
   return (
     <View style={styles.container}>
@@ -54,7 +54,7 @@ export function VoiceNotePlayer({ uri, durationSeconds, isMine = false }: VoiceN
         accessibilityRole="button"
         accessibilityLabel={status.playing ? 'Pause voice note' : 'Play voice note'}
         onPress={toggle}
-        style={[styles.playButton, isMine ? styles.playMine : styles.playTheirs]}
+        style={[styles.playButton, isMine ? styles.playMine : { backgroundColor: colors.primarySoft }]}
       >
         <Ionicons
           name={status.playing ? 'pause' : 'play'}
@@ -65,12 +65,12 @@ export function VoiceNotePlayer({ uri, durationSeconds, isMine = false }: VoiceN
       </Pressable>
 
       <View style={styles.trackWrap}>
-        <View style={[styles.track, isMine ? styles.trackMine : styles.trackTheirs]}>
+        <View style={[styles.track, isMine ? styles.trackMine : { backgroundColor: colors.surfaceMuted }]}>
           <View
             style={[
               styles.trackFill,
               { width: `${progress * 100}%` },
-              isMine ? styles.fillMine : styles.fillTheirs,
+              isMine ? { backgroundColor: colors.headerText } : styles.fillTheirs,
             ]}
           />
         </View>
@@ -104,9 +104,6 @@ const styles = StyleSheet.create({
   playMine: {
     backgroundColor: 'rgba(255,255,255,0.18)',
   },
-  playTheirs: {
-    backgroundColor: colors.primarySoft,
-  },
   playIconOffset: {
     marginLeft: 2,
   },
@@ -122,15 +119,9 @@ const styles = StyleSheet.create({
   trackMine: {
     backgroundColor: 'rgba(255,255,255,0.22)',
   },
-  trackTheirs: {
-    backgroundColor: colors.surfaceMuted,
-  },
   trackFill: {
     height: '100%',
     borderRadius: radius.pill,
-  },
-  fillMine: {
-    backgroundColor: colors.surface,
   },
   fillTheirs: {
     backgroundColor: colors.primary,

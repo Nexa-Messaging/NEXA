@@ -1,7 +1,6 @@
 import React from 'react';
 import { StyleSheet, View, ViewStyle } from 'react-native';
 
-import { colors } from '@/constants/theme';
 import { useAppTheme } from '@/lib/theme';
 
 export interface BlobStyle {
@@ -27,22 +26,25 @@ export interface BackdropProps {
   children?: React.ReactNode;
 }
 
-const DEFAULT_BLOBS: BlobStyle[] = [
-  { size: 220, color: colors.primarySoft, top: -70, right: -80, opacity: 0.9 },
-  { size: 140, color: colors.pinkSoft, top: 160, left: -60, opacity: 0.8 },
-  { size: 180, color: colors.skySoft, bottom: 40, right: -70, opacity: 0.7 },
-];
+function defaultBlobs(colors: ReturnType<typeof useAppTheme>['colors']): BlobStyle[] {
+  return [
+    { size: 220, color: colors.primarySoft, top: -70, right: -80, opacity: 0.9 },
+    { size: 140, color: colors.pinkSoft, top: 160, left: -60, opacity: 0.8 },
+    { size: 180, color: colors.skySoft, bottom: 40, right: -70, opacity: 0.7 },
+  ];
+}
 
 /**
  * Layered, soft organic shapes ("blobs") that sit behind a screen's content.
  * Renders sticker-like rounded shapes with hand-drawn-feeling asymmetric
  * corner radii to give the NEXA soft-graffiti personality.
  */
-export function Backdrop({ blobs = DEFAULT_BLOBS, style, children }: BackdropProps) {
+export function Backdrop({ blobs, style, children }: BackdropProps) {
   const { colors } = useAppTheme();
+  const resolvedBlobs = blobs ?? defaultBlobs(colors);
   return (
     <View pointerEvents="none" style={[styles.container, style]}>
-      {blobs.map((blob, index) => (
+      {resolvedBlobs.map((blob, index) => (
         <View
           key={index}
           style={[

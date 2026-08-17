@@ -7,7 +7,7 @@ import { Avatar } from '@/components/Avatar';
 import { FriendStatusActions } from '@/components/FriendStatusActions';
 import { ReportSheet } from '@/components/ReportSheet';
 import { AppText, Screen } from '@/components/ui';
-import { colors, radius, spacing } from '@/constants/theme';
+import { radius, spacing } from '@/constants/theme';
 import { useAppTheme } from '@/lib/theme';
 import { useFriendStatus } from '@/hooks/useFriendStatus';
 import { useAuth , fetchProfileByUsername } from '@/lib/auth';
@@ -123,7 +123,7 @@ export default function PublicProfileScreen() {
         </View>
       ) : (
         <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
-          <View style={styles.card}>
+          <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
             <View style={styles.identity}>
               <Avatar uri={profile.avatar_url} name={profile.display_name} size={96} />
               <View style={styles.identityText}>
@@ -243,11 +243,12 @@ function ProfileInfoRow({
   label: string;
   value?: string | null;
 }) {
+  const { colors } = useAppTheme();
   if (!value) {
     return null;
   }
   return (
-    <View style={styles.infoRow}>
+    <View style={[styles.infoRow, { borderTopColor: colors.border }]}>
       <Ionicons name={icon} size={18} color={colors.primary} />
       <AppText variant="label" color={colors.textSecondary} style={styles.infoLabel}>
         {label}
@@ -293,10 +294,8 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
   card: {
-    backgroundColor: colors.surface,
     borderRadius: radius.lg,
     borderWidth: 1,
-    borderColor: colors.border,
     padding: spacing.lg,
   },
   identity: {
@@ -317,7 +316,6 @@ const styles = StyleSheet.create({
     marginTop: spacing.md,
     paddingTop: spacing.md,
     borderTopWidth: 1,
-    borderTopColor: colors.border,
   },
   infoLabel: {
     marginLeft: spacing.xs,

@@ -11,7 +11,7 @@ import {
 
 import { Avatar } from '@/components/Avatar';
 import { AppText, Screen } from '@/components/ui';
-import { colors, radius, spacing } from '@/constants/theme';
+import { radius, spacing } from '@/constants/theme';
 import { useAppTheme } from '@/lib/theme';
 import { useAuth } from '@/lib/auth';
 import { listFriends } from '@/lib/friends';

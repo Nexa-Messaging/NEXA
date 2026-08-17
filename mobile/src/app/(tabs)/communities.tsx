@@ -77,7 +77,7 @@ export default function CommunitiesScreen() {
     return (
       <Pressable
         accessibilityRole="button"
-        style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
+        style={({ pressed }) => [styles.row, { borderBottomColor: colors.border }, pressed && styles.rowPressed]}
         onPress={() => {
           if (item.is_member) {
             router.push({
@@ -115,7 +115,7 @@ export default function CommunitiesScreen() {
                 <AppText
                   variant="caption"
                   weight="bold"
-                  color={colors.surface}
+                  color={colors.headerText}
                   style={styles.badgeText}
                 >
                   {item.unread_count > 99 ? '99+' : item.unread_count}
@@ -144,7 +144,7 @@ export default function CommunitiesScreen() {
                 end={{ x: 1, y: 1 }}
                 style={StyleSheet.absoluteFill}
               />
-              <AppText variant="caption" color={colors.surface} weight="bold">
+              <AppText variant="caption" color={colors.headerText} weight="bold">
                 Join
               </AppText>
             </Pressable>
@@ -164,15 +164,15 @@ export default function CommunitiesScreen() {
       >
         <View style={styles.header}>
           <View>
-            <AppText variant="caption" weight="bold" color={colors.surface} style={styles.headerLabel}>
+            <AppText variant="caption" weight="bold" color={colors.headerText} style={styles.headerLabel}>
               YOUR CREW
             </AppText>
-            <AppText variant="display" weight="bold" color={colors.surface}>
+            <AppText variant="display" weight="bold" color={colors.headerText}>
               Circles
             </AppText>
           </View>
           <View style={styles.headerSticker}>
-            <Ionicons name="color-palette" size={20} color={colors.surface} />
+            <Ionicons name="color-palette" size={20} color={colors.headerText} />
           </View>
         </View>
       </LinearGradient>
@@ -293,7 +293,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
   },
   rowPressed: {
     opacity: 0.7,

@@ -5,7 +5,7 @@ import { StyleSheet, View } from 'react-native';
 
 import { AppButton, GradientText, Screen } from '@/components/ui';
 import { AppText } from '@/components/ui/AppText';
-import { colors, gradients, radius, shadows, spacing } from '@/constants/theme';
+import { gradients, radius, shadows, spacing } from '@/constants/theme';
 import { useAppTheme } from '@/lib/theme';
 
 export default function WelcomeScreen() {
@@ -38,7 +38,7 @@ export default function WelcomeScreen() {
             end={{ x: 1, y: 1 }}
             style={styles.logo}
           >
-            <AppText variant="display" color={colors.surface} weight="bold">
+            <AppText variant="display" color={colors.headerText} weight="bold">
               N
             </AppText>
           </LinearGradient>

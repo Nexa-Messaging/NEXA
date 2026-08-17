@@ -133,7 +133,7 @@ export function VoiceRecorderBar({ onSend, onCancel }: VoiceRecorderBarProps) {
   }, [player, playerStatus.playing, playerStatus.duration, playerStatus.currentTime]);
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.surface, borderTopColor: colors.border }]}>
       {stage === 'preparing' ? (
         <View style={styles.row}>
           <ActivityIndicator size="small" color={colors.primary} />
@@ -176,7 +176,7 @@ export function VoiceRecorderBar({ onSend, onCancel }: VoiceRecorderBarProps) {
             onPress={() => void handleStop()}
             style={styles.stopButton}
           >
-            <View style={styles.stopSquare} />
+            <View style={[styles.stopSquare, { backgroundColor: colors.surface }]} />
           </Pressable>
         </View>
       ) : null}
@@ -187,7 +187,7 @@ export function VoiceRecorderBar({ onSend, onCancel }: VoiceRecorderBarProps) {
             accessibilityRole="button"
             accessibilityLabel={playerStatus.playing ? 'Pause preview' : 'Play preview'}
             onPress={togglePreview}
-            style={styles.previewButton}
+            style={[styles.previewButton, { backgroundColor: colors.primarySoft }]}
           >
             <Ionicons
               name={playerStatus.playing ? 'pause' : 'play'}
@@ -209,7 +209,7 @@ export function VoiceRecorderBar({ onSend, onCancel }: VoiceRecorderBarProps) {
             onPress={handleSend}
             style={styles.sendButton}
           >
-            <Ionicons name="arrow-up" size={20} color={colors.surface} />
+            <Ionicons name="arrow-up" size={20} color={colors.headerText} />
           </Pressable>
         </View>
       ) : null}
@@ -219,9 +219,7 @@ export function VoiceRecorderBar({ onSend, onCancel }: VoiceRecorderBarProps) {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: colors.surface,
     borderTopWidth: 1,
-    borderTopColor: colors.border,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
   },
@@ -260,13 +258,11 @@ const styles = StyleSheet.create({
     width: 16,
     height: 16,
     borderRadius: 3,
-    backgroundColor: colors.surface,
   },
   previewButton: {
     width: 44,
     height: 44,
     borderRadius: radius.pill,
-    backgroundColor: colors.primarySoft,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: spacing.sm,

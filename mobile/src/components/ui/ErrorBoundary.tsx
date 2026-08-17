@@ -37,32 +37,37 @@ export class ErrorBoundary extends Component<Props, State> {
 
   render(): ReactNode {
     if (this.state.hasError) {
-      return (
-        <View style={styles.container}>
-          <View style={styles.card}>
-            <AppText variant="heading" weight="bold" align="center" style={styles.title}>
-              Something went wrong
-            </AppText>
-            <AppText variant="body" color={colors.textSecondary} align="center" style={styles.body}>
-              NEXA hit an unexpected error. Please try again — if it keeps
-              happening, restart the app.
-            </AppText>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="Try again"
-              onPress={this.handleRetry}
-              style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
-            >
-              <AppText variant="label" color="#FFFFFF" weight="bold">
-                Try again
-              </AppText>
-            </Pressable>
-          </View>
-        </View>
-      );
+      return <ErrorFallback onRetry={this.handleRetry} />;
     }
     return this.props.children;
   }
+}
+
+function ErrorFallback({ onRetry }: { onRetry: () => void }) {
+  const { colors } = useAppTheme();
+  return (
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+        <AppText variant="heading" weight="bold" align="center" style={styles.title}>
+          Something went wrong
+        </AppText>
+        <AppText variant="body" color={colors.textSecondary} align="center" style={styles.body}>
+          NEXA hit an unexpected error. Please try again — if it keeps
+          happening, restart the app.
+        </AppText>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Try again"
+          onPress={onRetry}
+          style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
+        >
+          <AppText variant="label" color="#FFFFFF" weight="bold">
+            Try again
+          </AppText>
+        </Pressable>
+      </View>
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
@@ -70,16 +75,13 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.background,
     paddingHorizontal: spacing.xl,
   },
   card: {
     width: '100%',
     maxWidth: 360,
-    backgroundColor: colors.surface,
     borderRadius: radius.lg,
     borderWidth: 1,
-    borderColor: colors.border,
     padding: spacing.lg,
     alignItems: 'center',
   },

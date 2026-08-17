@@ -163,7 +163,7 @@ export function MessageBubble({
         <Ionicons
           name="checkmark-done"
           size={14}
-          color={colors.surface}
+          color={colors.headerText}
           style={styles.receipt}
         />
       );
@@ -201,7 +201,12 @@ export function MessageBubble({
           }
           onLongPress={onLongPress}
           delayLongPress={300}
-          style={[styles.bubble, isMine ? styles.bubbleMineWrap : styles.bubbleTheirs, isFailed && styles.bubbleFailed]}
+          style={[
+            styles.bubble,
+            isMine ? styles.bubbleMineWrap : styles.bubbleTheirs,
+            !isMine && { backgroundColor: colors.surface, borderColor: colors.border },
+            isFailed && styles.bubbleFailed,
+          ]}
         >
           {isMine ? (
             <LinearGradient
@@ -215,19 +220,23 @@ export function MessageBubble({
           {replyText ? (
             <Pressable
               onPress={handleReplyBoxPress}
-              style={[styles.replyBox, isMine ? styles.replyMine : styles.replyTheirs]}
+              style={[
+                styles.replyBox,
+                isMine ? styles.replyMine : null,
+                !isMine && { backgroundColor: colors.surfaceMuted },
+              ]}
             >
               <AppText
                 variant="caption"
                 weight="bold"
-                color={isMine ? colors.surface : colors.primary}
+                color={isMine ? colors.headerText : colors.primary}
                 numberOfLines={1}
               >
                 Reply
               </AppText>
               <AppText
                 variant="caption"
-                color={isMine ? colors.surface : colors.textSecondary}
+                color={isMine ? colors.headerText : colors.textSecondary}
                 numberOfLines={2}
               >
                 {replyText}
@@ -238,12 +247,12 @@ export function MessageBubble({
           {media ? <MediaBlock media={media} isMine={isMine} /> : null}
 
           {isDeleted ? (
-            <AppText variant="body" color={isMine ? colors.surface : colors.textMuted}>
+            <AppText variant="body" color={isMine ? colors.headerText : colors.textMuted}>
               This message was deleted
             </AppText>
           ) : body ? (
             <View style={styles.bodyRow}>
-              <AppText variant="body" color={isMine ? colors.surface : colors.text}>
+              <AppText variant="body" color={isMine ? colors.headerText : colors.text}>
                 {body}
               </AppText>
               {editedAt ? (
@@ -271,7 +280,7 @@ export function MessageBubble({
             {isMine ? receipt : null}
             <AppText
               variant="caption"
-              color={isMine ? colors.surface : colors.textMuted}
+              color={isMine ? colors.headerText : colors.textMuted}
               style={styles.time}
             >
               {formatMessageTime(createdAt)}
@@ -287,10 +296,14 @@ export function MessageBubble({
               key={group.emoji}
               accessibilityRole="button"
               onPress={() => onReact?.(group.emoji, group.mine)}
-              style={[styles.reaction, group.mine && styles.reactionMine]}
+              style={[
+                styles.reaction,
+                { backgroundColor: colors.surface, borderColor: colors.border },
+                group.mine && [styles.reactionMine, { backgroundColor: colors.pinkSoft }],
+              ]}
             >
               <AppText variant="caption">{group.emoji}</AppText>
-              <AppText variant="caption" weight="bold" style={styles.reactionCount}>
+              <AppText variant="caption" weight="bold" style={[styles.reactionCount, { color: colors.textSecondary }]}>
                 {group.count}
               </AppText>
             </Pressable>
@@ -359,9 +372,16 @@ function MediaPlaceholder({
   icon?: keyof typeof Ionicons.glyphMap;
   loading?: boolean;
 }) {
-  const tint = isMine ? colors.surface : colors.textMuted;
+  const { colors } = useAppTheme();
+  const tint = isMine ? colors.headerText : colors.textMuted;
   return (
-    <View style={[styles.mediaPlaceholder, isMine ? styles.placeholderMine : styles.placeholderTheirs]}>
+    <View
+      style={[
+        styles.mediaPlaceholder,
+        isMine ? styles.placeholderMine : null,
+        !isMine && { backgroundColor: colors.surfaceMuted },
+      ]}
+    >
       {loading ? (
         <ActivityIndicator size="small" color={tint} />
       ) : icon ? (
@@ -375,14 +395,17 @@ function MediaPlaceholder({
 }
 
 function ProgressOverlay({ progress = 0 }: { progress?: number }) {
+  const { colors } = useAppTheme();
   const fraction = Math.min(1, Math.max(0, progress ?? 0));
   return (
-    <View style={styles.overlay}>
-      <AppText variant="label" weight="bold" color={colors.surface}>
+    <View style={[styles.overlay, { backgroundColor: colors.overlay }]}>
+      <AppText variant="label" weight="bold" color={colors.headerText}>
         {Math.round(fraction * 100)}%
       </AppText>
       <View style={styles.progressTrack}>
-        <View style={[styles.progressFill, { width: `${fraction * 100}%` }]} />
+        <View
+          style={[styles.progressFill, { backgroundColor: colors.headerText, width: `${fraction * 100}%` }]}
+        />
       </View>
     </View>
   );
@@ -422,9 +445,7 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: radius.sm,
   },
   bubbleTheirs: {
-    backgroundColor: colors.surface,
     borderWidth: 1,
-    borderColor: colors.border,
     borderBottomLeftRadius: radius.sm,
     ...shadows.soft,
   },
@@ -441,9 +462,6 @@ const styles = StyleSheet.create({
   },
   replyMine: {
     backgroundColor: 'rgba(255,255,255,0.18)',
-  },
-  replyTheirs: {
-    backgroundColor: colors.surfaceMuted,
   },
   bodyRow: {
     flexDirection: 'row',
@@ -486,16 +504,12 @@ const styles = StyleSheet.create({
   placeholderMine: {
     backgroundColor: 'rgba(255,255,255,0.18)',
   },
-  placeholderTheirs: {
-    backgroundColor: colors.surfaceMuted,
-  },
   overlay: {
     position: 'absolute',
     top: 0,
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: colors.overlay,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -509,7 +523,6 @@ const styles = StyleSheet.create({
   },
   progressFill: {
     height: '100%',
-    backgroundColor: colors.surface,
     borderRadius: radius.pill,
   },
   retry: {
@@ -538,9 +551,7 @@ const styles = StyleSheet.create({
   reaction: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.surface,
     borderWidth: 1,
-    borderColor: colors.border,
     borderRadius: radius.pill,
     paddingHorizontal: spacing.xs,
     paddingVertical: 2,
@@ -549,10 +560,8 @@ const styles = StyleSheet.create({
   },
   reactionMine: {
     borderColor: colors.pink,
-    backgroundColor: colors.pinkSoft,
   },
   reactionCount: {
     marginLeft: 2,
-    color: colors.textSecondary,
   },
 });

@@ -47,13 +47,13 @@ export default function HomeScreen() {
         >
           <View style={styles.heroRow}>
             <View style={styles.heroText}>
-              <AppText variant="caption" weight="bold" color={colors.surface} style={styles.heroLabel}>
+              <AppText variant="caption" weight="bold" color={colors.headerText} style={styles.heroLabel}>
                 GOOD DAY, {firstName ? firstName.toUpperCase() : 'FRIEND'} ✦
               </AppText>
-              <AppText variant="display" weight="bold" color={colors.surface}>
+              <AppText variant="display" weight="bold" color={colors.headerText}>
                 Home
               </AppText>
-              <AppText variant="body" color={colors.surface} style={styles.heroBody}>
+              <AppText variant="body" color={colors.headerText} style={styles.heroBody}>
                 Drop a story, reply to friends, feel the vibe.
               </AppText>
             </View>
@@ -65,10 +65,10 @@ export default function HomeScreen() {
                 style={styles.searchButton}
                 onPress={() => router.push('/notifications')}
               >
-                <Ionicons name="notifications-outline" size={22} color={colors.surface} />
+                <Ionicons name="notifications-outline" size={22} color={colors.headerText} />
                 {unreadCount > 0 ? (
                   <View style={styles.heroBadge}>
-                    <AppText variant="caption" weight="bold" color={colors.surface} style={styles.heroBadgeText}>
+                    <AppText variant="caption" weight="bold" color={colors.headerText} style={styles.heroBadgeText}>
                       {unreadCount > 99 ? '99+' : unreadCount}
                     </AppText>
                   </View>
@@ -81,7 +81,7 @@ export default function HomeScreen() {
                 style={styles.searchButton}
                 onPress={() => router.push('/search')}
               >
-                <Ionicons name="search" size={22} color={colors.surface} />
+                <Ionicons name="search" size={22} color={colors.headerText} />
               </Pressable>
             </View>
           </View>

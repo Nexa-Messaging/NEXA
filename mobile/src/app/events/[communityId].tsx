@@ -34,12 +34,13 @@ function EventRow({
   onRespond: (event: CommunityEventFeed, response: 'going' | 'maybe' | 'not_going') => void;
   onReminder: (event: CommunityEventFeed) => void;
 }) {
+  const { colors } = useAppTheme();
   const past = new Date(event.starts_at).getTime() < Date.now();
 
   return (
     <Pressable
       accessibilityRole="button"
-      style={styles.eventRow}
+      style={[styles.eventRow, { backgroundColor: colors.surface, borderColor: colors.border }]}
       onPress={() =>
         router.push({
           pathname: '/event/[eventId]',
@@ -47,7 +48,7 @@ function EventRow({
         })
       }
     >
-      <View style={styles.eventDateBlock}>
+      <View style={[styles.eventDateBlock, { backgroundColor: colors.primarySoft }]}>
         <AppText variant="heading" weight="bold" color={colors.primary}>
           {new Date(event.starts_at).getDate()}
         </AppText>
@@ -93,7 +94,7 @@ function EventRow({
                   disabled={busy}
                   hitSlop={6}
                   onPress={() => onRespond(event, response)}
-                  style={[styles.rsvpChip, active && styles.rsvpChipActive]}
+                  style={[styles.rsvpChip, { backgroundColor: colors.surfaceMuted }, active && styles.rsvpChipActive]}
                 >
                   <Ionicons
                     name={
@@ -259,7 +260,7 @@ export default function CommunityEventsScreen() {
       />
 
       {error ? (
-        <View style={styles.errorBanner}>
+        <View style={[styles.errorBanner, { backgroundColor: colors.dangerSoft }]}>
           <AppText variant="label" color={colors.danger} style={styles.flex}>
             {error}
           </AppText>
@@ -306,10 +307,8 @@ const styles = StyleSheet.create({
   eventRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.surface,
     borderRadius: radius.lg,
     borderWidth: 1,
-    borderColor: colors.border,
     padding: spacing.sm,
     marginBottom: spacing.sm,
   },
@@ -318,7 +317,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: spacing.xs,
     borderRadius: radius.md,
-    backgroundColor: colors.primarySoft,
   },
   eventMain: {
     flex: 1,
@@ -339,7 +337,6 @@ const styles = StyleSheet.create({
     width: 26,
     height: 26,
     borderRadius: radius.pill,
-    backgroundColor: colors.surfaceMuted,
     alignItems: 'center',
     justifyContent: 'center',
     marginLeft: spacing.xxs,
@@ -362,7 +359,6 @@ const styles = StyleSheet.create({
   errorBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FDECEA',
     marginHorizontal: spacing.lg,
     borderRadius: radius.md,
     paddingHorizontal: spacing.md,

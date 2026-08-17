@@ -246,7 +246,7 @@ export default function EventFormScreen() {
               key={choice.label}
               accessibilityRole="button"
               onPress={() => setStartsAt(target.toISOString())}
-              style={[styles.chip, startsError && !startsAt && styles.chipError, active && styles.chipActive]}
+              style={[styles.chip, { borderColor: colors.border, backgroundColor: colors.surface }, startsError && !startsAt && styles.chipError, active && styles.chipActive]}
             >
               <AppText
                 variant="caption"
@@ -279,7 +279,7 @@ export default function EventFormScreen() {
       <Pressable
         accessibilityRole="button"
         onPress={() => void handlePickImage()}
-        style={styles.imagePicker}
+        style={[styles.imagePicker, { borderColor: colors.border, backgroundColor: colors.surfaceMuted }]}
       >
         {pickerImage?.uri ? (
           <Image source={{ uri: pickerImage.uri }} style={styles.previewImage} />
@@ -294,7 +294,7 @@ export default function EventFormScreen() {
           </View>
         )}
         {pickerImage?.uri || existingImageUrl ? (
-          <View style={styles.imageActions}>
+          <View style={[styles.imageActions, { backgroundColor: colors.overlay }]}>
             <AppText variant="caption" color={colors.textSecondary}>
               Change
             </AppText>
@@ -355,12 +355,10 @@ const styles = StyleSheet.create({
   chip: {
     borderRadius: radius.pill,
     borderWidth: 1,
-    borderColor: colors.border,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.xs,
     marginRight: spacing.xs,
     marginBottom: spacing.xs,
-    backgroundColor: colors.surface,
   },
   chipActive: {
     backgroundColor: colors.primary,
@@ -375,9 +373,7 @@ const styles = StyleSheet.create({
   imagePicker: {
     borderRadius: radius.lg,
     borderWidth: 1,
-    borderColor: colors.border,
     overflow: 'hidden',
-    backgroundColor: colors.surfaceMuted,
     marginTop: spacing.xs,
   },
   previewImage: {
@@ -395,7 +391,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: spacing.sm,
     bottom: spacing.sm,
-    backgroundColor: colors.overlay,
     borderRadius: radius.pill,
     paddingHorizontal: spacing.sm,
     paddingVertical: spacing.xxs,

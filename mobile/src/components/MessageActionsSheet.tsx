@@ -4,7 +4,7 @@ import React from 'react';
 import { Modal, Pressable, StyleSheet, View } from 'react-native';
 
 import { AppText } from '@/components/ui/AppText';
-import { colors, radius, spacing } from '@/constants/theme';
+import { radius, spacing } from '@/constants/theme';
 import { useAppTheme } from '@/lib/theme';
 
 export const QUICK_EMOJIS = ['❤️', '😂', '👍', '😮', '😢', '🙏'] as const;
@@ -52,8 +52,8 @@ export function MessageActionsSheet({
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
-      <Pressable accessibilityRole="button" accessibilityLabel="Close menu" style={styles.backdrop} onPress={onClose}>
-        <Pressable style={styles.sheet} onPress={() => {}}>
+      <Pressable accessibilityRole="button" accessibilityLabel="Close menu" style={[styles.backdrop, { backgroundColor: colors.overlay }]} onPress={onClose}>
+        <Pressable style={[styles.sheet, { backgroundColor: colors.surface }]} onPress={() => {}}>
           <AppText variant="label" weight="semibold" color={colors.textSecondary} align="center">
             MESSAGE ACTIONS
           </AppText>
@@ -78,7 +78,7 @@ export function MessageActionsSheet({
             ) : null}
           </View>
 
-          <View style={styles.divider} />
+          <View style={[styles.divider, { backgroundColor: colors.border }]} />
           <AppText variant="caption" color={colors.textMuted} style={styles.emojiLabel}>
             React
           </AppText>
@@ -89,7 +89,7 @@ export function MessageActionsSheet({
                 accessibilityRole="button"
                 accessibilityLabel={`React with ${emoji}`}
                 onPress={() => onReact(emoji)}
-                style={styles.emoji}
+                style={[styles.emoji, { backgroundColor: colors.surfaceMuted }]}
               >
                 <AppText variant="heading">{emoji}</AppText>
               </Pressable>
@@ -112,9 +112,10 @@ function ActionItem({
   danger?: boolean;
   onPress: () => void;
 }) {
+  const { colors } = useAppTheme();
   const color = danger ? colors.danger : colors.text;
   return (
-    <Pressable accessibilityRole="button" style={styles.action} onPress={onPress}>
+    <Pressable accessibilityRole="button" style={[styles.action, { backgroundColor: colors.surfaceMuted }]} onPress={onPress}>
       <Ionicons name={icon} size={22} color={color} />
       <AppText variant="body" weight="semibold" color={color}>
         {label}
@@ -126,11 +127,9 @@ function ActionItem({
 const styles = StyleSheet.create({
   backdrop: {
     flex: 1,
-    backgroundColor: colors.overlay,
     justifyContent: 'flex-end',
   },
   sheet: {
-    backgroundColor: colors.surface,
     borderTopLeftRadius: radius.lg,
     borderTopRightRadius: radius.lg,
     padding: spacing.lg,
@@ -144,14 +143,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     flex: 1,
-    backgroundColor: colors.surfaceMuted,
     borderRadius: radius.md,
     padding: spacing.md,
     marginHorizontal: spacing.xxs,
   },
   divider: {
     height: 1,
-    backgroundColor: colors.border,
     marginVertical: spacing.md,
   },
   emojiLabel: {
@@ -165,7 +162,6 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: radius.md,
-    backgroundColor: colors.surfaceMuted,
     alignItems: 'center',
     justifyContent: 'center',
   },

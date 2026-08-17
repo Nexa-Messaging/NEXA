@@ -30,7 +30,7 @@ export function FloatingTabBar({ items, active, badges, onSelect }: FloatingTabB
   const { colors } = useAppTheme();
   return (
     <SafeAreaView edges={['bottom']} style={styles.safe}>
-      <View style={styles.bar}>
+      <View style={[styles.bar, { backgroundColor: colors.surface, borderColor: colors.border }]}>
         {items.map((item) => {
           const focused = item.name === active;
           const badge = badges?.[item.name] ?? 0;
@@ -55,7 +55,7 @@ export function FloatingTabBar({ items, active, badges, onSelect }: FloatingTabB
                 {item.icon(focused)}
                 {badge > 0 ? (
                   <View style={styles.badge}>
-                    <AppText variant="caption" weight="bold" color={colors.surface} style={styles.badgeText}>
+                    <AppText variant="caption" weight="bold" color={colors.headerText} style={styles.badgeText}>
                       {badge > 99 ? '99+' : badge}
                     </AppText>
                   </View>
@@ -88,10 +88,8 @@ const styles = StyleSheet.create({
     marginHorizontal: spacing.md,
     marginBottom: Platform.OS === 'ios' ? spacing.xs : spacing.sm,
     paddingVertical: spacing.xxs,
-    backgroundColor: colors.surface,
     borderRadius: radius.xxl,
     borderWidth: 1,
-    borderColor: colors.border,
     ...shadows.pop,
   },
   tab: {

@@ -5,7 +5,7 @@ import React from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { AppText } from '@/components/ui/AppText';
-import { colors, gradients } from '@/constants/theme';
+import { gradients } from '@/constants/theme';
 import { useAppTheme } from '@/lib/theme';
 
 export interface AvatarProps {
@@ -71,14 +71,14 @@ export function Avatar({ uri, name, size = 64, ring = false, accessibilityLabel 
       {initials ? (
         <AppText
           variant="heading"
-          color={colors.surface}
+          color={colors.headerText}
           weight="bold"
           style={{ fontSize: size * 0.34 }}
         >
           {initials}
         </AppText>
       ) : (
-        <Ionicons name="person" size={size * 0.45} color={colors.surface} />
+        <Ionicons name="person" size={size * 0.45} color={colors.headerText} />
       )}
     </LinearGradient>
   );
@@ -101,7 +101,12 @@ export function Avatar({ uri, name, size = 64, ring = false, accessibilityLabel 
       <View
         style={[
           styles.ringInner,
-          { width: size + 2, height: size + 2, borderRadius: (size + 2) / 2 },
+          {
+            width: size + 2,
+            height: size + 2,
+            borderRadius: (size + 2) / 2,
+            backgroundColor: colors.background,
+          },
         ]}
       >
         {avatarContent}
@@ -121,7 +126,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   ringInner: {
-    backgroundColor: colors.background,
     alignItems: 'center',
     justifyContent: 'center',
   },

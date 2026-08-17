@@ -179,7 +179,7 @@ export default function CommunityScreen() {
       </View>
 
       {error ? (
-        <View style={styles.errorBanner}>
+        <View style={[styles.errorBanner, { backgroundColor: colors.dangerSoft }]}>
           <AppText variant="label" color={colors.danger} style={styles.flex}>
             {error}
           </AppText>
@@ -196,12 +196,12 @@ export default function CommunityScreen() {
           <View style={styles.activities}>
             <Pressable
               accessibilityRole="button"
-              style={styles.activityCard}
+              style={[styles.activityCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
               onPress={() =>
                 router.push({ pathname: '/polls/[communityId]', params: { communityId } })
               }
             >
-              <View style={styles.activityIcon}>
+              <View style={[styles.activityIcon, { backgroundColor: colors.primarySoft }]}>
                 <Ionicons name="bar-chart-outline" size={22} color={colors.primary} />
               </View>
               <View style={styles.middle}>
@@ -216,12 +216,12 @@ export default function CommunityScreen() {
             </Pressable>
             <Pressable
               accessibilityRole="button"
-              style={styles.activityCard}
+              style={[styles.activityCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
               onPress={() =>
                 router.push({ pathname: '/events/[communityId]', params: { communityId } })
               }
             >
-              <View style={styles.activityIcon}>
+              <View style={[styles.activityIcon, { backgroundColor: colors.primarySoft }]}>
                 <Ionicons name="calendar-outline" size={22} color={colors.primary} />
               </View>
               <View style={styles.middle}>
@@ -239,7 +239,7 @@ export default function CommunityScreen() {
         renderItem={({ item }) => (
           <Pressable
             accessibilityRole="button"
-            style={styles.channelRow}
+            style={[styles.channelRow, { borderBottomColor: colors.border }]}
             onPress={() =>
               router.push({
                 pathname: '/channel/[channelId]',
@@ -247,7 +247,7 @@ export default function CommunityScreen() {
               })
             }
           >
-            <View style={styles.channelIcon}>
+            <View style={[styles.channelIcon, { backgroundColor: colors.primarySoft }]}>
               <Ionicons name={channelIcon(item.kind)} size={22} color={colors.primary} />
             </View>
             <View style={styles.middle}>
@@ -264,7 +264,7 @@ export default function CommunityScreen() {
                   <AppText
                     variant="caption"
                     weight="bold"
-                    color={colors.surface}
+                    color={colors.headerText}
                     style={styles.badgeText}
                   >
                     {item.unread_count > 99 ? '99+' : item.unread_count}
@@ -327,7 +327,6 @@ const styles = StyleSheet.create({
   errorBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FDECEA',
     marginHorizontal: spacing.lg,
     borderRadius: radius.md,
     paddingHorizontal: spacing.md,
@@ -344,10 +343,8 @@ const styles = StyleSheet.create({
   activityCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.surface,
     borderRadius: radius.lg,
     borderWidth: 1,
-    borderColor: colors.border,
     padding: spacing.sm,
     marginBottom: spacing.sm,
   },
@@ -355,7 +352,6 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: radius.md,
-    backgroundColor: colors.primarySoft,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -364,13 +360,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
   },
   channelIcon: {
     width: 44,
     height: 44,
     borderRadius: radius.md,
-    backgroundColor: colors.primarySoft,
     alignItems: 'center',
     justifyContent: 'center',
   },

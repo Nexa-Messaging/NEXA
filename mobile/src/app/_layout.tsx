@@ -7,7 +7,7 @@ import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import { PushNavigation } from '@/components/PushNavigation';
 import { Screen } from '@/components/ui';
 import { AppText } from '@/components/ui/AppText';
-import { colors, radius, spacing } from '@/constants/theme';
+import { radius, spacing } from '@/constants/theme';
 import { AuthProvider, useAuth } from '@/lib/auth';
 import { ThemeProvider, useAppTheme } from '@/lib/theme';
 import { usePresenceTracker } from '@/hooks/usePresence';
@@ -44,7 +44,7 @@ function RootNavigator() {
   if (!isConfigured) {
     return (
       <Screen centered>
-        <View style={styles.messageCard}>
+        <View style={[styles.messageCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           <AppText variant="heading" weight="bold" align="center" style={{ marginBottom: spacing.sm }}>
             Supabase is not configured
           </AppText>
@@ -112,10 +112,8 @@ function RootNavigator() {
 
 const styles = StyleSheet.create({
   messageCard: {
-    backgroundColor: colors.surface,
     borderRadius: radius.lg,
     borderWidth: 1,
-    borderColor: colors.border,
     padding: spacing.lg,
   },
 });

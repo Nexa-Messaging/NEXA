@@ -498,7 +498,7 @@ export default function GroupChatScreen() {
             onPress={() => router.back()}
             accessibilityLabel="Back"
           >
-            <Ionicons name="arrow-back" size={22} color={colors.surface} />
+            <Ionicons name="arrow-back" size={22} color={colors.headerText} />
           </Pressable>
           <Pressable
             accessibilityRole="button"
@@ -508,11 +508,11 @@ export default function GroupChatScreen() {
           >
             <Avatar uri={avatarUrl} name={group?.name} size={36} />
             <View style={styles.peerText}>
-              <AppText variant="body" weight="bold" color={colors.surface} numberOfLines={1}>
+              <AppText variant="body" weight="bold" color={colors.headerText} numberOfLines={1}>
                 {group ? group.name : 'Loading…'}
               </AppText>
               {group ? (
-                <AppText variant="caption" color={colors.surface} numberOfLines={1} style={styles.peerSub}>
+                <AppText variant="caption" color={colors.headerText} numberOfLines={1} style={styles.peerSub}>
                   {members.length > 0
                     ? `${members.length} ${members.length === 1 ? 'member' : 'members'}`
                     : 'Group'}
@@ -606,7 +606,7 @@ export default function GroupChatScreen() {
           )}
 
           {chat.sendError ? (
-            <View style={styles.sendErrorBar}>
+            <View style={[styles.sendErrorBar, { backgroundColor: colors.dangerSoft }]}>
               <AppText variant="caption" color={colors.danger} style={styles.flex}>
                 {chat.sendError}
               </AppText>
@@ -617,7 +617,7 @@ export default function GroupChatScreen() {
           ) : null}
 
           {actionError ? (
-            <View style={styles.sendErrorBar}>
+            <View style={[styles.sendErrorBar, { backgroundColor: colors.dangerSoft }]}>
               <AppText variant="caption" color={colors.danger} style={styles.flex}>
                 {actionError}
               </AppText>
@@ -825,7 +825,6 @@ const styles = StyleSheet.create({
   sendErrorBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FDEBEA',
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.xs,
   },

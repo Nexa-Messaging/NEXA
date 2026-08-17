@@ -23,7 +23,7 @@ export function ConversationListItem({ item, onPress }: ConversationListItemProp
   return (
     <Pressable
       accessibilityRole="button"
-      style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
+      style={({ pressed }) => [styles.row, { borderBottomColor: colors.border }, pressed && styles.rowPressed]}
       onPress={onPress}
     >
       <Avatar uri={item.avatarPath} name={item.name} size={52} ring={item.kind === 'group'} />
@@ -52,7 +52,7 @@ export function ConversationListItem({ item, onPress }: ConversationListItemProp
             <AppText
               variant="caption"
               weight="bold"
-              color={colors.surface}
+              color={colors.headerText}
               style={styles.badgeText}
             >
               {item.unreadCount > 99 ? '99+' : item.unreadCount}
@@ -70,7 +70,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
   },
   rowPressed: {
     opacity: 0.7,

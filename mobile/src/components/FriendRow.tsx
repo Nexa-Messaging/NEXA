@@ -6,7 +6,7 @@ import { Avatar } from '@/components/Avatar';
 import { CompactStatusAction } from '@/components/FriendStatusActions';
 import { AppButton } from '@/components/ui/AppButton';
 import { AppText } from '@/components/ui/AppText';
-import { colors, radius, spacing } from '@/constants/theme';
+import { radius, spacing } from '@/constants/theme';
 import { useFriendStatus } from '@/hooks/useFriendStatus';
 import { FriendshipStatus } from '@/lib/friends';
 import { useAppTheme } from '@/lib/theme';
@@ -60,7 +60,7 @@ export function FriendRow({ profile, mode, onPress, onMutated, onMessage }: Frie
             accessibilityLabel={`Message ${profile.display_name}`}
             hitSlop={8}
             onPress={onMessage}
-            style={styles.iconButton}
+            style={[styles.iconButton, { backgroundColor: colors.surfaceMuted }]}
           >
             <Ionicons name="chatbubble-ellipses-outline" size={20} color={colors.primary} />
           </Pressable>
@@ -79,7 +79,7 @@ export function FriendRow({ profile, mode, onPress, onMutated, onMessage }: Frie
                 ],
               )
             }
-            style={styles.iconButton}
+            style={[styles.iconButton, { backgroundColor: colors.surfaceMuted }]}
           >
             <Ionicons name="person-remove-outline" size={20} color={colors.textSecondary} />
           </Pressable>
@@ -185,7 +185,6 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: radius.pill,
-    backgroundColor: colors.surfaceMuted,
     alignItems: 'center',
     justifyContent: 'center',
   },

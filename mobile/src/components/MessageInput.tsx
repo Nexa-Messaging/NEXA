@@ -41,9 +41,9 @@ export function MessageInput({
   const canSend = value.trim().length > 0 && !disabled;
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.surface, borderTopColor: colors.border }]}>
       {replyingTo ? (
-        <View style={styles.replyBar}>
+        <View style={[styles.replyBar, { backgroundColor: colors.primarySoft }]}>
           <View style={styles.replyTextWrap}>
             <AppText variant="caption" weight="bold" color={colors.primary}>
               Replying to {replyingTo.name}
@@ -64,7 +64,7 @@ export function MessageInput({
       ) : null}
 
       {editing ? (
-        <View style={styles.replyBar}>
+        <View style={[styles.replyBar, { backgroundColor: colors.primarySoft }]}>
           <View style={styles.replyTextWrap}>
             <AppText variant="caption" weight="bold" color={colors.sun}>
               Editing message
@@ -92,13 +92,13 @@ export function MessageInput({
             accessibilityState={{ disabled }}
             disabled={disabled}
             onPress={onAttach}
-            style={styles.attachButton}
+            style={[styles.attachButton, { backgroundColor: colors.primarySoft }]}
           >
             <Ionicons name="add" size={24} color={colors.primary} />
           </Pressable>
         ) : null}
         <TextInput
-          style={styles.input}
+          style={[styles.input, { backgroundColor: colors.surfaceMuted, color: colors.text }]}
           value={value}
           onChangeText={onChangeText}
           placeholder={editing ? 'Edit message…' : 'Message…'}
@@ -121,7 +121,7 @@ export function MessageInput({
             Keyboard.dismiss();
             onSend();
           }}
-          style={[styles.sendButton, !canSend && styles.sendButtonDisabled]}
+          style={[styles.sendButton, !canSend && [styles.sendButtonDisabled, { backgroundColor: colors.textMuted }]]}
         >
           {canSend ? (
             <LinearGradient
@@ -131,7 +131,7 @@ export function MessageInput({
               style={StyleSheet.absoluteFill}
             />
           ) : null}
-          <Ionicons name="arrow-up" size={20} color={colors.surface} />
+          <Ionicons name="arrow-up" size={20} color={colors.headerText} />
         </Pressable>
       </View>
     </View>
@@ -140,9 +140,7 @@ export function MessageInput({
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: colors.surface,
     borderTopWidth: 1,
-    borderTopColor: colors.border,
     paddingHorizontal: spacing.md,
     paddingTop: spacing.sm,
     paddingBottom: spacing.sm,
@@ -150,7 +148,6 @@ const styles = StyleSheet.create({
   replyBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.primarySoft,
     borderRadius: radius.md,
     paddingHorizontal: spacing.sm,
     paddingVertical: spacing.xxs,
@@ -170,19 +167,16 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: radius.pill,
-    backgroundColor: colors.primarySoft,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: spacing.xs,
   },
   input: {
     flex: 1,
-    backgroundColor: colors.surfaceMuted,
     borderRadius: radius.lg,
     paddingHorizontal: spacing.md,
     paddingTop: spacing.sm,
     paddingBottom: spacing.sm,
-    color: colors.text,
     maxHeight: 120,
     minHeight: 44,
   },
@@ -198,7 +192,6 @@ const styles = StyleSheet.create({
     ...shadows.card,
   },
   sendButtonDisabled: {
-    backgroundColor: colors.textMuted,
     opacity: 0.5,
   },
 });

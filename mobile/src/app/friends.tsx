@@ -12,7 +12,7 @@ import {
 
 import { FriendRow } from '@/components/FriendRow';
 import { AppText, Screen } from '@/components/ui';
-import { colors, radius, spacing } from '@/constants/theme';
+import { radius, spacing } from '@/constants/theme';
 import { useAppTheme } from '@/lib/theme';
 import { useAuth } from '@/lib/auth';
 import {
@@ -59,7 +59,7 @@ export default function FriendsScreen() {
         <View style={styles.backButton} />
       </View>
 
-      <View style={styles.segments}>
+      <View style={[styles.segments, { backgroundColor: colors.surfaceMuted }]}>
         {SEGMENTS.map((item) => {
           const active = segment === item.key;
           return (
@@ -68,7 +68,7 @@ export default function FriendsScreen() {
               accessibilityRole="tab"
               accessibilityState={{ selected: active }}
               onPress={() => setSegment(item.key)}
-              style={[styles.segment, active && styles.segmentActive]}
+              style={[styles.segment, active && [styles.segmentActive, { backgroundColor: colors.surface }]]}
             >
               <AppText
                 variant="label"
@@ -114,6 +114,7 @@ function LoadableList({
   onRetry: () => void;
   children: React.ReactNode;
 }) {
+  const { colors } = useAppTheme();
   if (loading) {
     return (
       <View style={styles.state}>
@@ -261,6 +262,7 @@ function FriendsPanel({ userId }: { userId: string }) {
 // ---------------------------------------------------------------------------
 
 function SearchPanel({ userId }: { userId: string }) {
+  const { colors } = useAppTheme();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(false);
@@ -307,10 +309,10 @@ function SearchPanel({ userId }: { userId: string }) {
 
   return (
     <View style={styles.flex}>
-      <View style={styles.searchBox}>
+      <View style={[styles.searchBox, { backgroundColor: colors.surface, borderColor: colors.border }]}>
         <Ionicons name="search" size={18} color={colors.textMuted} />
         <TextInput
-          style={styles.searchInput}
+          style={[styles.searchInput, { color: colors.text }]}
           placeholder="Search by name or username"
           placeholderTextColor={colors.textMuted}
           value={query}
@@ -360,6 +362,7 @@ function SearchPanel({ userId }: { userId: string }) {
 }
 
 function SectionTitle({ title, style }: { title: string; style?: object }) {
+  const { colors } = useAppTheme();
   return (
     <View style={[styles.sectionTitle, style]}>
       <AppText variant="label" weight="semibold" color={colors.textSecondary}>
@@ -370,6 +373,7 @@ function SectionTitle({ title, style }: { title: string; style?: object }) {
 }
 
 function Empty({ text }: { text: string }) {
+  const { colors } = useAppTheme();
   return (
     <View style={styles.empty}>
       <AppText variant="body" color={colors.textMuted} align="center" style={styles.emptyText}>
@@ -398,7 +402,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     marginHorizontal: spacing.lg,
     marginBottom: spacing.sm,
-    backgroundColor: colors.surfaceMuted,
     borderRadius: radius.pill,
     padding: 4,
   },
@@ -408,9 +411,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: radius.pill,
   },
-  segmentActive: {
-    backgroundColor: colors.surface,
-  },
+  segmentActive: {},
   content: {
     flex: 1,
     paddingHorizontal: spacing.lg,
@@ -442,9 +443,7 @@ const styles = StyleSheet.create({
   searchBox: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.surface,
     borderWidth: 1,
-    borderColor: colors.border,
     borderRadius: radius.md,
     paddingHorizontal: spacing.md,
     marginTop: spacing.xs,
@@ -453,6 +452,5 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 46,
     marginLeft: spacing.xs,
-    color: colors.text,
   },
 });

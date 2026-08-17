@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 
 import { AppText } from '@/components/ui/AppText';
-import { colors, gradients, radius, shadows, spacing } from '@/constants/theme';
+import { gradients, radius, shadows, spacing } from '@/constants/theme';
 import { useAppTheme } from '@/lib/theme';
 
 export type ButtonVariant =
@@ -33,22 +33,28 @@ export interface AppButtonProps extends Omit<PressableProps, 'style'> {
   style?: StyleProp<ViewStyle>;
 }
 
-const VARIANT_COLORS: Record<
-  ButtonVariant,
-  { background?: string; gradient?: readonly [string, string, ...string[]]; text: string; border?: string }
-> = {
-  primary: { background: colors.primary, text: colors.surface },
-  secondary: { background: colors.primarySoft, text: colors.primary },
-  outline: { background: 'transparent', text: colors.primary, border: colors.primary },
-  ghost: { background: 'transparent', text: colors.primary },
-  danger: { background: '#FDE9ED', text: colors.danger },
-  gradient: { gradient: gradients.brand, text: colors.surface },
-  sunset: { gradient: gradients.sunset, text: colors.surface },
-};
-
 const SIZE_HEIGHT: Record<ButtonSize, number> = { sm: 40, md: 50, lg: 58 };
 const SIZE_FONT: Record<ButtonSize, number> = { sm: 14, md: 16, lg: 18 };
 const SIZE_PADDING: Record<ButtonSize, number> = { sm: spacing.md, md: spacing.lg, lg: spacing.xl };
+
+type VariantConfig = {
+  background?: string;
+  gradient?: readonly [string, string, ...string[]];
+  text: string;
+  border?: string;
+};
+
+function variantConfig(colors: ReturnType<typeof useAppTheme>['colors']): Record<ButtonVariant, VariantConfig> {
+  return {
+    primary: { background: colors.primary, text: colors.headerText },
+    secondary: { background: colors.primarySoft, text: colors.primary },
+    outline: { background: 'transparent', text: colors.primary, border: colors.primary },
+    ghost: { background: 'transparent', text: colors.primary },
+    danger: { background: colors.dangerSoft, text: colors.danger },
+    gradient: { gradient: gradients.brand, text: colors.headerText },
+    sunset: { gradient: gradients.sunset, text: colors.headerText },
+  };
+}
 
 /**
  * Reusable button with variants, sizes, loading and disabled states.
@@ -65,7 +71,7 @@ export function AppButton({
   ...rest
 }: AppButtonProps) {
   const { colors } = useAppTheme();
-  const config = VARIANT_COLORS[variant];
+  const config = variantConfig(colors)[variant];
   const isDisabled = disabled || loading;
   const textColor = isDisabled ? colors.textMuted : config.text;
 

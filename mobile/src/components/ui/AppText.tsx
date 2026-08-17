@@ -1,7 +1,8 @@
 import React from 'react';
 import { StyleSheet, Text, TextProps, TextStyle } from 'react-native';
 
-import { colors, fontWeights, tracking, typography } from '@/constants/theme';
+import { fontWeights, tracking, typography } from '@/constants/theme';
+import { useAppTheme } from '@/lib/theme';
 
 export type TextVariant = keyof typeof typography;
 export type TextTone =
@@ -12,16 +13,6 @@ export type TextTone =
   | 'danger'
   | 'success'
   | 'surface';
-
-const TONE_COLORS: Record<TextTone, string> = {
-  default: colors.text,
-  secondary: colors.textSecondary,
-  muted: colors.textMuted,
-  primary: colors.primary,
-  danger: colors.danger,
-  success: colors.success,
-  surface: colors.surface,
-};
 
 export interface AppTextProps extends TextProps {
   variant?: TextVariant;
@@ -40,14 +31,24 @@ export interface AppTextProps extends TextProps {
 export function AppText({
   variant = 'body',
   tone,
-  color = colors.text,
+  color,
   weight,
   align,
   style,
   children,
   ...rest
 }: AppTextProps) {
-  const resolvedColor = tone ? TONE_COLORS[tone] : color;
+  const { colors } = useAppTheme();
+  const toneColors: Record<TextTone, string> = {
+    default: colors.text,
+    secondary: colors.textSecondary,
+    muted: colors.textMuted,
+    primary: colors.primary,
+    danger: colors.danger,
+    success: colors.success,
+    surface: colors.surface,
+  };
+  const resolvedColor = tone ? toneColors[tone] : color ?? colors.text;
   return (
     <Text
       style={[

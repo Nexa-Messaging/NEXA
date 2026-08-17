@@ -34,6 +34,7 @@ function PollCard({
   onVote: (optionId: string) => void;
   onDelete: () => void;
 }) {
+  const { colors } = useAppTheme();
   const total = entry.total_votes;
   const canModify =
     entry.my_role === 'owner' ||
@@ -42,14 +43,14 @@ function PollCard({
   const alreadyVoted = !!entry.my_vote_option_id;
 
   return (
-    <View style={styles.card}>
+    <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
       <View style={styles.cardHeader}>
         <View style={styles.cardTitleRow}>
           <AppText variant="body" weight="bold" style={styles.question} numberOfLines={3}>
             {entry.question}
           </AppText>
           {entry.is_anonymous ? (
-            <View style={[styles.chip, styles.chipAnonymous]}>
+            <View style={[styles.chip, styles.chipAnonymous, { backgroundColor: colors.primarySoft }]}>
               <AppText variant="caption" weight="semibold" color={colors.primary}>
                 Anonymous
               </AppText>
@@ -84,11 +85,12 @@ function PollCard({
                 onPress={() => onVote(option.option_id)}
                 style={[
                   styles.optionRow,
+                  { borderColor: colors.border },
                   selected && styles.optionRowSelected,
-                  pressable && styles.optionRowPressable,
+                  pressable && [styles.optionRowPressable, { backgroundColor: colors.surfaceMuted }],
                 ]}
               >
-                <View style={[styles.optionFill, { width: `${pct}%` }]} />
+                <View style={[styles.optionFill, { width: `${pct}%`, backgroundColor: colors.primarySoft }]} />
                 <View style={styles.optionContent}>
                   <View style={styles.optionTextRow}>
                     <AppText
@@ -101,7 +103,7 @@ function PollCard({
                     </AppText>
                     {selected ? (
                       <View style={styles.votedBadge}>
-                        <AppText variant="caption" weight="bold" color={colors.surface} style={styles.votedBadgeText}>
+                        <AppText variant="caption" weight="bold" color={colors.headerText} style={styles.votedBadgeText}>
                           You
                         </AppText>
                       </View>
@@ -261,7 +263,7 @@ export default function CommunityPollsScreen() {
       />
 
       {error ? (
-        <View style={styles.errorBanner}>
+        <View style={[styles.errorBanner, { backgroundColor: colors.dangerSoft }]}>
           <AppText variant="label" color={colors.danger} style={styles.flex}>
             {error}
           </AppText>
@@ -302,10 +304,8 @@ const styles = StyleSheet.create({
     paddingTop: spacing.sm,
   },
   card: {
-    backgroundColor: colors.surface,
     borderRadius: radius.lg,
     borderWidth: 1,
-    borderColor: colors.border,
     padding: spacing.md,
     marginBottom: spacing.md,
   },
@@ -327,9 +327,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.xs,
     paddingVertical: 2,
   },
-  chipAnonymous: {
-    backgroundColor: colors.primarySoft,
-  },
+  chipAnonymous: {},
   expired: {
     marginBottom: spacing.sm,
   },
@@ -340,22 +338,18 @@ const styles = StyleSheet.create({
     borderRadius: radius.md,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: colors.border,
     marginBottom: spacing.xs,
     justifyContent: 'center',
   },
   optionRowSelected: {
     borderColor: colors.primary,
   },
-  optionRowPressable: {
-    backgroundColor: colors.surfaceMuted,
-  },
+  optionRowPressable: {},
   optionFill: {
     position: 'absolute',
     left: 0,
     top: 0,
     bottom: 0,
-    backgroundColor: colors.primarySoft,
   },
   optionContent: {
     paddingHorizontal: spacing.sm,
@@ -406,7 +400,6 @@ const styles = StyleSheet.create({
   errorBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FDECEA',
     marginHorizontal: spacing.lg,
     borderRadius: radius.md,
     paddingHorizontal: spacing.md,

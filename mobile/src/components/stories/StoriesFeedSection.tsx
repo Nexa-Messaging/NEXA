@@ -52,12 +52,12 @@ export function StoriesFeedSection({
           style={styles.addButton}
           onPress={onOpenComposer}
         >
-          <Ionicons name="add" size={20} color={colors.surface} />
+          <Ionicons name="add" size={20} color={colors.headerText} />
         </Pressable>
       </View>
 
       {friends.length === 0 && !own ? (
-        <Pressable style={styles.emptyCard} onPress={onOpenComposer}>
+        <Pressable style={[styles.emptyCard, { backgroundColor: colors.surface, borderColor: colors.border }]} onPress={onOpenComposer}>
           <Ionicons name="camera-outline" size={20} color={colors.primary} />
           <AppText variant="body" tone="secondary" style={styles.emptyText}>
             Post your first story — photos, video or text.
@@ -94,11 +94,11 @@ export function StoriesFeedSection({
       {onBrowseFriends ? (
         <Pressable
           accessibilityRole="button"
-          style={styles.friendsCard}
+          style={[styles.friendsCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
           onPress={onBrowseFriends}
         >
           <View style={styles.friendsIcon}>
-            <Ionicons name="people" size={20} color={colors.surface} />
+            <Ionicons name="people" size={20} color={colors.headerText} />
           </View>
           <AppText variant="body" weight="bold" style={styles.friendsText}>
             See your crew
@@ -127,6 +127,7 @@ function StoryTile({
   isAdd?: boolean;
   onPress: () => void;
 }) {
+  const { colors } = useAppTheme();
   const ringSize = AVATAR_SIZE + 12;
   return (
     <Pressable
@@ -143,14 +144,14 @@ function StoryTile({
             height: ringSize,
             borderRadius: ringSize / 2,
           },
-          hasStories && hasUnseen ? styles.ringUnseen : styles.ringSeen,
+          hasStories && hasUnseen ? styles.ringUnseen : [styles.ringSeen, { borderColor: colors.border }],
         ]}
       >
         <Avatar uri={avatarUri} name={name} size={AVATAR_SIZE} ring={hasStories && hasUnseen} />
       </View>
       {isAdd ? (
-        <View style={styles.addBadge}>
-          <Ionicons name="add" size={16} color={colors.surface} />
+        <View style={[styles.addBadge, { borderColor: colors.background }]}>
+          <Ionicons name="add" size={16} color={colors.headerText} />
         </View>
       ) : null}
       <AppText variant="caption" numberOfLines={1} align="center" style={styles.label}>
@@ -196,9 +197,7 @@ const styles = StyleSheet.create({
   ringUnseen: {
     borderColor: colors.pink,
   },
-  ringSeen: {
-    borderColor: colors.border,
-  },
+  ringSeen: {},
   addBadge: {
     position: 'absolute',
     bottom: 22,
@@ -208,7 +207,6 @@ const styles = StyleSheet.create({
     borderRadius: 11,
     backgroundColor: colors.pink,
     borderWidth: 2,
-    borderColor: colors.background,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -223,9 +221,7 @@ const styles = StyleSheet.create({
     marginTop: spacing.sm,
     padding: spacing.md,
     borderRadius: radius.lg,
-    backgroundColor: colors.surface,
     borderWidth: 1,
-    borderColor: colors.border,
   },
   emptyText: {
     marginLeft: spacing.sm,
@@ -238,9 +234,7 @@ const styles = StyleSheet.create({
     marginTop: spacing.sm,
     padding: spacing.md,
     borderRadius: radius.lg,
-    backgroundColor: colors.surface,
     borderWidth: 1,
-    borderColor: colors.border,
   },
   friendsIcon: {
     width: 34,

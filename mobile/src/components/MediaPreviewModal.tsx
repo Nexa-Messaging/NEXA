@@ -57,9 +57,9 @@ export function MediaPreviewModal({
       >
         <View style={styles.header}>
           <Pressable accessibilityRole="button" accessibilityLabel="Close preview" hitSlop={12} onPress={onClose} style={styles.iconButton}>
-            <Ionicons name="close" size={24} color={colors.surface} />
+            <Ionicons name="close" size={24} color={colors.headerText} />
           </Pressable>
-          <AppText variant="label" weight="semibold" color={colors.surface} style={styles.headerTitle}>
+          <AppText variant="label" weight="semibold" color={colors.headerText} style={styles.headerTitle}>
             Preview
           </AppText>
           <View style={styles.iconButton} />
@@ -75,7 +75,7 @@ export function MediaPreviewModal({
 
         <View style={styles.composer}>
           <TextInput
-            style={styles.input}
+            style={[styles.input, { backgroundColor: colors.surfaceMuted, color: colors.text }]}
             value={caption}
             onChangeText={onChangeCaption}
             placeholder="Add a caption…"
@@ -90,9 +90,9 @@ export function MediaPreviewModal({
             accessibilityState={{ disabled: !canSend }}
             disabled={!canSend}
             onPress={onSend}
-            style={[styles.sendButton, !canSend && styles.sendButtonDisabled]}
+            style={[styles.sendButton, !canSend && [styles.sendButtonDisabled, { backgroundColor: colors.textMuted }]]}
           >
-            <Ionicons name="arrow-up" size={20} color={colors.surface} />
+            <Ionicons name="arrow-up" size={20} color={colors.headerText} />
           </Pressable>
         </View>
       </KeyboardAvoidingView>
@@ -141,12 +141,10 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    backgroundColor: colors.surfaceMuted,
     borderRadius: radius.lg,
     paddingHorizontal: spacing.md,
     paddingTop: spacing.sm,
     paddingBottom: spacing.sm,
-    color: colors.text,
     maxHeight: 120,
     minHeight: 44,
   },
@@ -160,7 +158,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   sendButtonDisabled: {
-    backgroundColor: colors.textMuted,
     opacity: 0.5,
   },
 });

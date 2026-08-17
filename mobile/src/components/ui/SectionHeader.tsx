@@ -3,7 +3,7 @@ import React from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { AppText } from '@/components/ui/AppText';
-import { colors, spacing } from '@/constants/theme';
+import { spacing } from '@/constants/theme';
 import { useAppTheme } from '@/lib/theme';
 
 export interface SectionHeaderProps {

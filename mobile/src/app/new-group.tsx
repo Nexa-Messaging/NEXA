@@ -11,7 +11,7 @@ import {
 
 import { Avatar } from '@/components/Avatar';
 import { AppButton, AppText, FormField, Screen } from '@/components/ui';
-import { colors, radius, spacing } from '@/constants/theme';
+import { radius, spacing } from '@/constants/theme';
 import { useAppTheme } from '@/lib/theme';
 import { useAuth } from '@/lib/auth';
 import { listFriends } from '@/lib/friends';
@@ -178,7 +178,7 @@ export default function NewGroupScreen() {
         )}
       </View>
 
-      <View style={styles.footer}>
+      <View style={[styles.footer, { borderTopColor: colors.border, backgroundColor: colors.surface }]}>
         <AppButton
           title="Create group"
           size="lg"
@@ -250,7 +250,5 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
     borderTopWidth: 1,
-    borderTopColor: colors.border,
-    backgroundColor: colors.surface,
   },
 });

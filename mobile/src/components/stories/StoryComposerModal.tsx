@@ -217,9 +217,9 @@ export function StoryComposerModal({ visible, meId, onClose, onPosted }: StoryCo
             onPress={close}
             style={styles.iconButton}
           >
-            <Ionicons name="close" size={26} color={colors.surface} />
+            <Ionicons name="close" size={26} color={colors.headerText} />
           </Pressable>
-          <AppText variant="label" weight="semibold" color={colors.surface} style={styles.headerTitle}>
+          <AppText variant="label" weight="semibold" color={colors.headerText} style={styles.headerTitle}>
             NEW STORY
           </AppText>
           <View style={styles.iconButton} />
@@ -271,9 +271,9 @@ export function StoryComposerModal({ visible, meId, onClose, onPosted }: StoryCo
                 accessibilityState={{ disabled: !canPost }}
                 disabled={!canPost}
                 onPress={() => void post()}
-                style={[styles.sendButton, !canPost && styles.sendButtonDisabled]}
+                style={[styles.sendButton, !canPost && [styles.sendButtonDisabled, { backgroundColor: colors.textMuted }]]}
               >
-                <Ionicons name="arrow-up" size={20} color={colors.surface} />
+                <Ionicons name="arrow-up" size={20} color={colors.headerText} />
               </Pressable>
             </View>
             {error ? (
@@ -296,16 +296,16 @@ export function StoryComposerModal({ visible, meId, onClose, onPosted }: StoryCo
               )}
             </View>
             {posting ? (
-              <View style={styles.uploadingOverlay}>
-                <ActivityIndicator color={colors.surface} />
-                <AppText variant="label" weight="semibold" color={colors.surface} style={styles.uploadingText}>
+              <View style={[styles.uploadingOverlay, { backgroundColor: colors.overlay }]}>
+                <ActivityIndicator color={colors.headerText} />
+                <AppText variant="label" weight="semibold" color={colors.headerText} style={styles.uploadingText}>
                   {Math.round(progress * 100)}%
                 </AppText>
               </View>
             ) : null}
             <View style={styles.composer}>
               <TextInput
-                style={styles.input}
+                style={[styles.input, { backgroundColor: colors.surfaceMuted, color: colors.text }]}
                 value={caption}
                 onChangeText={setCaption}
                 placeholder="Add a caption…"
@@ -321,12 +321,12 @@ export function StoryComposerModal({ visible, meId, onClose, onPosted }: StoryCo
                 accessibilityState={{ disabled: !canPost }}
                 disabled={!canPost}
                 onPress={() => void post()}
-                style={[styles.sendButton, !canPost && styles.sendButtonDisabled]}
+                style={[styles.sendButton, !canPost && [styles.sendButtonDisabled, { backgroundColor: colors.textMuted }]]}
               >
                 {posting ? (
-                  <ActivityIndicator size="small" color={colors.surface} />
+                  <ActivityIndicator size="small" color={colors.headerText} />
                 ) : (
-                  <Ionicons name="arrow-up" size={20} color={colors.surface} />
+                  <Ionicons name="arrow-up" size={20} color={colors.headerText} />
                 )}
               </Pressable>
             </View>
@@ -351,8 +351,9 @@ function PickAction({
   label: string;
   onPress: () => void;
 }) {
+  const { colors } = useAppTheme();
   return (
-    <Pressable accessibilityRole="button" style={styles.pick} onPress={onPress}>
+    <Pressable accessibilityRole="button" style={[styles.pick, { backgroundColor: colors.surface }]} onPress={onPress}>
       <Ionicons name={icon} size={28} color={colors.primary} />
       <AppText variant="label" weight="semibold" color={colors.text} style={styles.pickLabel}>
         {label}
@@ -397,7 +398,6 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.lg,
     marginHorizontal: spacing.sm,
     borderRadius: radius.lg,
-    backgroundColor: colors.surface,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -423,7 +423,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.xl,
-    color: colors.surface,
+    color: colors.headerText,
     fontSize: 26,
     lineHeight: 36,
     textAlignVertical: 'top',
@@ -439,12 +439,10 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    backgroundColor: colors.surfaceMuted,
     borderRadius: radius.lg,
     paddingHorizontal: spacing.md,
     paddingTop: spacing.sm,
     paddingBottom: spacing.sm,
-    color: colors.text,
     maxHeight: 120,
     minHeight: 44,
   },
@@ -458,7 +456,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   sendButtonDisabled: {
-    backgroundColor: colors.textMuted,
     opacity: 0.5,
   },
   uploadingOverlay: {
@@ -467,7 +464,6 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: colors.overlay,
     alignItems: 'center',
     justifyContent: 'center',
     zIndex: 10,

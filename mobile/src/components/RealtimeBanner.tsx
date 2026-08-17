@@ -3,7 +3,7 @@ import React from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { AppText } from '@/components/ui/AppText';
-import { colors, spacing } from '@/constants/theme';
+import { spacing } from '@/constants/theme';
 import { useAppTheme } from '@/lib/theme';
 import { RealtimeStatus } from '@/lib/messaging';
 
@@ -30,7 +30,7 @@ export function RealtimeBanner({ status }: RealtimeBannerProps) {
   }
 
   return (
-    <View style={styles.banner}>
+    <View style={[styles.banner, { backgroundColor: colors.sunSoft }]}>
       <Ionicons name={icon} size={14} color={color} />
       <AppText variant="caption" color={color} weight="semibold" style={styles.text}>
         {text}
@@ -44,7 +44,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.sunSoft,
     paddingVertical: spacing.xs,
     paddingHorizontal: spacing.md,
   },

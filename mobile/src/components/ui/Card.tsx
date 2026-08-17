@@ -2,7 +2,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import React from 'react';
 import { StyleProp, StyleSheet, View, ViewStyle } from 'react-native';
 
-import { colors, radius, shadows } from '@/constants/theme';
+import { radius, shadows } from '@/constants/theme';
 import { useAppTheme } from '@/lib/theme';
 
 export interface CardProps {
@@ -14,20 +14,19 @@ export interface CardProps {
   style?: StyleProp<ViewStyle>;
 }
 
-const VARIANTS = {
-  flat: { backgroundColor: colors.surface, ...shadows.card },
-  pop: { backgroundColor: colors.surface, ...shadows.pop },
-  soft: { backgroundColor: colors.surfaceMuted, ...shadows.soft },
-} as const;
-
 /**
  * Layered surface card with soft shadows and an optional gradient header —
  * the shared building block for NEXA's sticker-like surfaces.
  */
 export function Card({ children, variant = 'flat', gradient, style }: CardProps) {
   const { colors } = useAppTheme();
+  const variantStyles = {
+    flat: { backgroundColor: colors.surface, ...shadows.card },
+    pop: { backgroundColor: colors.surface, ...shadows.pop },
+    soft: { backgroundColor: colors.surfaceMuted, ...shadows.soft },
+  } as const;
   return (
-    <View style={[styles.base, VARIANTS[variant], style]}>
+    <View style={[styles.base, variantStyles[variant], style]}>
       {gradient ? (
         <LinearGradient
           colors={gradient}

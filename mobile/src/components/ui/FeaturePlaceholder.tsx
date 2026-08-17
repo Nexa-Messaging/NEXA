@@ -4,7 +4,7 @@ import { StyleSheet, View } from 'react-native';
 
 import { AppText } from '@/components/ui/AppText';
 import { Screen } from '@/components/ui/Screen';
-import { colors, radius, spacing } from '@/constants/theme';
+import { radius, spacing } from '@/constants/theme';
 import { useAppTheme } from '@/lib/theme';
 
 export interface FeaturePlaceholderProps {
@@ -24,8 +24,10 @@ export function FeaturePlaceholder({ icon, title, description, phase }: FeatureP
   const { colors } = useAppTheme();
   return (
     <Screen blobbed centered>
-      <View style={[styles.container, styles.card]}>
-        <View style={styles.iconWrap}>
+      <View
+        style={[styles.container, styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}
+      >
+        <View style={[styles.iconWrap, { backgroundColor: colors.primarySoft }]}>
           <Ionicons name={icon} size={40} color={colors.primary} />
         </View>
         <AppText variant="heading" weight="bold" align="center">
@@ -35,7 +37,7 @@ export function FeaturePlaceholder({ icon, title, description, phase }: FeatureP
           {description}
         </AppText>
         {phase ? (
-          <View style={styles.phaseTag}>
+          <View style={[styles.phaseTag, { backgroundColor: colors.primarySoft }]}>
             <AppText variant="caption" color={colors.primary} weight="bold">
               {phase}
             </AppText>
@@ -51,10 +53,8 @@ const styles = StyleSheet.create({
     padding: spacing.xl,
   },
   card: {
-    backgroundColor: colors.surface,
     borderRadius: radius.xxl,
     borderWidth: 1,
-    borderColor: colors.border,
     alignItems: 'center',
     paddingVertical: spacing.xxl,
     paddingHorizontal: spacing.lg,
@@ -63,7 +63,6 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: radius.blob,
-    backgroundColor: colors.primarySoft,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: spacing.md,
@@ -77,6 +76,5 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.sm,
     paddingVertical: spacing.xs,
     borderRadius: radius.pill,
-    backgroundColor: colors.primarySoft,
   },
 });

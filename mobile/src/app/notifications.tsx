@@ -7,7 +7,7 @@ import { ActivityIndicator, FlatList, Pressable, RefreshControl, StyleSheet, Vie
 import { NotificationCard } from '@/components/NotificationCard';
 import { RealtimeBanner } from '@/components/RealtimeBanner';
 import { AppText, AppButton, EmptyState, Screen } from '@/components/ui';
-import { colors, gradients, radius, spacing } from '@/constants/theme';
+import { gradients, radius, spacing } from '@/constants/theme';
 import { useAppTheme } from '@/lib/theme';
 import { RealtimeStatus, subscribeToRealtimeStatus } from '@/lib/messaging';
 import { openNotification } from '@/lib/notifications';
@@ -59,13 +59,13 @@ export default function NotificationsScreen() {
             onPress={() => router.back()}
             accessibilityLabel="Back"
           >
-            <Ionicons name="arrow-back" size={22} color={colors.surface} />
+            <Ionicons name="arrow-back" size={22} color={colors.headerText} />
           </Pressable>
           <View style={styles.headerTitle}>
-            <AppText variant="caption" weight="bold" color={colors.surface} style={styles.headerLabel}>
+            <AppText variant="caption" weight="bold" color={colors.headerText} style={styles.headerLabel}>
               STAY IN THE LOOP
             </AppText>
-            <AppText variant="display" weight="bold" color={colors.surface}>
+            <AppText variant="display" weight="bold" color={colors.headerText}>
               Alerts
             </AppText>
           </View>
@@ -74,7 +74,7 @@ export default function NotificationsScreen() {
               title="Mark all read"
               variant="outline"
               size="sm"
-              style={styles.markAllButton}
+              style={[{ borderColor: colors.headerText }]}
               onPress={() => void markAllRead()}
             />
           ) : (
@@ -113,7 +113,7 @@ export default function NotificationsScreen() {
       />
 
       {error ? (
-        <View style={styles.errorBanner}>
+        <View style={[styles.errorBanner, { backgroundColor: colors.dangerSoft }]}>
           <AppText variant="label" tone="danger" style={styles.flex}>
             {error}
           </AppText>
@@ -157,9 +157,6 @@ const styles = StyleSheet.create({
     letterSpacing: 1.2,
     opacity: 0.95,
   },
-  markAllButton: {
-    borderColor: colors.surface,
-  },
   list: {
     paddingHorizontal: spacing.lg,
     paddingBottom: spacing.xxl,
@@ -168,7 +165,6 @@ const styles = StyleSheet.create({
   errorBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FDE9ED',
     marginHorizontal: spacing.lg,
     borderRadius: radius.md,
     paddingHorizontal: spacing.md,

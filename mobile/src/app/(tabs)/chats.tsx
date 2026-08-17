@@ -14,7 +14,7 @@ import {
 import { ConversationListItem } from '@/components/ConversationListItem';
 import { RealtimeBanner } from '@/components/RealtimeBanner';
 import { AppButton, AppText, EmptyState, Screen, SectionHeader } from '@/components/ui';
-import { colors, gradients, radius, spacing } from '@/constants/theme';
+import { gradients, radius, spacing } from '@/constants/theme';
 import { useAppTheme } from '@/lib/theme';
 import { useConversations } from '@/hooks/useConversations';
 
@@ -39,10 +39,10 @@ export default function ChatsScreen() {
       >
         <View style={styles.header}>
           <View>
-            <AppText variant="caption" weight="bold" color={colors.surface} style={styles.headerLabel}>
+            <AppText variant="caption" weight="bold" color={colors.headerText} style={styles.headerLabel}>
               YOUR CHATS
             </AppText>
-            <AppText variant="display" weight="bold" color={colors.surface}>
+            <AppText variant="display" weight="bold" color={colors.headerText}>
               Chats
             </AppText>
           </View>
@@ -54,7 +54,7 @@ export default function ChatsScreen() {
               style={styles.newButton}
               onPress={() => router.push('/new-group')}
             >
-              <Ionicons name="people-outline" size={22} color={colors.surface} />
+              <Ionicons name="people-outline" size={22} color={colors.headerText} />
             </Pressable>
             <Pressable
               accessibilityRole="button"
@@ -63,7 +63,7 @@ export default function ChatsScreen() {
               style={styles.newButton}
               onPress={() => router.push('/new-chat')}
             >
-              <Ionicons name="chatbubble-ellipses-outline" size={22} color={colors.surface} />
+              <Ionicons name="chatbubble-ellipses-outline" size={22} color={colors.headerText} />
             </Pressable>
           </View>
         </View>
@@ -160,10 +160,10 @@ function FriendsEntry({ onPress }: { onPress: () => void }) {
     <Pressable
       accessibilityRole="button"
       accessibilityLabel="Friends"
-      style={({ pressed }) => [styles.friendsCard, pressed && styles.friendsCardPressed]}
+      style={({ pressed }) => [styles.friendsCard, { backgroundColor: colors.surface, borderColor: colors.border }, pressed && styles.friendsCardPressed]}
       onPress={onPress}
     >
-      <View style={styles.friendsIcon}>
+      <View style={[styles.friendsIcon, { backgroundColor: colors.surfaceMuted }]}>
         <Ionicons name="people" size={20} color={colors.primary} />
       </View>
       <View style={styles.friendsText}>
@@ -219,9 +219,7 @@ const styles = StyleSheet.create({
   friendsCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.surface,
     borderWidth: 1,
-    borderColor: colors.border,
     borderRadius: radius.lg,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.md,
@@ -234,7 +232,6 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: radius.pill,
-    backgroundColor: colors.surfaceMuted,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: spacing.sm,

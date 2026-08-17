@@ -3,7 +3,6 @@ import React from 'react';
 import { StyleSheet, Text, TextProps, TextStyle } from 'react-native';
 
 import { gradients, tracking, typography } from '@/constants/theme';
-import { useAppTheme } from '@/lib/theme';
 
 export type GradientTextVariant = keyof typeof typography;
 
@@ -29,7 +28,6 @@ export function GradientText({
   children,
   ...rest
 }: GradientTextProps) {
-  const { colors } = useAppTheme();
   return (
     <Text
       style={[

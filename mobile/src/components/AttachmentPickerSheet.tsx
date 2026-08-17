@@ -3,7 +3,7 @@ import React from 'react';
 import { Modal, Pressable, StyleSheet, View } from 'react-native';
 
 import { AppText } from '@/components/ui/AppText';
-import { colors, radius, spacing } from '@/constants/theme';
+import { radius, spacing } from '@/constants/theme';
 import { useAppTheme } from '@/lib/theme';
 
 export interface AttachmentPickerSheetProps {
@@ -28,8 +28,8 @@ export function AttachmentPickerSheet({
   const { colors } = useAppTheme();
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
-      <Pressable accessibilityRole="button" accessibilityLabel="Close" style={styles.backdrop} onPress={onClose}>
-        <Pressable style={styles.sheet} onPress={() => {}}>
+      <Pressable accessibilityRole="button" accessibilityLabel="Close" style={[styles.backdrop, { backgroundColor: colors.overlay }]} onPress={onClose}>
+        <Pressable style={[styles.sheet, { backgroundColor: colors.surface }]} onPress={() => {}}>
           <AppText variant="label" weight="semibold" color={colors.textSecondary} align="center">
             ADD ATTACHMENT
           </AppText>
@@ -53,8 +53,9 @@ function ActionItem({
   label: string;
   onPress: () => void;
 }) {
+  const { colors } = useAppTheme();
   return (
-    <Pressable accessibilityRole="button" style={styles.action} onPress={onPress}>
+    <Pressable accessibilityRole="button" style={[styles.action, { backgroundColor: colors.surfaceMuted }]} onPress={onPress}>
       <Ionicons name={icon} size={24} color={colors.primary} />
       <AppText variant="body" weight="semibold" color={colors.text} style={styles.actionLabel}>
         {label}
@@ -66,11 +67,9 @@ function ActionItem({
 const styles = StyleSheet.create({
   backdrop: {
     flex: 1,
-    backgroundColor: colors.overlay,
     justifyContent: 'flex-end',
   },
   sheet: {
-    backgroundColor: colors.surface,
     borderTopLeftRadius: radius.lg,
     borderTopRightRadius: radius.lg,
     padding: spacing.lg,
@@ -84,7 +83,6 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.surfaceMuted,
     borderRadius: radius.md,
     paddingVertical: spacing.md,
     marginHorizontal: spacing.xxs,
