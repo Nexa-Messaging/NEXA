@@ -182,6 +182,21 @@ export interface Database {
           },
         ];
       };
+      push_config: {
+        Row: {
+          key: string;
+          value: string;
+        };
+        Insert: {
+          key: string;
+          value: string;
+        };
+        Update: {
+          key?: string;
+          value?: string;
+        };
+        Relationships: [];
+      };
       conversations: {
         Row: {
           id: string;
@@ -972,6 +987,7 @@ export interface Database {
           data: Json;
           is_read: boolean;
           created_at: string;
+          push_delivered_at: string | null;
         };
         Insert: {
           id?: string;
@@ -983,6 +999,7 @@ export interface Database {
           data?: Json;
           is_read?: boolean;
           created_at?: string;
+          push_delivered_at?: string | null;
         };
         Update: {
           id?: string;
@@ -994,6 +1011,7 @@ export interface Database {
           data?: Json;
           is_read?: boolean;
           created_at?: string;
+          push_delivered_at?: string | null;
         };
         Relationships: [
           {

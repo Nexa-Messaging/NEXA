@@ -8,6 +8,9 @@ import { getSupabase } from '@/lib/supabase';
 
 const PUSH_ASKED_KEY = 'nexa_push_permission_asked';
 
+/** Android channel used by the push delivery worker (`channelId: messages`). */
+export const PUSH_CHANNEL_ID = 'messages';
+
 /** Latest token registered for this device; kept so sign-out can remove it. */
 let registeredToken: { data: string } | null = null;
 
@@ -28,9 +31,28 @@ export function installNotificationHandler(): void {
     handleNotification: async () => ({
       shouldShowBanner: true,
       shouldShowList: true,
-      shouldPlaySound: false,
+      shouldPlaySound: true,
       shouldSetBadge: false,
     }),
+  });
+  void configureAndroidChannel();
+}
+
+/**
+ * Creates the dedicated messages channel on Android 8+ so pushes coming from
+ * the worker (channelId "messages") show a heads-up banner with sound in the
+ * foreground, background and closed states. Idempotent.
+ */
+async function configureAndroidChannel(): Promise<void> {
+  if (Platform.OS !== 'android') {
+    return;
+  }
+  await Notifications.setNotificationChannelAsync(PUSH_CHANNEL_ID, {
+    name: 'Messages',
+    importance: Notifications.AndroidImportance.MAX,
+    vibrationPattern: [0, 250, 250, 250],
+    lightColor: '#5B5FE9',
+    sound: 'default',
   });
 }
 
@@ -72,6 +94,10 @@ export async function registerPushToken(): Promise<void> {
   }
 
   try {
+    // Android 13+ requires at least one channel to exist before the system
+    // permission prompt appears and before a push token can be minted.
+    await configureAndroidChannel();
+
     let settings = await Notifications.getPermissionsAsync();
     if (!settings.granted) {
       const asked = await AsyncStorage.getItem(PUSH_ASKED_KEY);
