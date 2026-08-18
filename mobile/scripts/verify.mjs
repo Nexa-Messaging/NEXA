@@ -570,6 +570,12 @@ if (signUpA.error) {
       } else {
         fail('A list shows last message and unread count', JSON.stringify(rowA));
       }
+      const badge1 = await aDevice.client.rpc('unread_conversation_count');
+      if (badge1.error || badge1.data !== 1) {
+        fail('chat badge counts 1 unread conversation', JSON.stringify(badge1));
+      } else {
+        pass('chat badge counts 1 unread conversation');
+      }
     }
 
     step('23. Reply to a message');
@@ -589,6 +595,14 @@ if (signUpA.error) {
         pass('chat list preview updates to the newest message');
       } else {
         fail('chat list preview updates to the newest message', JSON.stringify(rowA));
+      }
+      // Two unread messages in the same conversation must still count as ONE
+      // unread conversation for the Chat badge (distinct, not per-message).
+      const badge2 = await aDevice.client.rpc('unread_conversation_count');
+      if (badge2.error || badge2.data !== 1) {
+        fail('chat badge stays 1 across multiple messages in one conversation', JSON.stringify(badge2));
+      } else {
+        pass('chat badge stays 1 across multiple messages in one conversation');
       }
     }
 
@@ -621,6 +635,12 @@ if (signUpA.error) {
       fail('unread count cleared after read', JSON.stringify(rowA2));
     } else {
       pass('unread count cleared after read');
+    }
+    const badge3 = await aDevice.client.rpc('unread_conversation_count');
+    if (badge3.error || badge3.data !== 0) {
+      fail('chat badge clears after marking read', JSON.stringify(badge3));
+    } else {
+      pass('chat badge clears after marking read');
     }
 
     step('26. B sees delivered + read receipts on its own messages');
@@ -1125,6 +1145,9 @@ if (signUpA.error) {
         step('43. Unread count appears and mark_group_read clears it');
         const listBefore = await aDevice.client.rpc('list_group_chats');
         const rowBefore = listBefore.data?.find((g) => g.chat_id === groupId);
+        // Mark the DM read first so the badge isolates the group's unread.
+        await aDevice.client.rpc('mark_messages_read', { p_conversation: convId });
+        const badgeGroup = await aDevice.client.rpc('unread_conversation_count');
         const gRead = await aDevice.client.rpc('mark_group_read', { p_chat: groupId });
         const listAfter = await aDevice.client.rpc('list_group_chats');
         const rowAfter = listAfter.data?.find((g) => g.chat_id === groupId);
@@ -1132,6 +1155,17 @@ if (signUpA.error) {
           pass('group unread tracked via read watermark');
         } else {
           fail('group unread tracked via read watermark', JSON.stringify({ before: rowBefore?.unread_count, after: rowAfter?.unread_count, err: gRead.error?.message }));
+        }
+        if (badgeGroup.error || badgeGroup.data !== 1) {
+          fail('chat badge counts the unread group', JSON.stringify(badgeGroup));
+        } else {
+          pass('chat badge counts the unread group');
+        }
+        const badgeGroupAfter = await aDevice.client.rpc('unread_conversation_count');
+        if (badgeGroupAfter.error || badgeGroupAfter.data !== 0) {
+          fail('chat badge clears after mark_group_read', JSON.stringify(badgeGroupAfter));
+        } else {
+          pass('chat badge clears after mark_group_read');
         }
 
         step('44. Reactions on group messages (add, dedupe, remove)');

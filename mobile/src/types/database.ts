@@ -1864,6 +1864,10 @@ export interface Database {
           actor_avatar_url: string | null;
         };
       };
+      unread_conversation_count: {
+        Args: Record<PropertyKey, never>;
+        Returns: number;
+      };
       unread_notification_count: {
         Args: Record<PropertyKey, never>;
         Returns: number;

@@ -44,6 +44,16 @@ export async function fetchConversations(): Promise<MessagingResult<Conversation
   return { data: rows, error: null };
 }
 
+/** Count of distinct conversations (1:1 + groups) with unread messages (Chat badge). */
+export async function fetchUnreadConversationCount(): Promise<MessagingResult<number>> {
+  const supabase = getSupabase();
+  const { data, error } = await supabase.rpc('unread_conversation_count');
+  if (error) {
+    return { data: null, error: fallbackMessage(error, 'Could not load unread counts.') };
+  }
+  return { data: (data as number) ?? 0, error: null };
+}
+
 /** Peer info for an open conversation. Empty when the user is not a member. */
 export async function fetchConversationInfo(
   conversationId: string,

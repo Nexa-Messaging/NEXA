@@ -4,8 +4,8 @@ import React from 'react';
 
 import { FloatingTabBar, TabBarItem } from '@/components/ui/FloatingTabBar';
 import { useCommunities } from '@/hooks/useCommunities';
+import { useUnreadConversationCount } from '@/hooks/useUnreadConversationCount';
 import { useAppTheme } from '@/lib/theme';
-import { useConversations } from '@/hooks/useConversations';
 
 type IoniconName = keyof typeof Ionicons.glyphMap;
 
@@ -25,10 +25,9 @@ const TABS: Record<string, TabSpec> = {
 export default function TabsLayout() {
   const { colors } = useAppTheme();
   const router = useRouter();
-  const { items: conversations } = useConversations();
+  const chatUnread = useUnreadConversationCount();
   const { items: communities } = useCommunities();
 
-  const chatUnread = conversations.reduce((sum, item) => sum + item.unreadCount, 0);
   const circlesUnread = communities
     .filter((entry) => entry.is_member)
     .reduce((sum, entry) => sum + entry.unread_count, 0);
