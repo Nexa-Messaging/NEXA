@@ -988,6 +988,10 @@ export interface Database {
           is_read: boolean;
           created_at: string;
           push_delivered_at: string | null;
+          group_key: string | null;
+          message_count: number;
+          read_at: string | null;
+          updated_at: string;
         };
         Insert: {
           id?: string;
@@ -1000,6 +1004,10 @@ export interface Database {
           is_read?: boolean;
           created_at?: string;
           push_delivered_at?: string | null;
+          group_key?: string | null;
+          message_count?: number;
+          read_at?: string | null;
+          updated_at?: string;
         };
         Update: {
           id?: string;
@@ -1012,6 +1020,10 @@ export interface Database {
           is_read?: boolean;
           created_at?: string;
           push_delivered_at?: string | null;
+          group_key?: string | null;
+          message_count?: number;
+          read_at?: string | null;
+          updated_at?: string;
         };
         Relationships: [
           {
@@ -1857,12 +1869,20 @@ export interface Database {
           body: string;
           data: Json;
           is_read: boolean;
+          message_count: number;
+          group_key: string | null;
+          read_at: string | null;
           created_at: string;
+          updated_at: string;
           actor_id: string | null;
           actor_display_name: string | null;
           actor_username: string | null;
           actor_avatar_url: string | null;
         };
+      };
+      pending_friend_request_count: {
+        Args: Record<PropertyKey, never>;
+        Returns: number;
       };
       unread_conversation_count: {
         Args: Record<PropertyKey, never>;

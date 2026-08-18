@@ -1,4 +1,8 @@
-import { PostgrestError } from '@supabase/supabase-js';
+import {
+  PostgrestError,
+  RealtimeChannel,
+  RealtimePostgresChangesPayload,
+} from '@supabase/supabase-js';
 
 import { getSupabase } from '@/lib/supabase';
 import { Profile } from '@/types/database';
@@ -109,6 +113,16 @@ function friendshipError(error: PostgrestError | null): string {
   return error ? fallbackMessage(error, 'Could not load friendships.') : '';
 }
 
+/** Number of friend requests waiting on the current user (Friends badge). */
+export async function fetchPendingFriendRequestCount(): Promise<FriendResult<number>> {
+  const supabase = getSupabase();
+  const { data, error } = await supabase.rpc('pending_friend_request_count');
+  if (error) {
+    return { data: null, error: fallbackMessage(error, 'Could not load friend requests.') };
+  }
+  return { data: (data as number) ?? 0, error: null };
+}
+
 /** Accepted friends of the current user (as profiles). */
 export async function listFriends(meId: string): Promise<FriendResult<Profile[]>> {
   const supabase = getSupabase();
@@ -180,4 +194,53 @@ export async function searchUsers(
     return { data: null, error: fallbackMessage(error, 'Could not search for users.') };
   }
   return { data: (data ?? []) as Profile[], error: null };
+}
+
+// ---------------------------------------------------------------------------
+// Realtime (single underlying channel, many listeners)
+// ---------------------------------------------------------------------------
+
+type FriendshipChangeListener = (payload: RealtimePostgresChangesPayload<Record<string, unknown>>) => void;
+
+const friendshipListeners = new Set<FriendshipChangeListener>();
+
+let friendshipsChannel: RealtimeChannel | null = null;
+
+function ensureFriendshipsChannel() {
+  if (friendshipsChannel || friendshipListeners.size === 0) {
+    return;
+  }
+  const supabase = getSupabase();
+  friendshipsChannel = supabase
+    .channel('nexa-realtime-friendships')
+    .on(
+      'postgres_changes',
+      { event: '*', schema: 'public', table: 'friendships' },
+      (payload: RealtimePostgresChangesPayload<Record<string, unknown>>) => {
+        for (const listener of friendshipListeners) {
+          listener(payload);
+        }
+      },
+    )
+    .subscribe();
+}
+
+function teardownFriendshipsChannel() {
+  if (!friendshipsChannel) {
+    return;
+  }
+  friendshipsChannel.unsubscribe();
+  friendshipsChannel = null;
+}
+
+/** Subscribe to friendship changes (requests in/out, accepts, removals). */
+export function subscribeToFriendships(listener: FriendshipChangeListener): () => void {
+  friendshipListeners.add(listener);
+  ensureFriendshipsChannel();
+  return () => {
+    friendshipListeners.delete(listener);
+    if (friendshipListeners.size === 0) {
+      teardownFriendshipsChannel();
+    }
+  };
 }

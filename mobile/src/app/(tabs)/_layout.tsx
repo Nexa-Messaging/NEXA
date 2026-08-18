@@ -4,6 +4,7 @@ import React from 'react';
 
 import { FloatingTabBar, TabBarItem } from '@/components/ui/FloatingTabBar';
 import { useCommunities } from '@/hooks/useCommunities';
+import { usePendingFriendRequestCount } from '@/hooks/usePendingFriendRequestCount';
 import { useUnreadConversationCount } from '@/hooks/useUnreadConversationCount';
 import { useAppTheme } from '@/lib/theme';
 
@@ -18,6 +19,7 @@ interface TabSpec {
 const TABS: Record<string, TabSpec> = {
   home: { title: 'Home', icon: 'home-outline', iconFocused: 'home' },
   chats: { title: 'Chat', icon: 'chatbubble-ellipses-outline', iconFocused: 'chatbubble-ellipses' },
+  friends: { title: 'Friends', icon: 'person-add-outline', iconFocused: 'person-add' },
   communities: { title: 'Circles', icon: 'people-outline', iconFocused: 'people' },
   profile: { title: 'Profile', icon: 'person-circle-outline', iconFocused: 'person-circle' },
 };
@@ -26,11 +28,12 @@ export default function TabsLayout() {
   const { colors } = useAppTheme();
   const router = useRouter();
   const chatUnread = useUnreadConversationCount();
+  const friendsUnread = usePendingFriendRequestCount();
   const { items: communities } = useCommunities();
 
-  const circlesUnread = communities
-    .filter((entry) => entry.is_member)
-    .reduce((sum, entry) => sum + entry.unread_count, 0);
+  // Distinct communities with unread activity, mirroring the Chat badge's
+  // "count conversations, not messages" rule.
+  const circlesUnread = communities.filter((entry) => entry.is_member && entry.unread_count > 0).length;
 
   const items: TabBarItem[] = Object.entries(TABS).map(([name, { title, icon, iconFocused }]) => ({
     name,
@@ -56,6 +59,7 @@ export default function TabsLayout() {
           active={props.state.routes[props.state.index].name}
           badges={{
             chats: chatUnread,
+            friends: friendsUnread,
             communities: circlesUnread,
           }}
           onSelect={(name) => {

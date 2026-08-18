@@ -81,7 +81,6 @@ function RootNavigator() {
           />
           <Stack.Screen name="users/[username]" options={{ animation: 'slide_from_right' }} />
           <Stack.Screen name="notifications" options={{ animation: 'slide_from_right' }} />
-          <Stack.Screen name="friends" options={{ animation: 'slide_from_right' }} />
           <Stack.Screen name="new-chat" options={{ animation: 'slide_from_bottom' }} />
           <Stack.Screen name="new-group" options={{ animation: 'slide_from_bottom' }} />
           <Stack.Screen name="search" options={{ animation: 'slide_from_right' }} />

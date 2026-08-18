@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { router, useFocusEffect } from 'expo-router';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
@@ -12,7 +13,7 @@ import {
 
 import { FriendRow } from '@/components/FriendRow';
 import { AppText, Screen } from '@/components/ui';
-import { radius, spacing } from '@/constants/theme';
+import { gradients, radius, spacing } from '@/constants/theme';
 import { useAppTheme } from '@/lib/theme';
 import { useAuth } from '@/lib/auth';
 import {
@@ -42,22 +43,27 @@ export default function FriendsScreen() {
   }
 
   return (
-    <Screen padding={0}>
-      <View style={styles.header}>
-        <Pressable
-          accessibilityRole="button"
-          hitSlop={12}
-          style={styles.backButton}
-          onPress={() => router.back()}
-          accessibilityLabel="Back"
-        >
-          <Ionicons name="arrow-back" size={22} color={colors.text} />
-        </Pressable>
-        <AppText variant="heading" weight="bold">
-          Friends
-        </AppText>
-        <View style={styles.backButton} />
-      </View>
+    <Screen padding={0} blobbed>
+      <LinearGradient
+        colors={gradients.candy}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.headerBand}
+      >
+        <View style={styles.header}>
+          <View>
+            <AppText variant="caption" weight="bold" color={colors.headerText} style={styles.headerLabel}>
+              YOUR PEOPLE
+            </AppText>
+            <AppText variant="display" weight="bold" color={colors.headerText}>
+              Friends
+            </AppText>
+          </View>
+          <View style={styles.headerSticker}>
+            <Ionicons name="person-add" size={20} color={colors.headerText} />
+          </View>
+        </View>
+      </LinearGradient>
 
       <View style={[styles.segments, { backgroundColor: colors.surfaceMuted }]}>
         {SEGMENTS.map((item) => {
@@ -385,22 +391,36 @@ function Empty({ text }: { text: string }) {
 
 const styles = StyleSheet.create({
   flex: { flex: 1 },
+  headerBand: {
+    paddingTop: spacing.sm,
+    paddingBottom: spacing.lg,
+    borderBottomLeftRadius: radius.xxl,
+    borderBottomRightRadius: radius.xxl,
+    paddingHorizontal: spacing.lg,
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
   },
-  backButton: {
-    width: 40,
-    height: 40,
+  headerLabel: {
+    letterSpacing: 1.2,
+    opacity: 0.95,
+  },
+  headerSticker: {
+    width: 42,
+    height: 42,
+    borderRadius: radius.pill,
+    backgroundColor: 'rgba(255,255,255,0.22)',
     alignItems: 'center',
     justifyContent: 'center',
+    transform: [{ rotate: '8deg' }],
   },
   segments: {
     flexDirection: 'row',
     marginHorizontal: spacing.lg,
+    marginTop: spacing.md,
     marginBottom: spacing.sm,
     borderRadius: radius.pill,
     padding: 4,
