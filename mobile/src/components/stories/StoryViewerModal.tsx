@@ -6,7 +6,6 @@ import {
   ActivityIndicator,
   Alert,
   Animated,
-  Dimensions,
   KeyboardAvoidingView,
   Modal,
   Platform,
@@ -16,6 +15,7 @@ import {
   View,
 } from 'react-native';
 import { Image } from 'expo-image';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 
 import { Avatar } from '@/components/Avatar';
 import { AppText } from '@/components/ui/AppText';
@@ -35,6 +35,9 @@ import {
 import { StoryFeedRow, StoryReplyFeed, StoryViewer } from '@/types/database';
 
 const REACTION_EMOJIS = ['👍', '❤️', '😂', '😢', '😮', '🔥'];
+
+/** Swipe must move this far horizontally before it counts as next/previous. */
+const SWIPE_THRESHOLD = 56;
 
 export interface StoryViewerModalProps {
   visible: boolean;
@@ -108,6 +111,7 @@ export function StoryViewerModal({
   const [storyIndex, setStoryIndex] = useState(0);
   const [paused, setPaused] = useState(false);
   const [mediaUrls, setMediaUrls] = useState<Record<string, string>>({});
+  const [mediaErrors, setMediaErrors] = useState<Record<string, string>>({});
   const [localReactions, setLocalReactions] = useState<Record<string, string | null>>({});
   const localViewed = useRef<Set<string>>(new Set());
   const [replyOpen, setReplyOpen] = useState(false);
@@ -123,6 +127,10 @@ export function StoryViewerModal({
   const animation = useRef<Animated.CompositeAnimation | null>(null);
   const latestValue = useRef(0);
   const totalMs = useRef(5000);
+
+  // Double-tap like heart burst.
+  const heartScale = useRef(new Animated.Value(0.4)).current;
+  const heartOpacity = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     const id = progress.addListener(({ value }) => {
@@ -225,10 +233,15 @@ export function StoryViewerModal({
 
     if (story.kind !== 'text' && story.media_path) {
       const id = story.story_id;
-      if (!mediaUrls[id]) {
+      if (!mediaUrls[id] && !mediaErrors[id]) {
         void resolveStoryMediaUrl(id, story.media_path).then((result) => {
           if (result.url) {
             setMediaUrls((prev) => ({ ...prev, [id]: result.url as string }));
+          } else {
+            setMediaErrors((prev) => ({
+              ...prev,
+              [id]: result.error ?? 'Could not load this story.',
+            }));
           }
         });
       }
@@ -236,6 +249,62 @@ export function StoryViewerModal({
     return () => stopAnimation();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visible, userId, storyIndex, entries]);
+
+  const retryMedia = useCallback((targetStory: StoryFeedRow) => {
+    if (targetStory.kind === 'text' || !targetStory.media_path) {
+      return;
+    }
+    const id = targetStory.story_id;
+    setMediaErrors((prev) => {
+      if (!prev[id]) {
+        return prev;
+      }
+      const next = { ...prev };
+      delete next[id];
+      return next;
+    });
+    setMediaUrls((prev) => {
+      if (!prev[id]) {
+        return prev;
+      }
+      const next = { ...prev };
+      delete next[id];
+      return next;
+    });
+    void resolveStoryMediaUrl(id, targetStory.media_path).then((result) => {
+      if (result.url) {
+        setMediaUrls((prev) => ({ ...prev, [id]: result.url as string }));
+      } else {
+        setMediaErrors((prev) => ({
+          ...prev,
+          [id]: result.error ?? 'Could not load this story.',
+        }));
+      }
+    });
+  }, []);
+
+  const handleDoubleTapLike = useCallback(() => {
+    if (!story) {
+      return;
+    }
+    const current = localReactions[story.story_id] ?? story.my_reaction ?? null;
+    if (current === '❤️') {
+      setLocalReactions((prev) => ({ ...prev, [story.story_id]: null }));
+      void removeStoryReaction(story.story_id);
+      return;
+    }
+    setLocalReactions((prev) => ({ ...prev, [story.story_id]: '❤️' }));
+    void reactToStory(story.story_id, '❤️');
+    heartScale.setValue(0.4);
+    heartOpacity.setValue(1);
+    Animated.parallel([
+      Animated.spring(heartScale, { toValue: 1.15, friction: 4, useNativeDriver: true }),
+      Animated.sequence([
+        Animated.delay(320),
+        Animated.timing(heartOpacity, { toValue: 0, duration: 260, useNativeDriver: true }),
+      ]),
+    ]).start();
+  }, [story, localReactions, heartScale, heartOpacity]);
 
   // Pause / resume the current story's timer.
   useEffect(() => {
@@ -272,16 +341,39 @@ export function StoryViewerModal({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visible, story?.story_id, userId, storyIndex]);
 
-  const onTap = (x: number) => {
-    const width = Dimensions.get('window').width;
-    if (x < width / 3) {
-      goPrev();
-    } else if (x > (2 * width) / 3) {
-      goNext();
-    } else {
-      setPaused((current) => !current);
-    }
-  };
+  const singleTap = Gesture.Tap()
+    .maxDelay(280)
+    .onEnd(() => {
+      if (!replyOpen) {
+        setPaused((current) => !current);
+      }
+    });
+
+  const doubleTap = Gesture.Tap()
+    .numberOfTaps(2)
+    .maxDelay(280)
+    .onEnd(() => {
+      if (!replyOpen) {
+        handleDoubleTapLike();
+      }
+    });
+
+  const swipe = Gesture.Pan()
+    .minDistance(18)
+    .activeOffsetX([-12, 12])
+    .failOffsetY([-28, 28])
+    .onEnd((event) => {
+      if (replyOpen) {
+        return;
+      }
+      if (event.translationX > SWIPE_THRESHOLD) {
+        goNext();
+      } else if (event.translationX < -SWIPE_THRESHOLD) {
+        goPrev();
+      }
+    });
+
+  const gesture = Gesture.Race(Gesture.Exclusive(doubleTap, singleTap), swipe);
 
   const handleReact = (emoji: string) => {
     if (!story) {
@@ -360,23 +452,53 @@ export function StoryViewerModal({
   const isMine = story?.user_id === meId;
   const myReaction = story ? localReactions[story.story_id] ?? story.my_reaction ?? null : null;
   const mediaUrl = story ? mediaUrls[story.story_id] ?? null : null;
+  const mediaError = story ? mediaErrors[story.story_id] ?? null : null;
   const fillWidth = progress.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] });
 
   return (
     <Modal visible transparent animationType="fade" onRequestClose={onClose}>
       <View style={styles.container}>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={
-            story
-              ? `Story by ${entry?.display_name ?? 'user'}, tap the left side for previous, right side for next`
-              : 'Story viewer'
-          }
-          style={styles.fill}
-          onPress={(event) => onTap(event.nativeEvent.locationX)}
+        <GestureDetector gesture={gesture}>
+          <View
+            accessibilityLabel={
+              story
+                ? `Story by ${entry?.display_name ?? 'user'}. Tap to pause or resume, double tap to like, swipe right for the next story, swipe left for the previous one.`
+                : 'Story viewer'
+            }
+            style={styles.fill}
+          >
+            <FadeInView key={story?.story_id ?? 'empty'}>
+              <StoryContent
+                story={story}
+                url={mediaUrl}
+                paused={paused}
+                isMine={isMine}
+                error={mediaError}
+                onRetry={story ? () => retryMedia(story) : undefined}
+                onMediaError={
+                  story
+                    ? () =>
+                        setMediaErrors((prev) => ({
+                          ...prev,
+                          [story.story_id]: 'Could not load this story.',
+                        }))
+                    : undefined
+                }
+              />
+            </FadeInView>
+          </View>
+        </GestureDetector>
+
+        {/* Double-tap like burst */}
+        <Animated.View
+          pointerEvents="none"
+          style={[
+            styles.heartOverlay,
+            { opacity: heartOpacity, transform: [{ scale: heartScale }] },
+          ]}
         >
-          <StoryContent story={story} url={mediaUrl} paused={paused} isMine={isMine} />
-        </Pressable>
+          <Ionicons name="heart" size={104} color="#FF5A79" />
+        </Animated.View>
 
         {/* Top scrim + progress bars + header */}
         <View style={styles.topOverlay} pointerEvents="box-none">
@@ -587,11 +709,17 @@ function StoryContent({
   url,
   paused,
   isMine,
+  error,
+  onRetry,
+  onMediaError,
 }: {
   story: StoryFeedRow | null;
   url: string | null;
   paused: boolean;
   isMine: boolean;
+  error: string | null;
+  onRetry?: () => void;
+  onMediaError?: () => void;
 }) {
   if (!story) {
     return null;
@@ -613,6 +741,23 @@ function StoryContent({
       </LinearGradient>
     );
   }
+  if (error) {
+    return (
+      <View style={styles.errorArea}>
+        <Ionicons name="alert-circle-outline" size={40} color="rgba(255,255,255,0.7)" />
+        <AppText variant="body" color={colors.headerText} align="center" style={styles.errorText}>
+          {error}
+        </AppText>
+        {onRetry ? (
+          <Pressable accessibilityRole="button" onPress={onRetry} style={styles.retryButton}>
+            <AppText variant="label" weight="bold" color={colors.headerText}>
+              Retry
+            </AppText>
+          </Pressable>
+        ) : null}
+      </View>
+    );
+  }
   if (!url) {
     return (
       <View style={styles.loadingArea}>
@@ -629,8 +774,18 @@ function StoryContent({
       style={StyleSheet.absoluteFill}
       contentFit="contain"
       transition={150}
+      onError={onMediaError}
     />
   );
+}
+
+/** Soft fade-in when switching between stories (smooth transitions). */
+function FadeInView({ children }: { children: React.ReactNode }) {
+  const opacity = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    Animated.timing(opacity, { toValue: 1, duration: 220, useNativeDriver: true }).start();
+  }, [opacity]);
+  return <Animated.View style={[styles.fadeContainer, { opacity }]}>{children}</Animated.View>;
 }
 
 function StoryVideo({ uri, paused }: { uri: string; paused: boolean }) {
@@ -671,6 +826,31 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
+  },
+  fadeContainer: {
+    flex: 1,
+  },
+  heartOverlay: {
+    position: 'absolute',
+    top: '42%',
+    alignSelf: 'center',
+  },
+  errorArea: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: spacing.xl,
+  },
+  errorText: {
+    marginTop: spacing.sm,
+    marginBottom: spacing.md,
+    lineHeight: 22,
+  },
+  retryButton: {
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm,
+    borderRadius: radius.pill,
+    backgroundColor: 'rgba(255,255,255,0.18)',
   },
   topOverlay: {
     position: 'absolute',

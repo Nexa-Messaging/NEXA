@@ -258,6 +258,8 @@ export interface Database {
           media_height: number | null;
           media_duration: number | null;
           media_size: number | null;
+          via_story_reply: boolean;
+          story_id: string | null;
         };
         Insert: {
           id?: string;
@@ -280,6 +282,8 @@ export interface Database {
           media_height?: number | null;
           media_duration?: number | null;
           media_size?: number | null;
+          via_story_reply?: boolean;
+          story_id?: string | null;
         };
         Update: {
           id?: string;
@@ -302,6 +306,8 @@ export interface Database {
           media_height?: number | null;
           media_duration?: number | null;
           media_size?: number | null;
+          via_story_reply?: boolean;
+          story_id?: string | null;
         };
         Relationships: [
           {
@@ -323,6 +329,13 @@ export interface Database {
             columns: ['reply_to_id'];
             isOneToOne: false;
             referencedRelation: 'messages';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'messages_story_id_fkey';
+            columns: ['story_id'];
+            isOneToOne: false;
+            referencedRelation: 'stories';
             referencedColumns: ['id'];
           },
         ];

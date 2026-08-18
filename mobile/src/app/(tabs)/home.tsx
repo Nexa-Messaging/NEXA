@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { router } from 'expo-router';
-import React, { useState } from 'react';
+import { router, useFocusEffect } from 'expo-router';
+import React, { useCallback, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { StoriesFeedSection } from '@/components/stories/StoriesFeedSection';
@@ -33,6 +33,14 @@ export default function HomeScreen() {
   const onStoriesChanged = () => {
     void refresh();
   };
+
+  // Re-fetch when returning to the tab so expired stories drop off the rail
+  // (expiry is a time-based state, not a realtime event).
+  useFocusEffect(
+    useCallback(() => {
+      void refresh();
+    }, [refresh]),
+  );
 
   const firstName = profile?.display_name?.split(' ')[0] ?? '';
 

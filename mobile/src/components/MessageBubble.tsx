@@ -8,6 +8,7 @@ import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 
 import { AppText } from '@/components/ui/AppText';
 import { VoiceNotePlayer } from '@/components/VoiceNotePlayer';
+import { StoryReplyPreview } from '@/components/stories/StoryReplyPreview';
 import { colors, gradients, radius, shadows, spacing } from '@/constants/theme';
 import { useAppTheme } from '@/lib/theme';
 import { PendingCommunityMessage } from '@/hooks/useCommunityMessages';
@@ -90,6 +91,11 @@ function getEditedAt(item: ChatItem): string | null {
   return (item as { edited_at?: string | null }).edited_at ?? null;
 }
 
+function getStoryId(item: ChatItem): string | null {
+  if (!('story_id' in item)) return null;
+  return (item as { story_id?: string | null }).story_id ?? null;
+}
+
 export function MessageBubble({
   item,
   isMine,
@@ -112,6 +118,7 @@ export function MessageBubble({
   const reactions = isPending || isDeleted ? [] : groupReactions(item.reactions, meId);
   const replyToId = getReplyToId(item);
   const editedAt = getEditedAt(item);
+  const storyId = getStoryId(item);
   const msgId = getMessageId(item);
 
   const doubleTap = Gesture.Tap()
@@ -243,6 +250,8 @@ export function MessageBubble({
               </AppText>
             </Pressable>
           ) : null}
+
+          {storyId ? <StoryReplyPreview storyId={storyId} /> : null}
 
           {media ? <MediaBlock media={media} isMine={isMine} /> : null}
 

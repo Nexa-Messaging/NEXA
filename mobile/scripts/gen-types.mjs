@@ -3,7 +3,7 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
-const mobileRoot = dirname(fileURLToPath(new URL('..', import.meta.url)));
+const mobileRoot = fileURLToPath(new URL('..', import.meta.url));
 const outFile = join(mobileRoot, 'src', 'types', 'database.ts');
 const aliasesFile = join(mobileRoot, 'scripts', 'types-aliases.ts');
 

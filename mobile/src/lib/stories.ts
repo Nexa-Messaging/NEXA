@@ -3,7 +3,7 @@ import { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supab
 import { cacheSignedUrl, fallbackMessage } from '@/lib/messaging';
 import { getSupabase } from '@/lib/supabase';
 import { uploadObjectViaXhr } from '@/lib/uploadObject';
-import { StoryFeedRow, StoryReplyFeed, StoryViewer } from '@/types/database';
+import { StoryFeedRow, StoryReplyFeed, StoryRow, StoryViewer } from '@/types/database';
 
 import { randomToken } from '@/utils/random';
 
@@ -199,6 +199,26 @@ export async function deleteStory(storyId: string): Promise<string | null> {
   const supabase = getSupabase();
   const { error } = await supabase.rpc('delete_story', { p_story: storyId });
   return error ? fallbackMessage(error, 'Could not delete the story.') : null;
+}
+
+/**
+ * Fetches a single story the caller may see (own or a friend's, still live).
+ * RLS hides tombstoned and expired stories, so `data` is null once a story
+ * expires or is deleted — used by the chat story-reply preview.
+ */
+export async function fetchStory(
+  storyId: string,
+): Promise<StoryResult<StoryRow | null>> {
+  const supabase = getSupabase();
+  const { data, error } = await supabase
+    .from('stories')
+    .select('*')
+    .eq('id', storyId)
+    .maybeSingle();
+  if (error) {
+    return { data: null, error: fallbackMessage(error, 'Could not load the story.') };
+  }
+  return { data: (data as StoryRow | null) ?? null, error: null };
 }
 
 const storyUrlCache = new Map<string, { url: string; expiresAt: number }>();
