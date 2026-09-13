@@ -168,7 +168,7 @@ begin
   where question_id = p_question_id and user_id = auth.uid();
 
   if not found then
-    return;
+    return null;
   end if;
 
   return v_answer;
