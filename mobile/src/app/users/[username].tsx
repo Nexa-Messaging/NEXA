@@ -11,6 +11,7 @@ import { radius, spacing } from '@/constants/theme';
 import { useAppTheme } from '@/lib/theme';
 import { useFriendStatus } from '@/hooks/useFriendStatus';
 import { useAuth , fetchProfileByUsername } from '@/lib/auth';
+import { fetchMood } from '@/lib/moods';
 import { startConversationWith } from '@/lib/messaging';
 import { reportUser , ReportCategory } from '@/lib/moderation';
 import { Profile } from '@/types/database';
@@ -28,6 +29,7 @@ export default function PublicProfileScreen() {
   const [reportOpen, setReportOpen] = useState(false);
   const [reportError, setReportError] = useState<string | null>(null);
   const [reportSubmitting, setReportSubmitting] = useState(false);
+  const [profileMood, setProfileMood] = useState<import('@/lib/moods').Mood | null>(null);
 
   const friendship = useFriendStatus(profile?.id ?? null);
   const isSelf = !!profile && !!user && profile.id === user.id;
@@ -51,6 +53,13 @@ export default function PublicProfileScreen() {
         setProfile(data);
         if (!data) {
           setError('This user could not be found.');
+        } else if (data.id) {
+          // Fetch mood for this profile
+          void fetchMood(data.id).then(({ data: moodData }) => {
+            if (active && moodData) {
+              setProfileMood(moodData);
+            }
+          });
         }
       }
       setLoading(false);
@@ -125,7 +134,13 @@ export default function PublicProfileScreen() {
         <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
           <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
             <View style={styles.identity}>
-              <Avatar uri={profile.avatar_url} name={profile.display_name} size={96} />
+              <Avatar
+                uri={profile.avatar_url}
+                name={profile.display_name}
+                size={96}
+                mood={profileMood}
+                moodSize="lg"
+              />
               <View style={styles.identityText}>
                 <AppText variant="title" weight="bold">
                   {profile.display_name}

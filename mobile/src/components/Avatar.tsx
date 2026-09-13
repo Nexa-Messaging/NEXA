@@ -7,6 +7,8 @@ import { StyleSheet, View } from 'react-native';
 import { AppText } from '@/components/ui/AppText';
 import { gradients } from '@/constants/theme';
 import { useAppTheme } from '@/lib/theme';
+import { MoodBadge } from '@/components/MoodBadge';
+import { Mood } from '@/lib/moods';
 
 export interface AvatarProps {
   uri?: string | null;
@@ -15,6 +17,10 @@ export interface AvatarProps {
   size?: number;
   /** Show a thin gradient ring around the avatar (stories look). */
   ring?: boolean;
+  /** Optional mood to display as a badge on the avatar. */
+  mood?: Mood | null;
+  /** Size of the mood badge. */
+  moodSize?: 'sm' | 'md' | 'lg';
   accessibilityLabel?: string;
 }
 
@@ -42,10 +48,18 @@ export function gradientForName(name?: string | null): readonly [string, string,
 }
 
 /**
- * Circular avatar with a per-name gradient fallback ("sticker initials") and
- * an optional gradient ring, so the feed is colourful even without photos.
+ * Circular avatar with a per-name gradient fallback ("sticker initials"),
+ * an optional gradient ring, and an optional mood badge.
  */
-export function Avatar({ uri, name, size = 64, ring = false, accessibilityLabel }: AvatarProps) {
+export function Avatar({
+  uri,
+  name,
+  size = 64,
+  ring = false,
+  mood,
+  moodSize = 'md',
+  accessibilityLabel,
+}: AvatarProps) {
   const { colors } = useAppTheme();
   const radius = size / 2;
   const initials = initialsFrom(name);
@@ -83,8 +97,15 @@ export function Avatar({ uri, name, size = 64, ring = false, accessibilityLabel 
     </LinearGradient>
   );
 
+  const withMoodBadge = (content: React.ReactNode) => (
+    <View style={[styles.container, { width: size, height: size }]}>
+      {content}
+      <MoodBadge mood={mood} size={moodSize} showLabel={size >= 52} overlay />
+    </View>
+  );
+
   if (!ring) {
-    return avatarContent;
+    return withMoodBadge(avatarContent);
   }
 
   const ringSize = size + 8;
@@ -109,7 +130,7 @@ export function Avatar({ uri, name, size = 64, ring = false, accessibilityLabel 
           },
         ]}
       >
-        {avatarContent}
+        {withMoodBadge(avatarContent)}
       </View>
     </LinearGradient>
   );
@@ -128,5 +149,8 @@ const styles = StyleSheet.create({
   ringInner: {
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  container: {
+    position: 'relative',
   },
 });

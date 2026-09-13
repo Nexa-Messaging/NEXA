@@ -4,6 +4,7 @@ import { cacheSignedUrl, fallbackMessage } from '@/lib/messaging';
 import { getSupabase } from '@/lib/supabase';
 import { uploadObjectViaXhr } from '@/lib/uploadObject';
 import { StoryFeedRow, StoryReplyFeed, StoryRow, StoryViewer } from '@/types/database';
+import { awardBondXP } from '@/lib/bonds';
 
 import { randomToken } from '@/utils/random';
 
@@ -171,6 +172,13 @@ export async function sendStoryReply(
   if (!first) {
     return { ok: false, error: 'Your reply could not be sent.' };
   }
+
+  // Award bond XP for story reply (fire-and-forget)
+  const story = await fetchStory(storyId);
+  if (story.data?.user_id) {
+    void awardBondXP(story.data.user_id, 'story_reply', { story_id: storyId });
+  }
+
   return { ok: true, replyId: first.reply_id, messageId: first.message_id };
 }
 

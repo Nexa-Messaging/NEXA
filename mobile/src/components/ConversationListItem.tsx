@@ -26,7 +26,14 @@ export function ConversationListItem({ item, onPress }: ConversationListItemProp
       style={({ pressed }) => [styles.row, { borderBottomColor: colors.border }, pressed && styles.rowPressed]}
       onPress={onPress}
     >
-      <Avatar uri={item.avatarPath} name={item.name} size={52} ring={item.kind === 'group'} />
+      <Avatar
+        uri={item.avatarPath}
+        name={item.name}
+        size={52}
+        ring={item.kind === 'group'}
+        mood={item.mood ?? null}
+        moodSize="sm"
+      />
 
       <View style={styles.middle}>
         <AppText variant="body" weight="bold" numberOfLines={1}>

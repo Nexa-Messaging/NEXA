@@ -7,6 +7,7 @@ import { getSupabase } from '@/lib/supabase';
 import { uploadObjectViaXhr } from '@/lib/uploadObject';
 import { ConversationInfo, ConversationSummary, MessageRow } from '@/types/database';
 import { genUuid as _genUuid, randomToken } from '@/utils/random';
+import { awardBondXP } from '@/lib/bonds';
 
 export type RealtimeStatus = 'connecting' | 'connected' | 'disconnected' | 'error';
 
@@ -67,6 +68,12 @@ export async function fetchConversationInfo(
   }
   const rows = ((data as unknown as ConversationInfo[]) ?? []) as ConversationInfo[];
   return { data: rows[0] ?? null, error: null };
+}
+
+/** Get the other user's ID in a 1:1 conversation (for bond XP). */
+export async function getConversationPartner(conversationId: string): Promise<string | null> {
+  const info = await fetchConversationInfo(conversationId);
+  return info.data?.other_user_id ?? null;
 }
 
 /** Default page size for message history fetches (keyset by `seq`). */
@@ -162,6 +169,14 @@ export async function sendMessage(
   if (error) {
     return { ok: false, error: fallbackMessage(error, 'Your message could not be sent.') };
   }
+
+  // Award bond XP (fire-and-forget, don't block message send)
+  const friendId = await getConversationPartner(conversationId);
+  if (friendId) {
+    const activityId = replyToId ? 'message_replied' : 'message_sent';
+    void awardBondXP(friendId, activityId, { conversation_id: conversationId });
+  }
+
   return { ok: true, messageId: data as string };
 }
 
@@ -332,6 +347,17 @@ export async function sendMediaMessage(
   if (error) {
     return { ok: false, error: fallbackMessage(error, 'Your media could not be sent.') };
   }
+
+  // Award bond XP for media (fire-and-forget)
+  const friendId = await getConversationPartner(conversationId);
+  if (friendId) {
+    let activityId = 'message_sent';
+    if (media.kind === 'voice') activityId = 'voice_note_sent';
+    else if (media.kind === 'image') activityId = 'photo_shared';
+    else if (media.kind === 'video') activityId = 'video_shared';
+    void awardBondXP(friendId, activityId, { conversation_id: conversationId, media_kind: media.kind });
+  }
+
   return { ok: true, messageId: data as string };
 }
 

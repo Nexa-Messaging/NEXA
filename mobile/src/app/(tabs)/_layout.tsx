@@ -19,6 +19,8 @@ interface TabSpec {
 const TABS: Record<string, TabSpec> = {
   home: { title: 'Home', icon: 'home-outline', iconFocused: 'home' },
   chats: { title: 'Chat', icon: 'chatbubble-ellipses-outline', iconFocused: 'chatbubble-ellipses' },
+  bonds: { title: 'Bonds', icon: 'heart-outline', iconFocused: 'heart' },
+  dailyQuestion: { title: 'Daily', icon: 'help-circle-outline', iconFocused: 'help-circle' },
   friends: { title: 'Friends', icon: 'person-add-outline', iconFocused: 'person-add' },
   communities: { title: 'Circles', icon: 'people-outline', iconFocused: 'people' },
   profile: { title: 'Profile', icon: 'person-circle-outline', iconFocused: 'person-circle' },

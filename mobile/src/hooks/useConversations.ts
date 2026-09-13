@@ -10,6 +10,7 @@ import {
   subscribeToMessages,
   subscribeToRealtimeStatus,
 } from '@/lib/messaging';
+import { fetchMoodsForUsers } from '@/lib/moods';
 import { ConversationSummary, MessageRow } from '@/types/database';
 
 /** One row in the Chats tab, regardless of whether it is 1:1 or a group. */
@@ -24,6 +25,10 @@ export interface ChatListItem {
   memberCount: number;
   /** Present for groups: the caller's role in the chat. */
   myRole: string | null;
+  /** For direct conversations: the other user's ID (for fetching mood). */
+  otherUserId?: string;
+  /** Active mood for this user (direct chats only). */
+  mood?: import('@/lib/moods').Mood | null;
 }
 
 function toChatListItem(conversation: ConversationSummary): ChatListItem {
@@ -37,6 +42,7 @@ function toChatListItem(conversation: ConversationSummary): ChatListItem {
     unreadCount: conversation.unread_count,
     memberCount: 2,
     myRole: null,
+    otherUserId: conversation.other_user_id,
   };
 }
 
@@ -96,7 +102,19 @@ export function useConversations() {
     }
     const direct = directResult.error ? [] : (directResult.data ?? []).map(toChatListItem);
     const groups = groupsResult.error ? [] : (groupsResult.data ?? []).map(toGroupChatListItem);
-    setItems(mergeSorted(direct, groups));
+
+    // Fetch moods for direct conversation users
+    const directUserIds = direct
+      .map((d) => d.otherUserId)
+      .filter((id): id is string => !!id);
+    const moodMap = await fetchMoodsForUsers(directUserIds);
+
+    const directWithMoods = direct.map((item) => ({
+      ...item,
+      mood: item.otherUserId ? moodMap.get(item.otherUserId) ?? null : null,
+    }));
+
+    setItems(mergeSorted(directWithMoods, groups));
   }, [user]);
 
   const load = useCallback(async () => {

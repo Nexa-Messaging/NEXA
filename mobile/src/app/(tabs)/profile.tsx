@@ -5,10 +5,12 @@ import React, { useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 
 import { Avatar } from '@/components/Avatar';
+import { MoodSelectorModal } from '@/components/MoodSelectorModal';
 import { AppButton, AppText, Card, Screen } from '@/components/ui';
 import { gradients, radius, spacing } from '@/constants/theme';
 import { useAppTheme } from '@/lib/theme';
 import { useAuth } from '@/lib/auth';
+import { fetchMood } from '@/lib/moods';
 import { formatDateJoined } from '@/utils/format';
 
 export default function ProfileScreen() {
@@ -16,6 +18,21 @@ export default function ProfileScreen() {
   const { profile, user, signOut } = useAuth();
   const [signingOut, setSigningOut] = useState(false);
   const [signOutError, setSignOutError] = useState<string | null>(null);
+  const [moodModalVisible, setMoodModalVisible] = useState(false);
+  const [currentMood, setCurrentMood] = useState<import('@/lib/moods').Mood | null>(null);
+
+  const loadMood = React.useCallback(async () => {
+    if (profile?.id) {
+      const result = await fetchMood(profile.id);
+      if (result.data) {
+        setCurrentMood(result.data);
+      }
+    }
+  }, [profile]);
+
+  React.useEffect(() => {
+    loadMood();
+  }, [loadMood]);
 
   const onSignOut = async () => {
     setSigningOut(true);
@@ -25,7 +42,10 @@ export default function ProfileScreen() {
       setSignOutError(result.error);
     }
     setSigningOut(false);
-    // On success the protected guard redirects to the welcome screen.
+  };
+
+  const handleMoodSet = () => {
+    loadMood();
   };
 
   const username = profile?.username ?? user?.email;
@@ -47,9 +67,16 @@ export default function ProfileScreen() {
           </AppText>
         </LinearGradient>
 
-        <Card variant="pop" style={styles.card}>
+<Card variant="pop" style={styles.card}>
           <View style={styles.identity}>
-            <Avatar uri={profile?.avatar_url} name={profile?.display_name} size={84} ring />
+            <Avatar
+              uri={profile?.avatar_url}
+              name={profile?.display_name}
+              size={84}
+              ring
+              mood={currentMood}
+              moodSize="lg"
+            />
             <View style={styles.identityText}>
               <AppText variant="heading" weight="bold">
                 {profile?.display_name ?? 'Loading…'}
@@ -81,11 +108,19 @@ export default function ProfileScreen() {
         </Card>
 
         <AppButton
-          title="Edit profile"
+          title="Set mood"
           variant="gradient"
           size="md"
           fullWidth
           style={{ marginTop: spacing.md }}
+          onPress={() => setMoodModalVisible(true)}
+        />
+        <AppButton
+          title="Edit profile"
+          variant="gradient"
+          size="md"
+          fullWidth
+          style={{ marginTop: spacing.sm }}
           onPress={() => router.push('/edit-profile')}
         />
         <AppButton
@@ -126,6 +161,12 @@ export default function ProfileScreen() {
           style={{ marginTop: spacing.lg }}
         />
       </ScrollView>
+
+      <MoodSelectorModal
+        visible={moodModalVisible}
+        onClose={() => setMoodModalVisible(false)}
+        onMoodSet={handleMoodSet}
+      />
     </Screen>
   );
 }
