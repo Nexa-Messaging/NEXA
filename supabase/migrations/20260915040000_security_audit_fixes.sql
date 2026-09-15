@@ -9,6 +9,13 @@
 -- 1. CRITICAL: Daily Cards — Auth checks on all functions
 -- ============================================================
 
+DROP FUNCTION IF EXISTS public.assign_daily_card(uuid);
+DROP FUNCTION IF EXISTS public.complete_daily_card(uuid);
+DROP FUNCTION IF EXISTS public.send_daily_card(uuid, uuid, uuid, text);
+DROP FUNCTION IF EXISTS public.get_unread_card_count(uuid);
+DROP FUNCTION IF EXISTS public.get_received_cards(uuid, int);
+DROP FUNCTION IF EXISTS public.mark_card_read(uuid, uuid);
+
 -- 1a. assign_daily_card: enforce p_user_id = auth.uid()
 CREATE OR REPLACE FUNCTION public.assign_daily_card(p_user_id uuid)
 RETURNS jsonb
@@ -315,6 +322,15 @@ BEGIN
   RETURN v_count;
 END;
 $$;
+
+DROP FUNCTION IF EXISTS public.report_discover_item(text, uuid, text, text);
+DROP FUNCTION IF EXISTS public.get_user_preferences(uuid);
+DROP FUNCTION IF EXISTS public.update_user_preferences(uuid, text, text, text, text, text, text);
+DROP FUNCTION IF EXISTS public.react_to_daily_answer(uuid, text);
+DROP FUNCTION IF EXISTS public.unreact_to_daily_answer(uuid, text);
+DROP FUNCTION IF EXISTS public.process_due_event_reminders(int);
+DROP FUNCTION IF EXISTS public.search_all(text, text, int);
+DROP FUNCTION IF EXISTS public.mark_conversation_delivered(uuid, uuid);
 
 -- ============================================================
 -- 3. CRITICAL: report_discover_item — SECURITY DEFINER + validation
@@ -624,6 +640,8 @@ CREATE POLICY "moods_select_public"
          OR (blocker_id = moods.user_id AND blocked_id = auth.uid())
     )
   );
+
+DROP FUNCTION IF EXISTS public.get_discover_feed(int, int);
 
 -- ============================================================
 -- 8. HIGH: Discover Feed — fix banned_at logic (IN -> NOT IN)
