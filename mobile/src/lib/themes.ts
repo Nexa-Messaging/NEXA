@@ -6,7 +6,7 @@
  * (user_preferences.theme_id) and resolved at runtime via useUserTheme().
  */
 
-export type GraffitiStyle = 'default' | 'neon' | 'candy' | 'space' | 'ocean' | 'sunset' | 'cyber' | 'nature';
+export type GraffitiStyle = 'default' | 'neon' | 'candy' | 'space' | 'ocean' | 'sunset' | 'cyber' | 'nature' | 'black';
 export type BubbleStyle = 'default' | 'rounded' | 'square';
 export type StickerPack = 'default' | 'quirky' | 'cute' | 'cool';
 export type BackgroundId = 'default' | 'stars' | 'waves' | 'grid';
@@ -326,6 +326,39 @@ const nature: UserTheme = {
   bubbleStyle: 'rounded',
 };
 
+const black: UserTheme = {
+  ...defaultTheme,
+  id: 'black',
+  name: 'Black',
+  emoji: '⚫',
+  gradient: ['#000000', '#111111', '#1A1A1A'],
+  primary: '#FFFFFF',
+  primaryDeep: '#CCCCCC',
+  primarySoft: 'rgba(255, 255, 255, 0.1)',
+  bubbleMine: '#FFFFFF',
+  bubbleTheirs: '#1A1A1A',
+  background: '#000000',
+  surface: '#0A0A0A',
+  surfaceElevated: '#141414',
+  surfaceMuted: '#0D0D0D',
+  text: '#FFFFFF',
+  textSecondary: '#AAAAAA',
+  textMuted: '#666666',
+  border: '#222222',
+  inputBg: '#111111',
+  inputBorder: '#333333',
+  card: '#0D0D0D',
+  cardBorder: '#222222',
+  tabBar: '#000000',
+  tabBarBorder: '#1A1A1A',
+  overlay: 'rgba(0, 0, 0, 0.9)',
+  headerText: '#FFFFFF',
+  statusBar: 'light',
+  profileAccent: '#FFFFFF',
+  graffitiStyle: 'black',
+  bubbleStyle: 'square',
+};
+
 /** All available personalization themes. */
 export const USER_THEMES: readonly UserTheme[] = [
   defaultTheme,
@@ -336,6 +369,7 @@ export const USER_THEMES: readonly UserTheme[] = [
   sunset,
   cyber,
   nature,
+  black,
 ] as const;
 
 /** Default theme applied when user has not chosen one. */
