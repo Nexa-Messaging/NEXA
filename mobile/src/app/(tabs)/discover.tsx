@@ -21,11 +21,14 @@ import {
   ITEM_TYPE_CONFIG,
   getDiscoverFeed,
 } from '@/lib/discover';
+import { listUpcomingEvents, UserEventItem } from '@/lib/events';
+import { EventCard } from '@/components/EventCard';
 
-type FilterType = 'all' | DiscoverItemType;
+type FilterType = 'all' | DiscoverItemType | 'event';
 
 const FILTERS: { key: FilterType; label: string }[] = [
   { key: 'all',       label: 'All' },
+  { key: 'event',     label: 'Events' },
   { key: 'community', label: 'Communities' },
   { key: 'question',  label: 'Questions' },
   { key: 'answer',    label: 'Answers' },
@@ -36,6 +39,7 @@ export default function DiscoverScreen() {
   const { colors } = useAppTheme();
   const { user } = useAuth();
   const [items, setItems] = useState<DiscoverItem[]>([]);
+  const [events, setEvents] = useState<UserEventItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -46,12 +50,16 @@ export default function DiscoverScreen() {
 
   const load = useCallback(
     async (off = 0, append = false) => {
-      const { items: data, error: err } = await getDiscoverFeed(PAGE, off);
+      const [{ items: data, error: err }, { data: evts }] = await Promise.all([
+        getDiscoverFeed(PAGE, off),
+        listUpcomingEvents(10),
+      ]);
       if (err) {
         setError(err);
       } else {
         setError(null);
         setItems(append ? [...items, ...data] : data);
+        setEvents(evts ?? []);
         setOffset(off + PAGE);
       }
     },
@@ -76,7 +84,11 @@ export default function DiscoverScreen() {
     setLoadingMore(false);
   }, [loadingMore, offset, load]);
 
-  const filtered = filter === 'all' ? items : items.filter((i) => i.item_type === filter);
+  const filtered = filter === 'all'
+    ? items
+    : filter === 'event'
+    ? [] // events rendered separately below
+    : items.filter((i) => i.item_type === filter);
 
   const handleItemPress = (item: DiscoverItem) => {
     if (item.item_type === 'community') {
@@ -84,6 +96,10 @@ export default function DiscoverScreen() {
     } else if (item.item_type === 'profile' && item.meta?.username) {
       router.push(`/users/${item.meta.username}`);
     }
+  };
+
+  const handleEventPress = (event: UserEventItem) => {
+    router.push(`/event/${event.event_id}`);
   };
 
   return (
@@ -152,9 +168,28 @@ export default function DiscoverScreen() {
         </View>
       ) : (
         <FlatList
-          data={filtered}
+          data={filter === 'event' ? [] : filtered}
           keyExtractor={(item) => `${item.item_type}-${item.item_id}`}
           contentContainerStyle={s.list}
+          ListHeaderComponent={
+            (filter === 'all' || filter === 'event') && events.length > 0 ? (
+              <View style={s.eventsSection}>
+                <AppText variant="heading" weight="bold">
+                  Upcoming Events
+                </AppText>
+                {events.slice(0, filter === 'event' ? events.length : 3).map((ev) => (
+                  <EventCard key={ev.event_id} event={ev} onPress={() => handleEventPress(ev)} />
+                ))}
+                {filter !== 'all' && events.length > 3 ? (
+                  <Pressable onPress={() => setFilter('event')}>
+                    <AppText variant="label" color={colors.primary} align="center" style={{ marginTop: spacing.sm }}>
+                      See all events
+                    </AppText>
+                  </Pressable>
+                ) : null}
+              </View>
+            ) : null
+          }
           renderItem={({ item }) => (
             <DiscoverCard item={item} onPress={() => handleItemPress(item)} />
           )}
@@ -326,5 +361,9 @@ const s = StyleSheet.create({
   empty: {
     alignItems: 'center',
     paddingTop: spacing.xxl * 1.5,
+  },
+  eventsSection: {
+    gap: spacing.sm,
+    marginBottom: spacing.md,
   },
 });

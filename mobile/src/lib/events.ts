@@ -280,3 +280,121 @@ export function subscribeToCommunityEvents(listener: EventChangeListener): () =>
     }
   };
 }
+
+// ===========================================================================
+// USER EVENTS  –  standalone events (not tied to a community)
+// ===========================================================================
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type AnySupabase = any;
+
+export type UserEventStatus = 'upcoming' | 'live' | 'ended';
+export type UserLocationType = 'physical' | 'online' | 'hybrid';
+export type UserRSVPResponse = 'going' | 'maybe' | 'not_going';
+
+export interface UserEventItem {
+  event_id: string;
+  title: string;
+  description: string | null;
+  starts_at: string;
+  ends_at: string | null;
+  location: string | null;
+  location_type: UserLocationType;
+  cover_url: string | null;
+  created_by: string;
+  creator_name: string | null;
+  creator_avatar: string | null;
+  created_at: string;
+  going_count: number;
+  maybe_count: number;
+  not_going_count: number;
+  my_response: UserRSVPResponse | null;
+  reminding: boolean;
+  status: UserEventStatus;
+}
+
+export interface UserEventDetail extends UserEventItem {
+  username: string | null;
+}
+
+export const LOCATION_TYPE_CONFIG: Record<UserLocationType, { emoji: string; label: string }> = {
+  physical: { emoji: '📍', label: 'In Person' },
+  online:   { emoji: '🌐', label: 'Online' },
+  hybrid:   { emoji: '🔗', label: 'Hybrid' },
+};
+
+export const USER_EVENT_STATUS_CONFIG: Record<UserEventStatus, { emoji: string; label: string; color: string }> = {
+  upcoming: { emoji: '📅', label: 'Upcoming', color: '#3B82F6' },
+  live:     { emoji: '🔴', label: 'Happening Now', color: '#EF4444' },
+  ended:    { emoji: '✅', label: 'Ended', color: '#6B7280' },
+};
+
+export async function listUpcomingEvents(
+  limit = 30,
+  offset = 0,
+): Promise<EventResult<UserEventItem[]>> {
+  const supabase = getSupabase() as AnySupabase;
+  const { data, error } = await supabase.rpc('list_upcoming_events', {
+    p_limit: limit,
+    p_offset: offset,
+  });
+  if (error) return { data: null, error: error.message };
+  return { data: (data ?? []) as UserEventItem[], error: null };
+}
+
+export async function getUserEventDetail(
+  eventId: string,
+): Promise<EventResult<UserEventDetail>> {
+  const supabase = getSupabase() as AnySupabase;
+  const { data, error } = await supabase.rpc('get_user_event', {
+    p_event_id: eventId,
+  });
+  if (error) return { data: null, error: error.message };
+  return { data: data as UserEventDetail, error: null };
+}
+
+export async function createUserEvent(params: {
+  title: string;
+  starts_at: string;
+  description?: string;
+  ends_at?: string;
+  location?: string;
+  location_type?: UserLocationType;
+  cover_url?: string;
+}): Promise<EventResult<string>> {
+  const supabase = getSupabase() as AnySupabase;
+  const { data, error } = await supabase.rpc('create_user_event', {
+    p_title: params.title,
+    p_starts_at: params.starts_at,
+    p_description: params.description ?? null,
+    p_ends_at: params.ends_at ?? null,
+    p_location: params.location ?? null,
+    p_location_type: params.location_type ?? 'physical',
+    p_cover_url: params.cover_url ?? null,
+  });
+  if (error) return { data: null, error: error.message };
+  return { data: data as string, error: null };
+}
+
+export async function rsvpUserEvent(
+  eventId: string,
+  response: UserRSVPResponse,
+): Promise<string | null> {
+  const supabase = getSupabase() as AnySupabase;
+  const { error } = await supabase.rpc('rsvp_user_event', {
+    p_event: eventId,
+    p_response: response,
+  });
+  return error ? error.message : null;
+}
+
+export async function toggleUserEventReminder(
+  eventId: string,
+): Promise<{ on: boolean; error: string | null }> {
+  const supabase = getSupabase() as AnySupabase;
+  const { data, error } = await supabase.rpc('toggle_user_event_reminder', {
+    p_event: eventId,
+  });
+  if (error) return { on: false, error: error.message };
+  return { on: data as boolean, error: null };
+}

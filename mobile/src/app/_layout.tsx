@@ -98,6 +98,7 @@ function RootNavigator() {
           <Stack.Screen name="events/[communityId]" options={{ animation: 'slide_from_right' }} />
           <Stack.Screen name="event/[eventId]" options={{ animation: 'slide_from_right' }} />
           <Stack.Screen name="new-event/[communityId]" options={{ animation: 'slide_from_bottom' }} />
+          <Stack.Screen name="new-event" options={{ animation: 'slide_from_bottom' }} />
           <Stack.Screen name="settings/appearance" options={{ animation: 'slide_from_right' }} />
         </Stack.Protected>
       </Stack>

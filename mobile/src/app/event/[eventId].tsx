@@ -1,9 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { router, useLocalSearchParams } from 'expo-router';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   Image,
   Pressable,
   ScrollView,
@@ -11,357 +11,340 @@ import {
   View,
 } from 'react-native';
 
-import { AppText, AppButton, Screen } from '@/components/ui';
-import { RealtimeBanner } from '@/components/RealtimeBanner';
-import { radius, spacing } from '@/constants/theme';
+import { AppButton, AppText, Screen } from '@/components/ui';
+import { gradients, radius, spacing } from '@/constants/theme';
 import { useAppTheme } from '@/lib/theme';
 import { useAuth } from '@/lib/auth';
 import {
-  deleteCommunityEvent,
-  resolveEventImageUrl,
-  respondToEvent,
-  toggleEventReminder,
+  UserEventDetail,
+  getUserEventDetail,
+  rsvpUserEvent,
+  toggleUserEventReminder,
+  LOCATION_TYPE_CONFIG,
+  USER_EVENT_STATUS_CONFIG,
+  UserRSVPResponse,
 } from '@/lib/events';
-import { subscribeToRealtimeStatus, RealtimeStatus } from '@/lib/messaging';
-import { useEvents } from '@/hooks/useEvents';
-import { EventResponse } from '@/types/database';
-import { formatDateTime } from '@/utils/format';
-
-const RESPONSE_LABELS: Record<EventResponse, { label: string; icon: keyof typeof Ionicons.glyphMap }> = {
-  going: { label: 'Going', icon: 'checkmark' },
-  maybe: { label: 'Maybe', icon: 'time-outline' },
-  not_going: { label: "Can't go", icon: 'close' },
-};
-
-const RESPONSES: EventResponse[] = ['going', 'maybe', 'not_going'];
 
 export default function EventDetailScreen() {
+  const { eventId } = useLocalSearchParams<{ eventId: string }>();
   const { colors } = useAppTheme();
-  const params = useLocalSearchParams<{ eventId: string; communityId: string }>();
-  const eventId = params.eventId;
-  const communityId = params.communityId;
   const { user } = useAuth();
-
-  const [realtime, setRealtime] = useState<RealtimeStatus>('connecting');
-  const [busy, setBusy] = useState(false);
-  const [imageUrl, setImageUrl] = useState<string | null>(null);
-
-  const { events, loading, error, refresh } = useEvents(communityId);
+  const [event, setEvent] = useState<UserEventDetail | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const offStatus = subscribeToRealtimeStatus(setRealtime);
-    return offStatus;
-  }, []);
-
-  const event = events.find((item) => item.event_id === eventId) ?? null;
-  const canModify =
-    event &&
-    (event.my_role === 'owner' ||
-      event.my_role === 'admin' ||
-      event.created_by === user?.id);
-
-  useEffect(() => {
-    if (!event?.image_path) {
-      setImageUrl(null);
-      return;
-    }
-    let active = true;
-    void resolveEventImageUrl(event.image_path).then((result) => {
-      if (active && result.url) {
-        setImageUrl(result.url);
-      }
+    if (!eventId) return;
+    setLoading(true);
+    getUserEventDetail(eventId).then(({ data, error: err }) => {
+      setEvent(data);
+      setError(err);
+      setLoading(false);
     });
-    return () => {
-      active = false;
-    };
-  }, [event?.image_path]);
+  }, [eventId]);
 
-  const handleRespond = useCallback(
-    async (response: EventResponse) => {
-      if (busy || !event) {
-        return;
-      }
-      setBusy(true);
-      const errorMessage = await respondToEvent(event.event_id, response);
-      setBusy(false);
-      if (errorMessage) {
-        Alert.alert('Could not save your RSVP', errorMessage);
-      } else {
-        void refresh();
-      }
-    },
-    [busy, event, refresh],
-  );
+  const handleRSVP = async (response: UserRSVPResponse) => {
+    if (!event) return;
+    await rsvpUserEvent(event.event_id, response);
+    setEvent({ ...event, my_response: response });
+  };
 
-  const handleReminder = useCallback(async () => {
-    if (busy || !event) {
-      return;
-    }
-    setBusy(true);
-    const result = await toggleEventReminder(event.event_id);
-    setBusy(false);
-    if (result.error) {
-      Alert.alert('Reminder error', result.error);
-    } else {
-      void refresh();
-    }
-  }, [busy, event, refresh]);
+  const handleReminder = async () => {
+    if (!event) return;
+    const { on } = await toggleUserEventReminder(event.event_id);
+    setEvent({ ...event, reminding: on });
+  };
 
-  const handleDelete = useCallback(() => {
-    if (!event) {
-      return;
-    }
-    Alert.alert('Delete event?', 'This removes the event, RSVPs and reminders for everyone.', [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Delete',
-        style: 'destructive',
-        onPress: async () => {
-          const errorMessage = await deleteCommunityEvent(event.event_id);
-          if (errorMessage) {
-            Alert.alert('Delete failed', errorMessage);
-          } else {
-            router.back();
-          }
-        },
-      },
-    ]);
-  }, [event]);
-
-  if (loading || !event) {
+  if (loading) {
     return (
       <Screen centered>
-        {error && !event ? (
-          <AppText variant="body" color={colors.textSecondary} align="center" style={styles.stateText}>
-            {error}
-          </AppText>
-        ) : (
-          <ActivityIndicator color={colors.primary} />
-        )}
-        <Pressable accessibilityRole="button" hitSlop={8} onPress={() => router.back()}>
-          <AppText variant="label" color={colors.primary} weight="semibold">
-            Go back
-          </AppText>
-        </Pressable>
+        <ActivityIndicator size="large" color={colors.primary} />
       </Screen>
     );
   }
 
-  const past = new Date(event.starts_at).getTime() < Date.now();
+  if (error || !event) {
+    return (
+      <Screen centered>
+        <AppText variant="body" tone="danger" align="center">
+          {error ?? 'Event not found'}
+        </AppText>
+      </Screen>
+    );
+  }
+
+  const statusCfg = USER_EVENT_STATUS_CONFIG[event.status];
+  const locCfg = LOCATION_TYPE_CONFIG[event.location_type];
 
   return (
-    <Screen padding={0}>
-      <RealtimeBanner status={realtime} />
-      <ScrollView contentContainerStyle={styles.content}>
-        <View style={styles.header}>
-          <Pressable accessibilityRole="button" hitSlop={12} style={styles.backButton} onPress={() => router.back()} accessibilityLabel="Back">
-            <Ionicons name="arrow-back" size={22} color={colors.text} />
-          </Pressable>
-          <AppText variant="heading" weight="bold" numberOfLines={1} style={styles.headerTitle}>
-            Event
-          </AppText>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Event options"
-            hitSlop={12}
-            disabled={!canModify}
-            style={styles.backButton}
-            onPress={() => {
-              Alert.alert('Event', 'What would you like to do?', [
-                { text: 'Cancel', style: 'cancel' },
-                {
-                  text: 'Edit',
-                  onPress: () =>
-                    router.push({
-                      pathname: '/new-event/[communityId]',
-                      params: {
-                        communityId: event.community_id,
-                        eventId: event.event_id,
-                      },
-                    }),
-                },
-                { text: 'Delete', style: 'destructive', onPress: () => handleDelete() },
-              ]);
-            }}
+    <Screen padding={0} blobbed>
+      <ScrollView contentContainerStyle={s.scroll}>
+        {/* Cover */}
+        {event.cover_url ? (
+          <Image source={{ uri: event.cover_url }} style={s.cover} />
+        ) : (
+          <LinearGradient
+            colors={[statusCfg.color, statusCfg.color + '88']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={s.coverPlaceholder}
           >
-            <Ionicons name="ellipsis-horizontal" size={22} color={canModify ? colors.text : colors.textMuted} />
-          </Pressable>
-        </View>
+            <Ionicons name="calendar" size={48} color="#fff" />
+          </LinearGradient>
+        )}
 
-        {imageUrl ? <Image source={{ uri: imageUrl }} style={styles.heroImage} /> : null}
+        {/* Back button overlay */}
+        <Pressable style={s.backBtn} onPress={() => router.back()}>
+          <Ionicons name="arrow-back" size={22} color="#fff" />
+        </Pressable>
 
-        <View style={styles.body}>
-          <AppText variant="heading" weight="bold" style={styles.title}>
+        <View style={s.content}>
+          {/* Status badge */}
+          <View style={[s.statusBadge, { backgroundColor: statusCfg.color + '20' }]}>
+            <AppText variant="caption" weight="bold" color={statusCfg.color}>
+              {statusCfg.emoji} {statusCfg.label}
+            </AppText>
+          </View>
+
+          <AppText variant="title" weight="bold">
             {event.title}
           </AppText>
-          <AppText variant="body" color={colors.primary} weight="semibold" style={styles.date}>
-            {formatDateTime(event.starts_at)}
-          </AppText>
-          {event.location ? (
-            <View style={styles.row}>
-              <Ionicons name="location-outline" size={16} color={colors.textMuted} />
-              <AppText variant="body" color={colors.textSecondary} style={styles.rowText}>
-                {event.location}
+
+          {/* Date/time */}
+          <View style={s.infoRow}>
+            <Ionicons name="time-outline" size={18} color={colors.primary} />
+            <View>
+              <AppText variant="body" weight="semibold">
+                {formatFullDate(event.starts_at)}
+              </AppText>
+              <AppText variant="caption" tone="muted">
+                {formatTime(event.starts_at)}
+                {event.ends_at ? ` — ${formatTime(event.ends_at)}` : ''}
+              </AppText>
+            </View>
+          </View>
+
+          {/* Location */}
+          <View style={s.infoRow}>
+            <Ionicons name="location-outline" size={18} color={colors.primary} />
+            <View>
+              <AppText variant="body" weight="semibold">
+                {locCfg.label}
+              </AppText>
+              {event.location ? (
+                <AppText variant="caption" tone="muted">
+                  {event.location}
+                </AppText>
+              ) : null}
+            </View>
+          </View>
+
+          {/* Description */}
+          {event.description ? (
+            <View style={s.descSection}>
+              <AppText variant="label" weight="bold">
+                About
+              </AppText>
+              <AppText variant="body" tone="secondary" style={s.desc}>
+                {event.description}
               </AppText>
             </View>
           ) : null}
-          {event.description ? (
-            <AppText variant="body" color={colors.textSecondary} style={styles.description}>
-              {event.description}
-            </AppText>
-          ) : null}
 
-          {past ? (
-            <AppText variant="body" color={colors.textMuted} weight="semibold" style={styles.past}>
-              This event has already happened.
-            </AppText>
-          ) : (
-            <>
-              <AppText variant="label" weight="medium" color={colors.textSecondary} style={styles.sectionLabel}>
-                Will you be there?
-              </AppText>
-              <View style={styles.responseRow}>
-                {RESPONSES.map((response) => {
-                  const active = event.my_response === response;
-                  const config = RESPONSE_LABELS[response];
-                  return (
-                    <AppButton
-                      key={response}
-                      title={config.label}
-                      variant={active ? 'primary' : 'outline'}
-                      size="sm"
-                      loading={busy}
-                      onPress={() => void handleRespond(response)}
-                      style={styles.responseButton}
-                    />
-                  );
-                })}
-              </View>
-              <View style={styles.countsRow}>
-                {RESPONSES.map((response) => (
-                  <View key={response} style={[styles.countChip, { backgroundColor: colors.surfaceMuted }]}>
-                    <AppText variant="heading" weight="bold" color={colors.primary}>
-                      {response === 'going' ? event.going_count : response === 'maybe' ? event.maybe_count : event.not_going_count}
-                    </AppText>
-                    <AppText variant="caption" color={colors.textSecondary}>
-                      {RESPONSE_LABELS[response].label}
-                    </AppText>
-                  </View>
-                ))}
-              </View>
+          {/* RSVP counts */}
+          <View style={s.countsRow}>
+            <View style={[s.countCard, { backgroundColor: colors.successSoft }]}>
+              <Ionicons name="checkmark-circle" size={20} color={colors.success} />
+              <AppText variant="heading" weight="bold">{event.going_count}</AppText>
+              <AppText variant="caption" tone="muted">Going</AppText>
+            </View>
+            <View style={[s.countCard, { backgroundColor: colors.warningSoft }]}>
+              <Ionicons name="help-circle" size={20} color={colors.warning} />
+              <AppText variant="heading" weight="bold">{event.maybe_count}</AppText>
+              <AppText variant="caption" tone="muted">Maybe</AppText>
+            </View>
+            <View style={[s.countCard, { backgroundColor: colors.dangerSoft }]}>
+              <Ionicons name="close-circle" size={20} color={colors.danger} />
+              <AppText variant="heading" weight="bold">{event.not_going_count}</AppText>
+              <AppText variant="caption" tone="muted">Can't go</AppText>
+            </View>
+          </View>
 
-              <Pressable
-                accessibilityRole="button"
-                onPress={() => void handleReminder()}
-                style={styles.reminderRow}
-              >
-                <Ionicons
-                  name={event.reminding ? 'notifications' : 'notifications-outline'}
-                  size={20}
-                  color={event.reminding ? colors.primary : colors.textMuted}
-                />
-                <AppText
-                  variant="body"
-                  weight="semibold"
-                  color={event.reminding ? colors.primary : colors.textSecondary}
-                  style={styles.reminderText}
-                >
-                  {event.reminding ? 'Reminder on' : 'Remind me about this event'}
+          {/* Creator */}
+          <View style={s.creatorRow}>
+            {event.creator_avatar ? (
+              <Image source={{ uri: event.creator_avatar }} style={s.creatorAvatar} />
+            ) : (
+              <View style={[s.creatorAvatar, { backgroundColor: colors.primaryMuted, alignItems: 'center', justifyContent: 'center' }]}>
+                <AppText variant="caption" weight="bold" color="#fff">
+                  {(event.creator_name ?? 'U')[0]?.toUpperCase()}
                 </AppText>
-              </Pressable>
-            </>
-          )}
+              </View>
+            )}
+            <View>
+              <AppText variant="label" weight="semibold">{event.creator_name ?? 'Unknown'}</AppText>
+              <AppText variant="caption" tone="muted">Event creator</AppText>
+            </View>
+          </View>
         </View>
       </ScrollView>
+
+      {/* RSVP action bar */}
+      {event.status !== 'ended' && (
+        <View style={[s.actionBar, { backgroundColor: colors.surface, borderTopColor: colors.border }]}>
+          <Pressable
+            onPress={() => handleReminder()}
+            style={[s.reminderBtn, { backgroundColor: event.reminding ? colors.primarySoft : colors.inputBg }]}
+          >
+            <Ionicons
+              name={event.reminding ? 'notifications' : 'notifications-outline'}
+              size={20}
+              color={event.reminding ? colors.primary : colors.textMuted}
+            />
+          </Pressable>
+          <View style={s.rsvpButtons}>
+            {(['going', 'maybe', 'not_going'] as const).map((r) => (
+              <Pressable
+                key={r}
+                onPress={() => handleRSVP(r)}
+                style={[
+                  s.rsvpBtn,
+                  {
+                    backgroundColor: event.my_response === r ? colors.primary : colors.inputBg,
+                    borderColor: event.my_response === r ? colors.primary : colors.border,
+                  },
+                ]}
+              >
+                <AppText
+                  variant="caption"
+                  weight={event.my_response === r ? 'bold' : 'regular'}
+                  color={event.my_response === r ? '#fff' : colors.textSecondary}
+                >
+                  {r === 'going' ? 'Going' : r === 'maybe' ? 'Maybe' : "Can't go"}
+                </AppText>
+              </Pressable>
+            ))}
+          </View>
+        </View>
+      )}
     </Screen>
   );
 }
 
-const styles = StyleSheet.create({
-  content: {
-    paddingBottom: spacing.xxl,
+function formatFullDate(iso: string): string {
+  return new Date(iso).toLocaleDateString('en-US', {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+  });
+}
+
+function formatTime(iso: string): string {
+  return new Date(iso).toLocaleTimeString('en-US', {
+    hour: 'numeric',
+    minute: '2-digit',
+  });
+}
+
+const s = StyleSheet.create({
+  scroll: {
+    paddingBottom: 100,
   },
-  stateText: {
-    lineHeight: 22,
-    marginBottom: spacing.sm,
+  cover: {
+    width: '100%',
+    height: 220,
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-  },
-  backButton: {
-    width: 40,
-    height: 40,
+  coverPlaceholder: {
+    width: '100%',
+    height: 220,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  headerTitle: {
-    flex: 1,
-    textAlign: 'center',
-    marginHorizontal: spacing.xs,
-  },
-  heroImage: {
-    width: '100%',
-    height: 200,
-  },
-  body: {
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.md,
-  },
-  title: {
-    lineHeight: 28,
-  },
-  date: {
-    marginTop: spacing.xs,
-  },
-  row: {
-    flexDirection: 'row',
+  backBtn: {
+    position: 'absolute',
+    top: 48,
+    left: 16,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(0,0,0,0.4)',
     alignItems: 'center',
-    marginTop: spacing.sm,
+    justifyContent: 'center',
   },
-  rowText: {
-    marginLeft: spacing.xs,
+  content: {
+    padding: spacing.lg,
+    gap: spacing.md,
   },
-  description: {
-    marginTop: spacing.sm,
-    lineHeight: 22,
+  statusBadge: {
+    alignSelf: 'flex-start',
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 3,
+    borderRadius: radius.pill,
   },
-  past: {
-    marginTop: spacing.lg,
-  },
-  sectionLabel: {
-    marginTop: spacing.lg,
-    marginBottom: spacing.sm,
-  },
-  responseRow: {
+  infoRow: {
     flexDirection: 'row',
+    gap: spacing.sm,
+    alignItems: 'flex-start',
   },
-  responseButton: {
-    marginRight: spacing.xs,
-    height: 40,
-    paddingHorizontal: spacing.md,
+  descSection: {
+    gap: spacing.xs,
+  },
+  desc: {
+    lineHeight: 22,
   },
   countsRow: {
     flexDirection: 'row',
-    marginTop: spacing.md,
+    gap: spacing.sm,
   },
-  countChip: {
+  countCard: {
     flex: 1,
     alignItems: 'center',
-    borderRadius: radius.md,
-    paddingVertical: spacing.sm,
-    marginRight: spacing.xs,
+    padding: spacing.sm,
+    borderRadius: radius.lg,
+    gap: 2,
   },
-  reminderRow: {
+  creatorRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: spacing.lg,
-    paddingVertical: spacing.sm,
+    gap: spacing.sm,
+    paddingTop: spacing.md,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: 'rgba(0,0,0,0.06)',
   },
-  reminderText: {
-    marginLeft: spacing.xs,
+  creatorAvatar: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+  },
+  actionBar: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    padding: spacing.md,
+    borderTopWidth: 1,
+  },
+  reminderBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: radius.lg,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  rsvpButtons: {
+    flex: 1,
+    flexDirection: 'row',
+    gap: spacing.xs,
+  },
+  rsvpBtn: {
+    flex: 1,
+    paddingVertical: spacing.sm,
+    borderRadius: radius.md,
+    alignItems: 'center',
+    borderWidth: 1,
   },
 });
