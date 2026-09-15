@@ -274,6 +274,8 @@ $$;
 -- 2. CRITICAL: purge_expired_stories — admin gate
 -- ============================================================
 
+DROP FUNCTION IF EXISTS public.purge_expired_stories(int);
+
 CREATE OR REPLACE FUNCTION public.purge_expired_stories(p_older_than_days int DEFAULT 7)
 RETURNS int
 LANGUAGE plpgsql
