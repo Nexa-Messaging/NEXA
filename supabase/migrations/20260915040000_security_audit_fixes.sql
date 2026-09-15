@@ -1022,27 +1022,26 @@ BEGIN
     RAISE EXCEPTION 'Not authenticated';
   END IF;
 
-  FOR r IN
-    SELECT r.user_id, r.event_id, e.title, e.starts_at, e.created_by, e.community_id
-    FROM public.user_event_reminders r
-    JOIN public.user_events e ON e.id = r.event_id
+FOR r IN
+    SELECT re.user_id, re.event_id, e.title, e.starts_at, e.created_by, e.community_id
+    FROM public.user_event_reminders re
+    JOIN public.user_events e ON e.id = re.event_id
     WHERE e.starts_at BETWEEN now() AND now() + (p_window_minutes || ' minutes')::interval
       AND NOT EXISTS (
         SELECT 1 FROM public.notifications n
-        WHERE n.user_id = r.user_id
+        WHERE n.user_id = re.user_id
           AND n.type = 'event_reminder'
-          AND n.data->>'event_id' = r.event_id::text
-          AND n.created_at > now() - interval '1 hour'
+          AND n.data->>'event_id' = re.event_id::text
       )
   LOOP
     INSERT INTO public.notifications (user_id, actor_id, type, title, body, data)
     VALUES (
-      r.user_id,
-      r.created_by,
+      re.user_id,
+      re.created_by,
       'event_reminder',
-      r.title,
-      r.title || ' — ' || to_char(r.starts_at, 'Mon DD at HH12:MIam'),
-      jsonb_build_object('event_id', r.event_id, 'community_id', r.community_id)
+      re.title,
+      re.title || ' — ' || to_char(re.starts_at, 'Mon DD at HH12:MIam'),
+      jsonb_build_object('event_id', re.event_id, 'community_id', re.community_id)
     );
     v_count := v_count + 1;
   END LOOP;
