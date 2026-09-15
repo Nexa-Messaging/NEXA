@@ -11,17 +11,20 @@ import { AppText } from '@/components/ui/AppText';
 import { radius, spacing } from '@/constants/theme';
 import { AuthProvider, useAuth } from '@/lib/auth';
 import { ThemeProvider, useAppTheme } from '@/lib/theme';
+import { UserThemeProvider } from '@/lib/userTheme';
 import { usePresenceTracker } from '@/hooks/usePresence';
 
 export default function RootLayout() {
   return (
     <ThemeProvider>
       <AuthProvider>
-        <ErrorBoundary>
-          <RootNavigator />
-          <PushNavigation />
-        </ErrorBoundary>
-        <ThemedStatusBar />
+        <UserThemeProvider>
+          <ErrorBoundary>
+            <RootNavigator />
+            <PushNavigation />
+          </ErrorBoundary>
+          <ThemedStatusBar />
+        </UserThemeProvider>
       </AuthProvider>
     </ThemeProvider>
   );

@@ -13,6 +13,7 @@ import {
 
 import { Avatar } from '@/components/Avatar';
 import { MoodSelectorModal } from '@/components/MoodSelectorModal';
+import { ThemePicker } from '@/components/ThemePicker';
 import { AppButton, AppText, Card, Screen } from '@/components/ui';
 import { gradients, radius, spacing } from '@/constants/theme';
 import { useAppTheme } from '@/lib/theme';
@@ -141,6 +142,8 @@ export default function ProfileScreen() {
           style={{ marginTop: spacing.sm }}
           onPress={() => router.push('/settings/appearance' as any)}
         />
+
+        <ThemePicker />
 
         {signOutError ? (
           <AppText variant="caption" tone="danger" align="center" style={{ marginTop: spacing.md }}>
