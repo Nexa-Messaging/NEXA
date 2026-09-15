@@ -1022,7 +1022,7 @@ BEGIN
     RAISE EXCEPTION 'Not authenticated';
   END IF;
 
-FOR r IN
+FOR rem IN
     SELECT re.user_id, re.event_id, e.title, e.starts_at, e.created_by, e.community_id
     FROM public.user_event_reminders re
     JOIN public.user_events e ON e.id = re.event_id
