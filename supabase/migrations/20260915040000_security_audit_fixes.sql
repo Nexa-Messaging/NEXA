@@ -1009,6 +1009,8 @@ CREATE POLICY "Admins can view automation log"
 -- 13. LOW: process_due_event_reminders — add auth guard
 -- ============================================================
 
+DROP FUNCTION IF EXISTS public.process_due_event_reminders(int);
+
 CREATE OR REPLACE FUNCTION public.process_due_event_reminders(p_window_minutes int DEFAULT 5)
 RETURNS int
 LANGUAGE plpgsql
@@ -1022,30 +1024,26 @@ BEGIN
     RAISE EXCEPTION 'Not authenticated';
   END IF;
 
-FOR rem IN
-    SELECT re.user_id, re.event_id, e.title, e.starts_at, e.created_by, e.community_id
-    FROM public.user_event_reminders re
-    JOIN public.user_events e ON e.id = re.event_id
-    WHERE e.starts_at BETWEEN now() AND now() + (p_window_minutes || ' minutes')::interval
-      AND NOT EXISTS (
-        SELECT 1 FROM public.notifications n
-        WHERE n.user_id = re.user_id
-          AND n.type = 'event_reminder'
-          AND n.data->>'event_id' = re.event_id::text
-      )
-  LOOP
-    INSERT INTO public.notifications (user_id, actor_id, type, title, body, data)
-    VALUES (
-      rem.user_id,
-      rem.created_by,
-      'event_reminder',
-      rem.title,
-      rem.title || ' — ' || to_char(rem.starts_at, 'Mon DD at HH12:MIam'),
-      jsonb_build_object('event_id', rem.event_id, 'community_id', rem.community_id)
+  INSERT INTO public.notifications (user_id, actor_id, type, title, body, data)
+  SELECT
+    re.user_id,
+    e.created_by,
+    'event_reminder',
+    e.title,
+    e.title || ' — ' || to_char(e.starts_at, 'Mon DD at HH12:MIam'),
+    jsonb_build_object('event_id', re.event_id, 'community_id', e.community_id)
+  FROM public.user_event_reminders re
+  JOIN public.user_events e ON e.id = re.event_id
+  WHERE e.starts_at BETWEEN now() AND now() + (p_window_minutes || ' minutes')::interval
+    AND NOT EXISTS (
+      SELECT 1 FROM public.notifications n
+      WHERE n.user_id = re.user_id
+        AND n.type = 'event_reminder'
+        AND n.data->>'event_id' = re.event_id::text
+        AND n.created_at > now() - interval '1 hour'
     );
-    v_count := v_count + 1;
-  END LOOP;
 
+  GET DIAGNOSTICS v_count = ROW_COUNT;
   RETURN v_count;
 END;
 $$;
