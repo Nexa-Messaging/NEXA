@@ -4,6 +4,7 @@ import { router, useFocusEffect } from 'expo-router';
 import React, { useCallback, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
+import { DailyCard } from '@/components/DailyCard';
 import { StoriesFeedSection } from '@/components/stories/StoriesFeedSection';
 import { StoryComposerModal } from '@/components/stories/StoryComposerModal';
 import { StoryViewerModal } from '@/components/stories/StoryViewerModal';
@@ -13,6 +14,7 @@ import { useAppTheme } from '@/lib/theme';
 import { useAuth } from '@/lib/auth';
 import { useStories } from '@/hooks/useStories';
 import { useNotifications } from '@/hooks/useNotifications';
+import { DailyCard as DailyCardType, fetchTodayCard } from '@/lib/dailyCards';
 
 export default function HomeScreen() {
   const { colors } = useAppTheme();
@@ -22,8 +24,15 @@ export default function HomeScreen() {
   const [composerOpen, setComposerOpen] = useState(false);
   const [viewerUser, setViewerUser] = useState<string | null>(null);
   const [viewerOpen, setViewerOpen] = useState(false);
+  const [dailyCard, setDailyCard] = useState<DailyCardType | null>(null);
 
   const meId = user?.id ?? '';
+
+  const loadDailyCard = useCallback(async () => {
+    if (!user) return;
+    const { data } = await fetchTodayCard(user.id);
+    if (data) setDailyCard(data);
+  }, [user]);
 
   const openUser = (userId: string) => {
     setViewerUser(userId);
@@ -39,7 +48,8 @@ export default function HomeScreen() {
   useFocusEffect(
     useCallback(() => {
       void refresh();
-    }, [refresh]),
+      void loadDailyCard();
+    }, [refresh, loadDailyCard]),
   );
 
   const firstName = profile?.display_name?.split(' ')[0] ?? '';
@@ -94,6 +104,12 @@ export default function HomeScreen() {
             </View>
           </View>
         </LinearGradient>
+
+        {dailyCard ? (
+          <View style={styles.cardWrap}>
+            <DailyCard card={dailyCard} onCompleted={loadDailyCard} />
+          </View>
+        ) : null}
 
         {loading ? null : error ? (
           <AppText variant="caption" tone="danger" style={styles.error}>
@@ -191,6 +207,10 @@ const styles = StyleSheet.create({
   heroBadgeText: {
     fontSize: 10,
     lineHeight: 13,
+  },
+  cardWrap: {
+    paddingHorizontal: spacing.lg,
+    marginTop: spacing.md,
   },
   error: {
     paddingHorizontal: spacing.lg,

@@ -1,8 +1,15 @@
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
-import React, { useState } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import {
+  ScrollView,
+  StyleSheet,
+  View,
+  Modal,
+  Pressable,
+  Image,
+} from 'react-native';
 
 import { Avatar } from '@/components/Avatar';
 import { MoodSelectorModal } from '@/components/MoodSelectorModal';
@@ -20,6 +27,7 @@ export default function ProfileScreen() {
   const [signOutError, setSignOutError] = useState<string | null>(null);
   const [moodModalVisible, setMoodModalVisible] = useState(false);
   const [currentMood, setCurrentMood] = useState<import('@/lib/moods').Mood | null>(null);
+  const [imageViewerVisible, setImageViewerVisible] = useState(false);
 
   const loadMood = React.useCallback(async () => {
     if (profile?.id) {
@@ -67,44 +75,33 @@ export default function ProfileScreen() {
           </AppText>
         </LinearGradient>
 
-<Card variant="pop" style={styles.card}>
+        <Card variant="pop" style={styles.card}>
           <View style={styles.identity}>
-            <Avatar
-              uri={profile?.avatar_url}
-              name={profile?.display_name}
-              size={84}
-              ring
-              mood={currentMood}
-              moodSize="lg"
-            />
-            <View style={styles.identityText}>
-              <AppText variant="heading" weight="bold">
-                {profile?.display_name ?? 'Loading…'}
-              </AppText>
-              <AppText variant="body" tone="secondary">
-                @{username}
-              </AppText>
-              <View style={[styles.joinedSticker, { backgroundColor: colors.mintSoft }]}>
-                <AppText variant="caption" weight="bold" color={colors.mint}>
-                  {formatDateJoined(profile?.created_at)}
+            <View style={styles.identityInner}>
+              <Avatar
+                uri={profile?.avatar_url}
+                name={profile?.display_name}
+                size={84}
+                ring
+                mood={currentMood}
+                moodSize="lg"
+                onPress={() => setImageViewerVisible(true)}
+              />
+              <View style={styles.identityText}>
+                <AppText variant="heading" weight="bold">
+                  {profile?.display_name ?? 'Loading…'}
                 </AppText>
+                <AppText variant="body" tone="secondary">
+                  @{username}
+                </AppText>
+                <View style={[styles.joinedSticker, { backgroundColor: colors.mintSoft }]}>
+                  <AppText variant="caption" weight="bold" color={colors.mint}>
+                    {formatDateJoined(profile?.created_at)}
+                  </AppText>
+                </View>
               </View>
             </View>
           </View>
-
-          {profile?.bio ? (
-            <AppText variant="body" color={colors.text} style={styles.bio}>
-              {profile.bio}
-            </AppText>
-          ) : (
-            <AppText variant="body" tone="muted" style={styles.bio}>
-              No bio yet — tell people who you are.
-            </AppText>
-          )}
-
-          <ProfileInfoRow icon="school-outline" label="School" value={profile?.school} />
-          <ProfileInfoRow icon="layers-outline" label="Department" value={profile?.department} />
-          <ProfileInfoRow icon="trending-up-outline" label="Level" value={profile?.level} />
         </Card>
 
         <AppButton
@@ -167,35 +164,31 @@ export default function ProfileScreen() {
         onClose={() => setMoodModalVisible(false)}
         onMoodSet={handleMoodSet}
       />
-    </Screen>
-  );
-}
 
-function ProfileInfoRow({
-  icon,
-  label,
-  value,
-}: {
-  icon: keyof typeof Ionicons.glyphMap;
-  label: string;
-  value?: string | null;
-}) {
-  const { colors } = useAppTheme();
-  if (!value) {
-    return null;
-  }
-  return (
-    <View style={[styles.infoRow, { borderTopColor: colors.border }]}>
-      <View style={[styles.infoIcon, { backgroundColor: colors.primarySoft }]}>
-        <Ionicons name={icon} size={16} color={colors.primary} />
-      </View>
-      <AppText variant="label" tone="secondary" style={styles.infoLabel}>
-        {label}
-      </AppText>
-      <AppText variant="body" weight="semibold" style={styles.infoValue} numberOfLines={1}>
-        {value}
-      </AppText>
-    </View>
+      {/* Profile Image Full-Screen Viewer */}
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={imageViewerVisible}
+        onRequestClose={() => setImageViewerVisible(false)}
+      >
+        <Pressable
+          style={styles.viewerBackground}
+          onPress={() => setImageViewerVisible(false)}
+        >
+          <View style={styles.viewerContainer}>
+            <Image
+              source={{ uri: profile?.avatar_url ?? '' }}
+              style={styles.viewerImage}
+              accessibilityLabel={profile?.display_name ?? 'Profile picture'}
+            />
+            <Pressable style={styles.closeButton} onPress={() => setImageViewerVisible(false)}>
+              <Ionicons name="close-outline" size={28} color={colors.textMuted} />
+            </Pressable>
+          </View>
+        </Pressable>
+      </Modal>
+    </Screen>
   );
 }
 
@@ -230,6 +223,9 @@ const styles = StyleSheet.create({
     flex: 1,
     marginLeft: spacing.md,
   },
+  identityInner: {
+    width: 84,
+  },
   joinedSticker: {
     alignSelf: 'flex-start',
     marginTop: spacing.xxs,
@@ -237,30 +233,28 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
     borderRadius: radius.pill,
   },
-  bio: {
-    marginTop: spacing.md,
-    lineHeight: 22,
-  },
-  infoRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: spacing.md,
-    paddingTop: spacing.md,
-    borderTopWidth: 1,
-  },
-  infoIcon: {
-    width: 30,
-    height: 30,
-    borderRadius: radius.pill,
-    alignItems: 'center',
+  viewerBackground: {
+    ...StyleSheet.absoluteFill,
+    backgroundColor: 'rgba(0,0,0,0.8)',
     justifyContent: 'center',
+    alignItems: 'center',
   },
-  infoLabel: {
-    marginLeft: spacing.sm,
-    marginRight: spacing.sm,
+  viewerContainer: {
+    maxWidth: '90%',
+    maxHeight: '90%',
   },
-  infoValue: {
-    flex: 1,
-    textAlign: 'right',
+  viewerImage: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'contain',
+    borderRadius: radius.lg,
+  },
+  closeButton: {
+    position: 'absolute',
+    top: 40,
+    right: 16,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    borderRadius: radius.pill,
+    padding: 8,
   },
 });

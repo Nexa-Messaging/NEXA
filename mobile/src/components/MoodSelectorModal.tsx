@@ -136,9 +136,9 @@ export function MoodSelectorModal({ visible, onClose, onMoodSet }: MoodSelectorM
     >
       <Animated.View style={[styles.fadeOverlay, { opacity: fadeAnim }]}>
         <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'padding'}
           style={styles.keyboardAvoiding}
-          keyboardVerticalOffset={0}
+          keyboardVerticalOffset={88}
         >
           <View style={styles.modalContainer}>
             <View style={styles.handleWrapper}>

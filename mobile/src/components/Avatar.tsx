@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Image } from 'expo-image';
 import React from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { AppText } from '@/components/ui/AppText';
 import { gradients } from '@/constants/theme';
@@ -22,6 +22,7 @@ export interface AvatarProps {
   /** Size of the mood badge. */
   moodSize?: 'sm' | 'md' | 'lg';
   accessibilityLabel?: string;
+  onPress?: () => void;
 }
 
 const RING_GRADIENTS: readonly (readonly [string, string, ...string[]])[] = [
@@ -59,6 +60,7 @@ export function Avatar({
   mood,
   moodSize = 'md',
   accessibilityLabel,
+  onPress,
 }: AvatarProps) {
   const { colors } = useAppTheme();
   const radius = size / 2;
@@ -97,12 +99,22 @@ export function Avatar({
     </LinearGradient>
   );
 
-  const withMoodBadge = (content: React.ReactNode) => (
-    <View style={[styles.container, { width: size, height: size }]}>
-      {content}
-      <MoodBadge mood={mood} size={moodSize} showLabel={size >= 52} overlay />
-    </View>
-  );
+  const withMoodBadge = (content: React.ReactNode) => {
+    const inner = (
+      <View style={[styles.container, { width: size, height: size }]}>
+        {content}
+        <MoodBadge mood={mood} size={moodSize} showLabel={size >= 52} overlay />
+      </View>
+    );
+    if (onPress) {
+      return (
+        <Pressable onPress={onPress} accessibilityRole="button">
+          {inner}
+        </Pressable>
+      );
+    }
+    return inner;
+  };
 
   if (!ring) {
     return withMoodBadge(avatarContent);

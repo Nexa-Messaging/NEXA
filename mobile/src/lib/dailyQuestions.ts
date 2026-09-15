@@ -140,6 +140,76 @@ export async function unreactToDailyAnswer(
 }
 
 /**
+ * Get today's date string for comparison.
+ */
+function getTodayDateString(): string {
+  const now = new Date();
+  return now.toISOString().split('T')[0];
+}
+
+/**
+ * Check if the daily question was already shown today for this user.
+ */
+export async function hasShownDailyQuestionToday(userId: string): Promise<boolean> {
+  const supabase = getSupabase();
+  const { data, error } = await (supabase as any)
+    .from('daily_question_log' as any)
+    .select('shown_at')
+    .eq('user_id', userId)
+    .eq('date', getTodayDateString())
+    .maybeSingle();
+
+  if (error) {
+    console.warn('Could not check daily question show status:', error.message);
+    return false;
+  }
+
+  return data !== null;
+}
+
+/**
+ * Mark the daily question as shown today for this user.
+ */
+export async function markDailyQuestionShownToday(userId: string): Promise<void> {
+  const supabase = getSupabase();
+  const { error } = await (supabase as any)
+    .from('daily_question_log' as any)
+    .upsert(
+      {
+        user_id: userId,
+        date: getTodayDateString(),
+        shown_at: new Date().toISOString(),
+      } as any,
+      { onConflict: 'user_id,date' }
+    );
+
+  if (error) {
+    console.warn('Could not mark daily question as shown:', error.message);
+  }
+}
+
+/**
+ * Mark the daily question as answered today for this user.
+ */
+export async function markDailyQuestionAnsweredToday(userId: string): Promise<void> {
+  const supabase = getSupabase();
+  const { error } = await (supabase as any)
+    .from('daily_question_log' as any)
+    .upsert(
+      {
+        user_id: userId,
+        date: getTodayDateString(),
+        answered_at: new Date().toISOString(),
+      } as any,
+      { onConflict: 'user_id,date' }
+    );
+
+  if (error) {
+    console.warn('Could not mark daily question as answered:', error.message);
+  }
+}
+
+/**
  * Skip today's question.
  */
 export async function skipDailyQuestion(questionId: string): Promise<DailyQuestionResult<void>> {
@@ -151,6 +221,13 @@ export async function skipDailyQuestion(questionId: string): Promise<DailyQuesti
   if (error) {
     return { data: null, error: dqError(error) };
   }
+
+  // Mark as skipped so it shows on next app open
+  const { data: { user } } = await supabase.auth.getUser();
+  if (user) {
+    await markDailyQuestionShownToday(user.id);
+  }
+
   return { data: null, error: null };
 }
 
