@@ -117,7 +117,7 @@ BEGIN
   LEFT JOIN public.community_members mc
     ON mc.community_id = c.id AND mc.user_id = v_uid
   WHERE c.created_by IN (
-    SELECT id FROM public.profiles WHERE is_banned = false
+    SELECT id FROM public.profiles WHERE banned_at IS NOT NULL
   )
 
   UNION ALL
@@ -206,7 +206,7 @@ BEGIN
      WHERE dar.answer_id = da.id
   ) ar ON true
   WHERE da.is_public = true
-    AND p.is_banned IS NOT TRUE
+    AND p.banned_at IS NULL
 
   UNION ALL
 
@@ -249,7 +249,7 @@ BEGIN
     WHERE da.user_id = pr.id
       AND da.is_public = true
   ) uar ON true
-  WHERE pr.is_banned IS NOT TRUE
+  WHERE pr.banned_at IS NULL
     AND (uar.total_answers > 0 OR pr.id = v_uid)
 
   -- ── Rank and paginate ────────────────────────────────────────

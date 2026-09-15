@@ -259,7 +259,7 @@ AS $$
   FROM public.user_events ev
   LEFT JOIN public.profiles p ON p.id = ev.created_by
   WHERE ev.created_by NOT IN (
-    SELECT id FROM public.profiles WHERE is_banned = true
+    SELECT id FROM public.profiles WHERE banned_at IS NOT NULL
   )
   ORDER BY
     CASE
