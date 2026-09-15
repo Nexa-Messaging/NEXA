@@ -13,9 +13,8 @@ RETURNS boolean
 LANGUAGE sql STABLE
 AS $$
   SELECT
-    now() - p_user_id IN (SELECT created_at FROM auth.users WHERE id = p_user_id)
     -- Account must be at least 24 hours old
-    AND (
+    (
       SELECT created_at FROM auth.users WHERE id = p_user_id
     ) < now() - interval '24 hours'
     -- User must not have 3+ open moderation reports against them
