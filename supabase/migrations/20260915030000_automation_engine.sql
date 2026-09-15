@@ -193,52 +193,27 @@ CREATE TRIGGER trg_auto_event_reminder
 -- ============================================================
 -- These run automatically if pg_cron is enabled.
 -- If not available, they serve as documentation for manual setup.
+-- Each job is a separate DO block to avoid nested dollar-quoting.
 -- ============================================================
 
 DO $$
 BEGIN
   IF EXISTS (SELECT 1 FROM pg_available_extensions WHERE name = 'pg_cron') THEN
-    -- Purge expired stories daily at 3 AM
-    PERFORM cron.schedule(
-      'purge_expired_stories',
-      '0 3 * * *',
-      $$SELECT public.purge_expired_stories()$$
-    );
-
-    -- Purge expired moods daily at 3:30 AM
-    PERFORM cron.schedule(
-      'purge_expired_moods',
-      '30 3 * * *',
-      $$DELETE FROM public.moods WHERE expires_at < now()$$
-    );
-
-    -- Process due event reminders every 5 minutes
-    PERFORM cron.schedule(
-      'process_event_reminders',
-      '*/5 * * * *',
-      $$SELECT public.process_due_event_reminders()$$
-    );
-
-    -- Transition events to live/ended every 5 minutes
-    PERFORM cron.schedule(
-      'transition_event_status',
-      '*/5 * * * *',
-      $$UPDATE public.user_events SET status = 'live' WHERE status = 'upcoming' AND starts_at <= now()$$
-    );
-
-    -- Refresh discover view scores every hour
-    -- (only if discover_scores table exists)
-    IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'discover_scores') THEN
-      PERFORM cron.schedule(
-        'refresh_discover_scores',
-        '0 * * * *',
-        $$REFRESH MATERIALIZED VIEW CONCURRENTLY public.discover_scores$$
-      );
-    END IF;
-
-    RAISE NOTICE 'All scheduled jobs configured';
+    PERFORM cron.schedule('purge_expired_stories', '0 3 * * *', 'SELECT public.purge_expired_stories()');
+    PERFORM cron.schedule('purge_expired_moods', '30 3 * * *', 'DELETE FROM public.moods WHERE expires_at < now()');
+    PERFORM cron.schedule('process_event_reminders', '*/5 * * * *', 'SELECT public.process_due_event_reminders()');
+    PERFORM cron.schedule('transition_event_status', '*/5 * * * *', 'UPDATE public.user_events SET status = ''live'' WHERE status = ''upcoming'' AND starts_at <= now()');
+    RAISE NOTICE 'Scheduled jobs configured';
   ELSE
     RAISE NOTICE 'pg_cron not available — scheduled jobs skipped';
+  END IF;
+END $$;
+
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM pg_available_extensions WHERE name = 'pg_cron')
+     AND EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'discover_scores') THEN
+    PERFORM cron.schedule('refresh_discover_scores', '0 * * * *', 'REFRESH MATERIALIZED VIEW CONCURRENTLY public.discover_scores');
   END IF;
 END $$;
 
@@ -252,11 +227,7 @@ END $$;
 DO $$
 BEGIN
   IF EXISTS (SELECT 1 FROM pg_available_extensions WHERE name = 'pg_cron') THEN
-    PERFORM cron.schedule(
-      'cleanup_stale_presence',
-      '*/10 * * * *',
-      $$DELETE FROM public.user_presence WHERE last_seen < now() - interval '5 minutes'$$
-    );
+    PERFORM cron.schedule('cleanup_stale_presence', '*/10 * * * *', 'DELETE FROM public.user_presence WHERE last_seen < now() - interval ''5 minutes''');
   END IF;
 END $$;
 
