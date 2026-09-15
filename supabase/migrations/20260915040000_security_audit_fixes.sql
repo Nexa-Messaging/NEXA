@@ -1036,12 +1036,12 @@ FOR rem IN
   LOOP
     INSERT INTO public.notifications (user_id, actor_id, type, title, body, data)
     VALUES (
-      re.user_id,
-      re.created_by,
+      rem.user_id,
+      rem.created_by,
       'event_reminder',
-      re.title,
-      re.title || ' — ' || to_char(re.starts_at, 'Mon DD at HH12:MIam'),
-      jsonb_build_object('event_id', re.event_id, 'community_id', re.community_id)
+      rem.title,
+      rem.title || ' — ' || to_char(rem.starts_at, 'Mon DD at HH12:MIam'),
+      jsonb_build_object('event_id', rem.event_id, 'community_id', rem.community_id)
     );
     v_count := v_count + 1;
   END LOOP;
