@@ -636,8 +636,8 @@ CREATE POLICY "moods_select_public"
     AND auth.uid() IS NOT NULL
     AND NOT EXISTS (
       SELECT 1 FROM public.blocks
-      WHERE (blocker_id = auth.uid() AND blocked_id = moods.user_id)
-         OR (blocker_id = moods.user_id AND blocked_id = auth.uid())
+      WHERE (user_id = auth.uid() AND blocked_user_id = moods.user_id)
+         OR (blocked_user_id = auth.uid() AND user_id = moods.user_id)
     )
   );
 
@@ -794,8 +794,8 @@ BEGIN
       AND pr.banned_at IS NULL
       AND NOT EXISTS (
         SELECT 1 FROM public.blocks b
-        WHERE (b.blocker_id = v_uid AND b.blocked_id = pr.id)
-           OR (b.blocker_id = pr.id AND b.blocked_id = v_uid)
+        WHERE (b.user_id = v_uid AND b.blocked_user_id = pr.id)
+           OR (b.blocked_user_id = v_uid AND b.user_id = pr.id)
       )
   )
   SELECT feed.item_type, feed.item_id, feed.score, feed.payload
@@ -860,8 +860,8 @@ BEGIN
         )
         AND NOT EXISTS (
           SELECT 1 FROM public.blocks b
-          WHERE (b.blocker_id = v_uid AND b.blocked_id = pr.id)
-             OR (b.blocker_id = pr.id AND b.blocked_id = v_uid)
+          WHERE (b.user_id = v_uid AND b.blocked_user_id = pr.id)
+             OR (b.blocked_user_id = v_uid AND b.user_id = pr.id)
         )
       ORDER BY
         CASE WHEN lower(pr.username) = lower(v_escaped) THEN 0
