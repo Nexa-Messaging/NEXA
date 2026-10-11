@@ -20,7 +20,57 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.4';
 // ============================================================================
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL') ?? '';
-const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
+
+/**
+ * Resolves the service-role key.
+ *
+ * The platform used to export `SUPABASE_SERVICE_ROLE_KEY` directly. It now
+ * provisions named keys as JSON instead:
+ *
+ *   SUPABASE_SECRET_KEYS -> { "default": "sb_secret_...", ... }
+ *
+ * Reading only the old name yields '', and `createClient(url, '')` throws
+ * during module evaluation — before Deno.serve is ever registered. That is why
+ * a GET, which needs no database at all, came back as a bare 500 with no JSON
+ * body. Accept every shape the platform and the CLI are known to provide.
+ */
+function resolveServiceRoleKey(): string {
+  const legacy = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+  if (legacy) return legacy;
+
+  for (const name of ['SUPABASE_SECRET_KEYS', 'SUPABASE_SECRET_KEY']) {
+    const raw = Deno.env.get(name);
+    if (!raw) continue;
+    try {
+      const parsed: unknown = JSON.parse(raw);
+      if (typeof parsed === 'string' && parsed) return parsed;
+      if (
+        parsed !== null &&
+        typeof parsed === 'object' &&
+        typeof (parsed as Record<string, unknown>).default === 'string'
+      ) {
+        const key = (parsed as Record<string, string>).default;
+        if (key) return key;
+      }
+    } catch {
+      // Some runtimes hand back the bare key rather than JSON.
+      return raw;
+    }
+  }
+  return '';
+}
+
+const SUPABASE_SERVICE_ROLE_KEY = resolveServiceRoleKey();
+
+if (!SUPABASE_SERVICE_ROLE_KEY) {
+  throw new Error(
+    '[send-push] No service-role key available. The platform now exports ' +
+      'SUPABASE_SECRET_KEYS (JSON object; use its "default" entry) instead of ' +
+      'SUPABASE_SERVICE_ROLE_KEY. Grant the function access to the project ' +
+      'secret key so it can read notifications and device_tokens.',
+  );
+}
+
 const EXPO_PUSH_URL = 'https://exp.host/--/api/v2/push/send';
 const EXPO_RECEIPTS_URL = 'https://exp.host/--/api/v2/push/getReceipts';
 const EXPO_ACCESS_TOKEN = Deno.env.get('EXPO_ACCESS_TOKEN') ?? '';
@@ -109,7 +159,15 @@ async function loadActiveTokens(recipientId: string): Promise<DeviceTokenRow[]> 
   return (data ?? []) as DeviceTokenRow[];
 }
 
-/** Sends every token, chunked. Returns any tokens Expo flagged as invalid. */
+/**
+ * Errors that mean "this token will never work again". Anything else
+ * (MessageTooBig, MessageRateExceeded, ...) is transient or content-specific
+ * and must NOT invalidate the token, otherwise one oversized message would
+ * silently disconnect every device.
+ */
+const FATAL_TOKEN_ERRORS = new Set(['DeviceNotRegistered', 'InvalidCredentials']);
+
+/** Sends every token, chunked. Returns any tokens Expo flagged as dead. */
 async function sendToExpo(
   tokens: string[],
   title: string,
@@ -117,7 +175,6 @@ async function sendToExpo(
   payload: Record<string, unknown>,
 ): Promise<string[]> {
   const invalidTokens = new Set<string>();
-  const allTickets: ExpoTicket[] = [];
 
   for (let i = 0; i < tokens.length; i += MAX_TOKENS_PER_REQUEST) {
     const chunk = tokens.slice(i, i + MAX_TOKENS_PER_REQUEST);
@@ -151,14 +208,28 @@ async function sendToExpo(
       return [...invalidTokens];
     }
 
+    // Map each accepted ticket id back to the token it was minted for. This
+    // must be built from the ORIGINAL chunk index: looking tokens up by
+    // position in a filtered list misaligns as soon as any ticket in the same
+    // chunk was rejected, and would invalidate the wrong devices.
+    const ticketIdToToken = new Map<string, string>();
     tickets.forEach((ticket, index) => {
+      const token = chunk[index];
+      if (!token) {
+        return;
+      }
       if (ticket.status === 'error') {
-        invalidTokens.add(chunk[index]);
-        allTickets.push(ticket);
+        if (FATAL_TOKEN_ERRORS.has(ticket.details?.error ?? '')) {
+          invalidTokens.add(token);
+        }
+        return;
+      }
+      if (ticket.status === 'ok' && ticket.id) {
+        ticketIdToToken.set(ticket.id, token);
       }
     });
 
-    const ticketIds = tickets.filter((t) => t.status === 'ok' && t.id).map((t) => t.id!);
+    const ticketIds = [...ticketIdToToken.keys()];
     if (ticketIds.length > 0) {
       for (let r = 0; r < ticketIds.length; r += MAX_TOKENS_PER_REQUEST) {
         const ids = ticketIds.slice(r, r + MAX_TOKENS_PER_REQUEST);
@@ -172,10 +243,14 @@ async function sendToExpo(
           const receipts = parsed.data ?? {};
           for (const id of ids) {
             const receipt = receipts[id];
-            if (receipt && receipt.status === 'error') {
-              const idx = ticketIds.indexOf(id);
-              const token = chunk[idx];
-              if (token) invalidTokens.add(token);
+            const token = ticketIdToToken.get(id);
+            if (!token || !receipt || receipt.status !== 'error') {
+              continue;
+            }
+            // A receipt error is only fatal for the token itself; other
+            // failures (e.g. MessageTooBig) leave the token perfectly usable.
+            if (FATAL_TOKEN_ERRORS.has(receipt.details?.error ?? '')) {
+              invalidTokens.add(token);
             }
           }
         } catch {
@@ -185,7 +260,6 @@ async function sendToExpo(
     }
   }
 
-  void allTickets;
   return [...invalidTokens];
 }
 
