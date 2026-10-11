@@ -2524,6 +2524,66 @@ if (signUpA.error) {
           fail('moderation group deleted', del.error.message);
         }
       }
+
+      // -------------------------------------------------------------------------
+      // Push notification device-token registry
+      // -------------------------------------------------------------------------
+      // Covers the client -> register_device_token -> device_tokens path and,
+      // just as importantly, proves the table stays unreachable from clients so
+      // a future "fix the Advisor warning" change cannot quietly reopen it.
+      step('113. Device token registration is scoped to the caller');
+      {
+        const pushToken = `ExponentPushToken[verify-${Date.now()}]`;
+        const reg = await aDevice.client.rpc('register_device_token', {
+          p_token: pushToken,
+          p_platform: 'android',
+        });
+        // Re-registering the same token must be idempotent: it happens on every
+        // app relaunch and after an invalidated token is re-minted.
+        const regAgain = await aDevice.client.rpc('register_device_token', {
+          p_token: pushToken,
+          p_platform: 'android',
+        });
+        const badToken = await aDevice.client.rpc('register_device_token', {
+          p_token: 'not-an-expo-token',
+          p_platform: 'android',
+        });
+        // No client policies exist on purpose; the RPCs are the only writers and
+        // the delivery worker reads with the service role. Both a direct read and
+        // another user's scoped read must be denied outright.
+        const directRead = await aDevice.client.from('device_tokens').select('user_id, token');
+        const otherUserRead = await bClient
+          .from('device_tokens')
+          .select('user_id, token')
+          .eq('user_id', aId);
+        const unreg = await aDevice.client.rpc('unregister_device_token', { p_token: pushToken });
+        const unregAgain = await aDevice.client.rpc('unregister_device_token', { p_token: pushToken });
+
+        const readDenied = !!directRead.error && !!otherUserRead.error;
+        if (
+          !reg.error &&
+          !regAgain.error &&
+          !!badToken.error &&
+          readDenied &&
+          !unreg.error &&
+          !unregAgain.error
+        ) {
+          pass('device token registers, is idempotent, is not client-readable, and unregisters');
+        } else {
+          fail(
+            'device token registers, is idempotent, is not client-readable, and unregisters',
+            JSON.stringify({
+              reg: reg.error?.message ?? 'ok',
+              regAgain: regAgain.error?.message ?? 'ok',
+              badToken: badToken.error?.message ?? 'no error',
+              directRead: directRead.error?.message ?? `rows=${(directRead.data ?? []).length}`,
+              otherUserRead: otherUserRead.error?.message ?? `rows=${(otherUserRead.data ?? []).length}`,
+              unreg: unreg.error?.message ?? 'ok',
+              unregAgain: unregAgain.error?.message ?? 'ok',
+            }),
+          );
+        }
+      }
     }
   }
 }
